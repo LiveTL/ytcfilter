@@ -1,20 +1,13 @@
 <ul class="list-disc list-inside">
   <strong>On today's KFP menu:</strong>
   <li class="ml-3.5">
-    Auto-translate was broken for some users due to breaking
-    changes on Google's end, but these issues have been fixed!
-    Please keep in mind that this feature is experimental.
-  </li>
-</ul>
-<ul class="list-disc list-inside">
-  <strong>What's still cooking in the usual room:</strong>
-  <li class="ml-3.5">
-    Opt-in procedure for gifted memberships
+    YtcFilter's original developer stopped development about a year
+    ago, and YtcFilter was scheduled to be removed from the Chrome
+    Web Store permanently in December 2022. However, we (the LiveTL dev team)
+    have decided to inherit the project to revamp it!
   </li>
   <li class="ml-3.5">
-    Migration to Manifest V3
-  </li>
-  <li class="ml-3.5">
-    Updated screenshots, store listing, and trailer video
+    YtcFilter has been rewritten from the ground up, and is now more
+    powerful and robust than ever before. We hope you enjoy!
   </li>
 </ul>

@@ -1,4 +1,3 @@
-import HcButton from '../components/HyperchatButton.svelte';
 import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, checkInjected } from '../ts/chat-utils';
 import { isLiveTL, isAndroid } from '../ts/chat-constants';
 import { hcEnabled, autoLiveChat } from '../ts/storage';
@@ -10,6 +9,7 @@ import {
   updatePlayerProgress,
   setTheme
 } from '../ts/messaging';
+import YtcFilterButtons from '../components/YtcFilterButtons.svelte';
 
 // const isFirefox = navigator.userAgent.includes('Firefox');
 
@@ -76,17 +76,22 @@ const chatLoaded = async (): Promise<void> => {
   const hyperChatEnabled = await hcEnabled.get();
 
   // Inject HC button
-  const ytcPrimaryContent = document.querySelector('#primary-content');
+  const ytcPrimaryContent = document.querySelector('#chat-messages');
   if (!ytcPrimaryContent) {
-    console.error('Failed to find #primary-content');
+    console.error('Failed to find #chat-messages');
     return;
   }
+  const immediateChild = document.createElement('div');
+  ytcPrimaryContent.prepend(immediateChild);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const hcButton = new HcButton({
-    target: ytcPrimaryContent
+  const ytcfButton = new YtcFilterButtons({
+    target: immediateChild
   });
 
+  return;
+
   // Everything past this point will only run if HC is enabled
+  // eslint-disable-next-line no-unreachable
   if (!hyperChatEnabled) return;
 
   const ytcItemList = document.querySelector('#chat>#item-list');

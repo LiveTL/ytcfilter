@@ -1833,6 +1833,11 @@ detective@^5.2.0:
     defined "^1.0.0"
     minimist "^1.1.1"
 
+dialog-polyfill@^0.5.6:
+  version "0.5.6"
+  resolved "https://registry.yarnpkg.com/dialog-polyfill/-/dialog-polyfill-0.5.6.tgz#7507b4c745a82fcee0fa07ce64d835979719599a"
+  integrity sha512-ZbVDJI9uvxPAKze6z146rmfUZjBqNEwcnFTVamQzXH+svluiV7swmVIGr7miwADgfgt1G2JQIytypM9fbyhX4w==
+
 didyoumean@^1.2.2:
   version "1.2.2"
   resolved "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz"
@@ -2549,6 +2554,13 @@ execa@^4.0.0:
     onetime "^5.1.0"
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
+
+exio@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/exio/-/exio-0.6.0.tgz#369e64485431d3223794cd754880f5a0e029ee92"
+  integrity sha512-LcswfaNl4H62TG4gtTuO4Tch4bZU+9cB6vZhXx2Ob8W9hlyTyyFWosTD8JEJkUO1wxKN2O8Z7976YvXppkTdUQ==
+  dependencies:
+    dialog-polyfill "^0.5.6"
 
 express@4.17.1:
   version "4.17.1"

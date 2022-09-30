@@ -1,5 +1,5 @@
 {
-  "name": "HyperChat",
+  "name": "YtcFilter",
   "version": "69.42.0",
   "private": true,
   "scripts": {
@@ -52,5 +52,8 @@
     "typescript": "^4.3.5",
     "vite": "2.9.14",
     "vite-plugin-web-extension": "^1.4.0"
+  },
+  "dependencies": {
+    "exio": "^0.6.0"
   }
 }

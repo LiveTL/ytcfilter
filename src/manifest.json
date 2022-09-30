@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "HyperChat by LiveTL",
+  "name": "YtcFilter",
   "homepage_url": "https://livetl.app/en/hyperchat/",
   "description": "YouTube chat, but it's fast and sleek!",
-  "version": "2.6.7",
+  "version": "0.3.0",
   "permissions": [
     "storage"
   ],

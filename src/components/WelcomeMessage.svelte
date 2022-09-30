@@ -45,7 +45,7 @@
       <img class="rounded-full" width="44" height="44" src={logo} alt="logo">
     </div>
     <span class="ml-2 leading-tight">
-      <h5 class="font-bold">HyperChat by LiveTL</h5>
+      <h5 class="font-bold">YtcFilter by LiveTL</h5>
       <p>
         Optimized YouTube Chat
         /

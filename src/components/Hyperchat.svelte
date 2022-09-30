@@ -384,13 +384,13 @@
         </div>
       {/each}
     </div>
-    {#if pinned}
+    <!-- {#if pinned}
       <div class="absolute top-0 w-full" bind:this={topBar}>
         <div class="mx-1.5 mt-1.5">
           <PinnedMessage pinned={pinned} on:resize={topBarResized} />
         </div>
       </div>
-    {/if}
+    {/if} -->
     {#if !isAtBottom}
       <div
         class="absolute left-1/2 transform -translate-x-1/2 bottom-0 pb-1"

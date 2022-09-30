@@ -7,8 +7,8 @@ import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode } from './chat-con
 
 export const stores = webExtStores();
 
-export const hcEnabled = stores.addSyncStore('hc.enabled', true);
-export const translateTargetLanguage = stores.addSyncStore('hc.translateTargetLanguage', '' as '' | AvailableLanguageCodes);
+export const hcEnabled = stores.addSyncStore('ytcf.enabled', true);
+export const translateTargetLanguage = stores.addSyncStore('ytcf.translateTargetLanguage', '' as '' | AvailableLanguageCodes);
 export const translatorClient = readable(null as (null | IframeTranslatorClient), (set) => {
   let client: IframeTranslatorClient | null = null;
   const destroyIf = (): void => {
@@ -44,16 +44,16 @@ export const translatorClient = readable(null as (null | IframeTranslatorClient)
   };
 });
 export const refreshScroll = writable(false);
-export const theme = stores.addSyncStore('hc.theme', Theme.YOUTUBE);
-export const showProfileIcons = stores.addSyncStore('hc.messages.showProfileIcons', false);
-export const showUsernames = stores.addSyncStore('hc.messages.showUsernames', true);
-export const showTimestamps = stores.addSyncStore('hc.messages.showTimestamps', false);
-export const showUserBadges = stores.addSyncStore('hc.messages.showUserBadges', true);
-export const lastClosedVersion = stores.addSyncStore('hc.lastClosedVersion', '');
-export const showOnlyMemberChat = stores.addSyncStore('hc.showOnlyMemberChat', false);
-export const emojiRenderMode = stores.addSyncStore('hc.emojiRenderMode', YoutubeEmojiRenderMode.SHOW_ALL);
-export const autoLiveChat = stores.addSyncStore('hc.autoLiveChat', false);
-export const useSystemEmojis = stores.addSyncStore('hc.useSystemEmojis', false);
+export const theme = stores.addSyncStore('ytcf.theme', Theme.YOUTUBE);
+export const showProfileIcons = stores.addSyncStore('ytcf.messages.showProfileIcons', false);
+export const showUsernames = stores.addSyncStore('ytcf.messages.showUsernames', true);
+export const showTimestamps = stores.addSyncStore('ytcf.messages.showTimestamps', false);
+export const showUserBadges = stores.addSyncStore('ytcf.messages.showUserBadges', true);
+export const lastClosedVersion = stores.addSyncStore('ytcf.lastClosedVersion', '');
+export const showOnlyMemberChat = stores.addSyncStore('ytcf.showOnlyMemberChat', false);
+export const emojiRenderMode = stores.addSyncStore('ytcf.emojiRenderMode', YoutubeEmojiRenderMode.SHOW_ALL);
+export const autoLiveChat = stores.addSyncStore('ytcf.autoLiveChat', false);
+export const useSystemEmojis = stores.addSyncStore('ytcf.useSystemEmojis', false);
 export const hoveredItem = writable(null as null | Chat.MessageAction['message']['messageId']);
 export const focusedSuperchat = writable(null as null | Ytc.ParsedTimedItem);
 export const port = writable(null as null | Chat.Port);
@@ -76,6 +76,6 @@ export const isDark = derived(theme, ($theme) => {
   );
 });
 export const currentProgress = writable(null as null | number);
-export const enableStickySuperchatBar = stores.addSyncStore('hc.enableStickySuperchatBar', true);
-export const enableHighlightedMentions = stores.addSyncStore('hc.enableHighlightedMentions', true);
-export const lastOpenedVersion = stores.addSyncStore('hc.lastOpenedVersion', '');
+export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySuperchatBar', true);
+export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', true);
+export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '');
