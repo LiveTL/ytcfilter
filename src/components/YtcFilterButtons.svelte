@@ -1,11 +1,22 @@
 <script lang="ts">
   import { isLiveTL } from '../ts/chat-constants';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { isDark } from '../ts/storage';
+  import { onDestroy, onMount } from 'svelte';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
+  let dark = true;
+  let attrObserver: MutationObserver;
+  onMount(() => {
+    attrObserver = new MutationObserver((mutations) => {
+      dark = document.documentElement.hasAttribute('dark');
+    });
+    attrObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dark'] });
+  });
+  onDestroy(() => {
+    attrObserver.disconnect();
+  });
 </script>
 
-<div data-theme={$isDark ? 'dark' : 'light'} class="ytcf-button-wrapper">
+<div data-theme={dark ? 'dark' : 'light'} class="ytcf-button-wrapper">
   <button use:exioButton class="ytcf-button">
     <img src={logo} alt="ytcfilter-logo" class="ytcfilter-logo"/>
     YtcFilter
