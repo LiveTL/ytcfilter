@@ -94,13 +94,6 @@ const chatLoaded = async (): Promise<void> => {
   // eslint-disable-next-line no-unreachable
   if (!hyperChatEnabled) return;
 
-  const ytcItemList = document.querySelector('#chat>#item-list');
-  if (!ytcItemList) {
-    console.error('Failed to find #chat>#item-list');
-    return;
-  }
-
-  // Inject hyperchat
   const frameInfo = await getFrameInfoAsync();
   if (!isValidFrameInfo(frameInfo)) {
     console.error('Failed to get valid frame info', { frameInfo });
@@ -114,6 +107,14 @@ const chatLoaded = async (): Promise<void> => {
     (isLiveTL ? 'hyperchat/index.html' : 'hyperchat.html') +
     `?${params.toString()}`
   );
+
+  const ytcItemList = document.querySelector('#chat>#item-list');
+  if (!ytcItemList) {
+    console.error('Failed to find #chat>#item-list');
+    return;
+  }
+
+  // Inject hyperchat
   ytcItemList.outerHTML = `
   <iframe id="hyperchat" src="${source}" style="border: 0px; width: 100%; height: 100%;"/>
   `;
