@@ -16,21 +16,23 @@
   });
 </script>
 
-<div data-theme={dark ? 'dark' : 'light'} class="ytcf-button-wrapper">
-  <button use:exioButton class="ytcf-button">
+<div data-theme={dark ? 'dark' : 'light'} class="ytcf-wrapper">
+  <button use:exioButton class="ytcf-activator-button">
     <img src={logo} alt="ytcfilter-logo" class="ytcfilter-logo"/>
     YtcFilter
     <div use:exioIcon class="ytcf-shifted-icon" style="color: inherit;">
       expand
     </div>
   </button>
+  <div style="width: 100%;" class="ytcf-iframe" />
 </div>
 <style>
-  .ytcf-button-wrapper {
+  .ytcf-wrapper {
     display: flex;
-    justify-content: end;
+    align-items: end;
+    flex-direction: column;
   }
-  .ytcf-button {
+  .ytcf-activator-button {
     background-color: transparent;
     width: fit-content;
     color: inherit;
@@ -44,10 +46,10 @@
     height: 15px;
     vertical-align: sub;
   }
-  .ytcf-button-wrapper[data-theme=dark] {
+  .ytcf-wrapper[data-theme=dark] {
     color: white;
   }
-  .ytcf-button-wrapper[data-theme=light] {
+  .ytcf-wrapper[data-theme=light] {
     color: black;
   }
 </style>

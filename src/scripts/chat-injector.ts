@@ -88,11 +88,8 @@ const chatLoaded = async (): Promise<void> => {
     target: immediateChild
   });
 
-  return;
-
   // Everything past this point will only run if HC is enabled
-  // eslint-disable-next-line no-unreachable
-  if (!hyperChatEnabled) return;
+  // if (!hyperChatEnabled) return;
 
   const frameInfo = await getFrameInfoAsync();
   if (!isValidFrameInfo(frameInfo)) {
@@ -107,7 +104,24 @@ const chatLoaded = async (): Promise<void> => {
     (isLiveTL ? 'hyperchat/index.html' : 'hyperchat.html') +
     `?${params.toString()}`
   );
+  const ytcfilterElement = document.querySelector('.ytcf-iframe');
+  if (!ytcfilterElement) {
+    console.error('Failed to find .ytcf-iframe');
+    return;
+  }
+  const activatorButton = document.querySelector('.ytcf-activator-button') as HTMLButtonElement;
+  activatorButton.addEventListener('click', () => {
+    activatorButton.style.display = 'none';
+    ytcfilterElement.innerHTML = `
+      <iframe id="hyperchat" src="${source}" style="border: 0px; width: 100%; height: 250px;"/>
+    `;
+  });
 
+  return;
+
+  // rest is inherited from hyperchat, is unused
+
+  // eslint-disable-next-line no-unreachable
   const ytcItemList = document.querySelector('#chat>#item-list');
   if (!ytcItemList) {
     console.error('Failed to find #chat>#item-list');

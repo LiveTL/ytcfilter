@@ -113,6 +113,7 @@
   const newMessages = (
     messagesAction: Chat.MessagesAction, isInitial: boolean
   ) => {
+    return;
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
