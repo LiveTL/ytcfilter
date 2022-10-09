@@ -1,6 +1,12 @@
 button {
     background-color: #4f4f4f;
 }
+
 input {
-    background-color: #272727;
+    background-color: #191919;
+    box-sizing: border-box;
+}
+
+.red-bg {
+    background-color: #c80000;
 }

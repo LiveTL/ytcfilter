@@ -95,7 +95,8 @@ module.exports = {
   },
   globals: {
     Ytc: 'readonly',
-    Chat: 'readonly'
+    Chat: 'readonly',
+    YtcF: 'readonly'
   },
   root: true
 };

@@ -1,14 +1,22 @@
 declare namespace YtcF {
+  interface BaseCondition {
+    type: string;
+    property: string;
+  }
+  interface StringCondition extends BaseCondition {
+    type: 'contains' | 'startsWith' | 'endsWith' | 'regex';
+    property: 'message' | 'authorName';
+    value: string;
+    invert: boolean;
+  }
+  interface BooleanCondition extends BaseCondition {
+    type: 'boolean';
+    property: 'isSuperchat' | 'isVerified' | 'isModerator' | 'isOwner' | 'isMember';
+    value: boolean;
+  }
   interface ChatFilter {
     nickname?: string;
-    subcondition?: {
-      items: ChatFilter[];
-      logic: 'and' | 'or';
-    };
-    condition: {
-      type: 'contains' | 'startsWith' | 'endsWith' | 'regex';
-      value: string;
-      invert: boolean;
-    };
+    condition: StringCondition | BooleanCondition;
+    id: string;
   }
 }

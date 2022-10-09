@@ -2,18 +2,31 @@
   import '../stylesheets/scrollbar.css';
   import { dataTheme, chatFilters } from '../ts/storage';
   import '../stylesheets/ui.css';
-  import { exioButton, exioTextbox } from 'exio/svelte';
+  import { exioAccordion, exioButton, exioTextbox } from 'exio/svelte';
+  import { getRandomString } from '../ts/chat-utils';
+  import { tick } from 'svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
-  const newFilter = () => {
+  let lastItem: HTMLDetailsElement | null = null;
+  const newFilter = async () => {
     $chatFilters = [...$chatFilters, {
-      nickname: 'New Filter',
+      nickname: 'Filter #' + ($chatFilters.length + 1),
+      id: getRandomString(),
       condition: {
-        invert: false,
         type: 'contains',
-        value: ''
+        property: 'message',
+        value: '',
+        invert: false
       }
     }];
+    await tick();
+    if (lastItem) {
+      lastItem.open = true;
+      lastItem.querySelector('input')?.select();
+    }
+  };
+  const deleteFilter = (item: YtcF.ChatFilter) => {
+    $chatFilters = $chatFilters.filter(x => x !== item);
   };
 </script>
 
@@ -32,9 +45,24 @@
       <button use:exioButton on:click={newFilter}>
         Create New Filter
       </button>
-      {#each $chatFilters as filter}
+      {#each $chatFilters as filter (filter.id)}
         <div class="filter">
-          <input class="filter-name" bind:value={filter.nickname} use:exioTextbox />
+          <details use:exioAccordion bind:this={lastItem}>
+            <summary>{filter.nickname}</summary>
+            <div style="padding: 1rem;">
+              <input
+                class="filter-name"
+                bind:value={filter.nickname}
+                use:exioTextbox
+                on:input={() => ($chatFilters = [...$chatFilters])}
+              />
+              <button
+                use:exioButton
+                class="red-bg delete"
+                on:click={() => deleteFilter(filter)}
+              >Delete</button>
+            </div>
+          </details>
         </div>
       {/each}
     </div>
@@ -56,6 +84,9 @@
   .filter {
     margin-top: 10px;
   }
+  .filter > details[open] {
+    background-color: rgb(128 128 128 / 25%);
+  }
   .wrapper {
     color: black;
     font-size: 1rem;
@@ -63,6 +94,10 @@
   }
   .wrapper[data-theme='dark'] {
     color: white;
+  }
+  .delete {
+    vertical-align: bottom;
+    display: inline-block;
   }
   :global(html) {
     background-color: white;

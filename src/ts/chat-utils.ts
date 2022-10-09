@@ -6,8 +6,19 @@ export const getFrameInfoAsync = async (): Promise<Chat.UncheckedFrameInfo> => {
 };
 
 export const createPopup = (url: string): void => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   chrome.runtime.sendMessage({ type: 'createPopup', url });
 };
+
+export function getRandomString(len = 10): string {
+  const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const randomString: string[] = [];
+  for (let i = 0; i < len; i++) {
+    const pos = Math.floor(Math.random() * charSet.length);
+    randomString.push(charSet.substring(pos, pos + 1));
+  }
+  return randomString.join('');
+}
 
 export const frameIsReplay = window.location.href.startsWith(
   'https://www.youtube.com/live_chat_replay'
