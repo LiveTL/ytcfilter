@@ -18,5 +18,6 @@ declare namespace YtcF {
     nickname?: string;
     condition: StringCondition | BooleanCondition;
     id: string;
+    enabled: boolean;
   }
 }

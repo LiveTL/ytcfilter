@@ -1,10 +1,19 @@
-button {
+button, select {
     background-color: #4f4f4f;
 }
 
 input {
     background-color: #191919;
     box-sizing: border-box;
+}
+
+input[type="checkbox"] {
+    margin: 0px;
+}
+
+label {
+    user-select: none;
+    margin-right: 20px;
 }
 
 .red-bg {

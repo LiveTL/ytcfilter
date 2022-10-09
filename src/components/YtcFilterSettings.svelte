@@ -2,12 +2,12 @@
   import '../stylesheets/scrollbar.css';
   import { dataTheme, chatFilters } from '../ts/storage';
   import '../stylesheets/ui.css';
-  import { exioAccordion, exioButton, exioTextbox } from 'exio/svelte';
+  import { exioButton, exioCheckbox, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { tick } from 'svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
-  let lastItem: HTMLDetailsElement | null = null;
+  let lastItem: HTMLDivElement | null = null;
   const newFilter = async () => {
     $chatFilters = [...$chatFilters, {
       nickname: 'Filter #' + ($chatFilters.length + 1),
@@ -17,17 +17,18 @@
         property: 'message',
         value: '',
         invert: false
-      }
+      },
+      enabled: true
     }];
     await tick();
     if (lastItem) {
-      lastItem.open = true;
       lastItem.querySelector('input')?.select();
     }
   };
   const deleteFilter = (item: YtcF.ChatFilter) => {
     $chatFilters = $chatFilters.filter(x => x !== item);
   };
+  const updateFilters = () => ($chatFilters = [...$chatFilters]);
 </script>
 
 <svelte:head>
@@ -46,23 +47,56 @@
         Create New Filter
       </button>
       {#each $chatFilters as filter (filter.id)}
-        <div class="filter">
-          <details use:exioAccordion bind:this={lastItem}>
-            <summary>{filter.nickname}</summary>
-            <div style="padding: 1rem;">
+        <div class="filter" bind:this={lastItem}>
+          <span>Name: </span>
+          <input
+            class="filter-name"
+            bind:value={filter.nickname}
+            use:exioTextbox
+            on:input={updateFilters}
+          />
+          <button
+            use:exioButton
+            class="red-bg delete"
+            on:click={() => deleteFilter(filter)}
+          >Delete</button>
+          <div class="items">
+            <select bind:value={filter.condition.property} use:exioDropdown>
+              <option value="message">Message Text</option>
+              <option value="authorName">Author Name</option>
+            </select>
+            <select bind:value={filter.condition.type} use:exioDropdown>
+              <option value="contains">Contains</option>
+              <option value="startsWith">Starts With</option>
+              <option value="endsWith">Ends With</option>
+              <option value="equals">Equals</option>
+              <option value="regex">Regex</option>
+            </select>
+            <input
+              class="filter-content"
+              bind:value={filter.condition.value}
+              use:exioTextbox
+              on:input={updateFilters}
+            />
+          </div>
+          {#if 'invert' in filter.condition}
+            <div class="items">
               <input
-                class="filter-name"
-                bind:value={filter.nickname}
-                use:exioTextbox
-                on:input={() => ($chatFilters = [...$chatFilters])}
-              />
-              <button
-                use:exioButton
-                class="red-bg delete"
-                on:click={() => deleteFilter(filter)}
-              >Delete</button>
+                id="enable-{filter.id}"
+                type="checkbox"
+                use:exioCheckbox
+                bind:checked={filter.enabled} 
+                on:change={updateFilters} />
+              <label for="enable-{filter.id}">Enable Filter</label>
+              <input
+                id="invert-{filter.id}"
+                type="checkbox"
+                use:exioCheckbox
+                bind:checked={filter.condition.invert} 
+                on:change={updateFilters} />
+              <label for="invert-{filter.id}">Invert Filter</label>
             </div>
-          </details>
+          {/if}
         </div>
       {/each}
     </div>
@@ -79,13 +113,18 @@
     font-weight: bold;
   }
   .card > .content {
-    padding: 10px;
+    padding-top: 10px;
   }
   .filter {
     margin-top: 10px;
-  }
-  .filter > details[open] {
     background-color: rgb(128 128 128 / 25%);
+    padding: 10px;
+  }
+  .filter > .items {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: center;
   }
   .wrapper {
     color: black;
