@@ -6,7 +6,7 @@
   let dark = true;
   let attrObserver: MutationObserver;
   onMount(() => {
-    attrObserver = new MutationObserver((mutations) => {
+    attrObserver = new MutationObserver((_) => {
       dark = document.documentElement.hasAttribute('dark');
     });
     attrObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dark'] });

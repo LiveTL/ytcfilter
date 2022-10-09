@@ -1,6 +1,9 @@
 import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, checkInjected } from '../ts/chat-utils';
 import { isLiveTL, isAndroid } from '../ts/chat-constants';
-import { hcEnabled, autoLiveChat } from '../ts/storage';
+import {
+  // hcEnabled,
+  autoLiveChat
+} from '../ts/storage';
 import {
   initInterceptor,
   processMessageChunk,
@@ -73,7 +76,7 @@ const chatLoaded = async (): Promise<void> => {
   sendTheme();
 
   document.body.style.minWidth = document.body.style.minHeight = '0px';
-  const hyperChatEnabled = await hcEnabled.get();
+  // const hyperChatEnabled = await hcEnabled.get();
 
   // Inject HC button
   const ytcPrimaryContent = document.querySelector('#chat-messages');
@@ -112,9 +115,12 @@ const chatLoaded = async (): Promise<void> => {
   const activatorButton = document.querySelector('.ytcf-activator-button') as HTMLButtonElement;
   activatorButton.addEventListener('click', () => {
     activatorButton.style.display = 'none';
-    ytcfilterElement.innerHTML = `
-      <iframe id="hyperchat" src="${source}" style="border: 0px; width: 100%; height: 250px;"/>
-    `;
+    const iframe = document.createElement('iframe');
+    iframe.src = source;
+    iframe.style.border = '0px';
+    iframe.style.width = '100%';
+    iframe.style.height = '250px';
+    ytcfilterElement.appendChild(iframe);
   });
 
   return;

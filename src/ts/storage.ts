@@ -79,3 +79,5 @@ export const currentProgress = writable(null as null | number);
 export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySuperchatBar', true);
 export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', true);
 export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '');
+export const chatFilters = stores.addSyncStore('ytcf.chatFilters', [] as YtcF.ChatFilter[]);
+export const dataTheme = derived(isDark, ($isDark) => $isDark ? 'dark' : 'light');

@@ -5,7 +5,7 @@
   import dark from 'smelte/src/dark';
   import WelcomeMessage from './WelcomeMessage.svelte';
   import Message from './Message.svelte';
-  import PinnedMessage from './PinnedMessage.svelte';
+  // import PinnedMessage from './PinnedMessage.svelte';
   import PaidMessage from './PaidMessage.svelte';
   import MembershipItem from './MembershipItem.svelte';
   import ReportBanDialog from './ReportBanDialog.svelte';
@@ -52,14 +52,14 @@
   const paramsFrameId = params.get('frameid');
   const paramsIsReplay = params.get('isReplay');
 
-  const CHAT_HISTORY_SIZE = 150;
-  const TRUNCATE_SIZE = 20;
+  // const CHAT_HISTORY_SIZE = 150;
+  // const TRUNCATE_SIZE = 20;
   let messageActions: (Chat.MessageAction | Welcome)[] = [];
   const messageKeys = new Set<string>();
   let pinned: Ytc.ParsedPinned | null;
   let div: HTMLElement;
   let isAtBottom = true;
-  let truncateInterval: number;
+  // let truncateInterval: number;
   const isReplay = paramsIsReplay;
   let ytDark = false;
   const smelteDark = dark();
@@ -101,19 +101,18 @@
     div.scrollTop = div.scrollHeight;
   };
 
-  const checkTruncateMessages = (): void => {
-    const diff = messageActions.length - CHAT_HISTORY_SIZE;
-    if (diff > TRUNCATE_SIZE) {
-      const removed = messageActions.splice(0, diff);
-      removed.forEach(m => messageKeys.delete(m.message.messageId));
-    }
-    messageActions = messageActions;
-  };
+  // const checkTruncateMessages = (): void => {
+  //   const diff = messageActions.length - CHAT_HISTORY_SIZE;
+  //   if (diff > TRUNCATE_SIZE) {
+  //     const removed = messageActions.splice(0, diff);
+  //     removed.forEach(m => messageKeys.delete(m.message.messageId));
+  //   }
+  //   messageActions = messageActions;
+  // };
 
   const newMessages = (
     messagesAction: Chat.MessagesAction, isInitial: boolean
   ) => {
-    return;
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
@@ -122,8 +121,9 @@
       ));
     } else {
       messageActions.push(...filterTickers(messagesAction.messages).filter(shouldShowMessage));
+      messageActions = messageActions;
     }
-    if (!isInitial) checkTruncateMessages();
+    // if (!isInitial) checkTruncateMessages();
   };
 
   const onBonk = (bonk: Ytc.ParsedBonk) => {
@@ -294,7 +294,7 @@
 
   onDestroy(() => {
     $port?.disconnect();
-    if (truncateInterval) window.clearInterval(truncateInterval);
+    // if (truncateInterval) window.clearInterval(truncateInterval);
   });
 
   $: updateTheme($theme, ytDark);

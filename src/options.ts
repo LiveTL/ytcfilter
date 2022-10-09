@@ -1,5 +1,4 @@
-import Settings from './components/Settings.svelte';
-import 'smelte/src/tailwind.css';
+import Settings from './components/YtcFilterSettings.svelte';
 
 const options = new Settings({
   target: document.body
