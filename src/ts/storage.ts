@@ -76,7 +76,7 @@ export const isDark = derived(theme, ($theme) => {
   );
 });
 export const currentProgress = writable(null as null | number);
-export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySuperchatBar', true);
+export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySuperchatBar', false);
 export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', true);
 export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '');
 export const chatFilters = stores.addSyncStore('ytcf.chatFilters', [] as YtcF.ChatFilter[]);

@@ -1,10 +1,18 @@
 button, select {
+    background-color: #b4b4b4;
+}
+
+button[data-theme=dark], select[data-theme=dark] {
     background-color: #4f4f4f;
 }
 
 input {
-    background-color: #191919;
     box-sizing: border-box;
+    background-color: white;
+}
+
+input[data-theme=dark] {
+    background-color: #191919;
 }
 
 input[type="checkbox"] {
@@ -17,5 +25,9 @@ label {
 }
 
 .red-bg {
+    background-color: #ff5656;
+}
+
+.red-bg[data-theme=dark] {
     background-color: #c80000;
 }

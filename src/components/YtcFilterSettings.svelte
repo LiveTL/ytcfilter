@@ -117,8 +117,11 @@
   }
   .filter {
     margin-top: 10px;
-    background-color: rgb(128 128 128 / 25%);
     padding: 10px;
+    background-color: rgb(128 128 128 / 15%);
+  }
+  [data-theme='dark'] .filter {
+    background-color: rgb(128 128 128 / 25%);
   }
   .filter > .items {
     display: flex;
