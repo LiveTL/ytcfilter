@@ -1,10 +1,5 @@
-import { chatFilters } from './storage';
-
-export async function shouldFilterMessage(action: Chat.MessageAction): Promise<boolean> {
+export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.ChatFilter[]): boolean {
   const msg = action.message;
-  await chatFilters.ready();
-  const filters = chatFilters.getCurrent();
-  console.log(filters);
   for (const filter of filters) {
     console.log(filter);
     if (filter.enabled) {

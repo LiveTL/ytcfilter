@@ -40,7 +40,8 @@
     enableStickySuperchatBar,
     lastOpenedVersion,
     selfChannelName,
-    enableHighlightedMentions
+    enableHighlightedMentions,
+    chatFilters
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage } from '../ts/ytcf-logic';
@@ -113,7 +114,7 @@
 
   const applyYtcf = async (items: Chat.MessageAction[]) => {
     await Promise.all(items.map(async a => {
-      if (isMessage(a) && await shouldFilterMessage(a)) messageActions.push(a);
+      if (isMessage(a) && shouldFilterMessage(a, $chatFilters)) messageActions.push(a);
     }));
   };
 
