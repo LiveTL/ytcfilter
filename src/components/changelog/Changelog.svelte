@@ -1,13 +1,21 @@
+<script lang="ts">
+  import { isLiveTL } from '../../ts/chat-constants';
+  const trailer = chrome.runtime.getURL(
+    (isLiveTL ? 'hyperchat' : 'assets') + '/trailer.png'
+  );
+</script>
+
 <ul class="list-disc list-inside">
   <strong>On today's KFP menu:</strong>
+  <div style="width: 100%; display: flex; justify-content: center; margin: 8px 0px;">
+    <a href="https://www.youtube.com/watch?v=FU3YWQy_Rfs" target="_blank">
+      <img src={trailer} style="width: 150px; aspect-ratio: calc(16 / 9);" alt="HyperChat Trailer" class="rounded-sm" />
+    </a>
+  </div>
+</ul>
+<ul class="list-disc list-inside">
+  <strong>What's still cooking in the usual room:</strong>
   <li class="ml-3.5">
-    YtcFilter's original developer stopped development about a year
-    ago, and YtcFilter was scheduled to be removed from the Chrome
-    Web Store permanently in December 2022. However, we (the LiveTL dev team)
-    have decided to inherit the project to revamp it!
-  </li>
-  <li class="ml-3.5">
-    YtcFilter has been rewritten from the ground up, and is now more
-    powerful and robust than ever before. We hope you enjoy!
+    Migration to Manifest V3
   </li>
 </ul>

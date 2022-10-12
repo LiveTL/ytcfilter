@@ -11,6 +11,7 @@
   const newFilter = async () => {
     $chatFilters = [...$chatFilters, {
       nickname: 'Filter #' + ($chatFilters.length + 1),
+      type: 'basic',
       id: getRandomString(),
       condition: {
         type: 'contains',
@@ -55,6 +56,9 @@
             use:exioTextbox
             on:input={updateFilters}
           />
+          <!-- <select bind:value={filter.type} use:exioDropdown>
+            <option value="basic">Basic</option>
+          </select> -->
           <button
             use:exioButton
             class="red-bg delete"

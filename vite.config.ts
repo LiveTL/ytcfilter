@@ -3,7 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import browserExtension from 'vite-plugin-web-extension';
 import path from 'path';
 import copy from 'rollup-plugin-copy';
-import manifest from './src/manifest.json';
+import manifest from './src/ytcf-manifest.json';
 
 export default defineConfig({
   root: 'src',
@@ -23,7 +23,7 @@ export default defineConfig({
       },
       assets: 'assets',
       watchFilePaths: [
-        path.resolve(__dirname, 'src/manifest.json')
+        path.resolve(__dirname, 'src/ytcf-manifest.json')
       ],
       additionalInputs: [
         'hyperchat.html',

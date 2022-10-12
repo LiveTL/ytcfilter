@@ -16,6 +16,7 @@ declare namespace YtcF {
   }
   interface ChatFilter {
     nickname?: string;
+    type: 'basic' | 'advanced';
     condition: StringCondition | BooleanCondition;
     id: string;
     enabled: boolean;
