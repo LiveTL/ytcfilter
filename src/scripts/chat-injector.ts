@@ -112,9 +112,15 @@ const chatLoaded = async (): Promise<void> => {
     console.error('Failed to find .ytcf-iframe');
     return;
   }
-  const activatorButton = document.querySelector('.ytcf-activator-button') as HTMLButtonElement;
+  (document.querySelector('#content-pages') as HTMLElement).style.backgroundColor = 'white';
+  const activatorButton = document.querySelector('.ytcf-launch-button') as HTMLButtonElement;
   activatorButton.addEventListener('click', () => {
-    activatorButton.style.display = 'none';
+    // activatorButton.style.display = 'none';
+    const frame = ytcfilterElement.querySelector('iframe');
+    if (frame) {
+      ytcfilterElement.removeChild(frame);
+      return;
+    }
     const iframe = document.createElement('iframe');
     iframe.src = source;
     iframe.style.border = '0px';

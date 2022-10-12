@@ -1,7 +1,7 @@
 <script lang="ts">
   import { lastClosedVersion, refreshScroll } from '../ts/storage';
   import { Browser, getBrowser, isLiveTL } from '../ts/chat-constants';
-  import Changelog from './changelog/Changelog.svelte';
+  import Changelog from './changelog/YtcFilterChangelog.svelte';
   import { version } from '../manifest.json';
   import Icon from './common/Icon.svelte';
 

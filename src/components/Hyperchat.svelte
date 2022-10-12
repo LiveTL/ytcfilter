@@ -303,7 +303,7 @@
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
   );
 
-  const containerClass = 'h-screen w-screen text-black dark:text-white dark:bg-black dark:bg-opacity-25 flex flex-col justify-between';
+  const containerClass = 'h-screen w-screen text-black dark:text-white dark:bg-black flex flex-col justify-between';
 
   const isSuperchat = (action: Chat.MessageAction) => (action.message.superChat || action.message.superSticker);
   const isMembership = (action: Chat.MessageAction) => (action.message.membership || action.message.membershipGiftPurchase);
@@ -352,7 +352,7 @@
   topBarResized();
 }} on:load={onLoad} />
 
-<div class={containerClass} style="font-size: 13px">
+<div class="{containerClass} container" style="font-size: 13px;" >
   {#if $enableStickySuperchatBar}
     <StickyBar />
   {/if}
@@ -421,5 +421,8 @@
   }
   .mention.mention-light:hover {
     background-color: #bfb2408f;
+  }
+  :global(.mode-dark) .container {
+    background-color: #181818 !important;
   }
 </style>
