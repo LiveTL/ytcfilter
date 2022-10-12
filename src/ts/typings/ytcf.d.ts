@@ -4,10 +4,11 @@ declare namespace YtcF {
     property: string;
   }
   interface StringCondition extends BaseCondition {
-    type: 'contains' | 'startsWith' | 'endsWith' | 'regex';
+    type: 'includes' | 'startsWith' | 'endsWith' | 'regex';
     property: 'message' | 'authorName';
     value: string;
     invert: boolean;
+    caseSensitive: boolean;
   }
   interface BooleanCondition extends BaseCondition {
     type: 'boolean';

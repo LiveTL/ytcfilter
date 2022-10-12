@@ -14,10 +14,11 @@
       type: 'basic',
       id: getRandomString(),
       condition: {
-        type: 'contains',
+        type: 'includes',
         property: 'message',
         value: '',
-        invert: false
+        invert: false,
+        caseSensitive: false
       },
       enabled: true
     }];
@@ -70,7 +71,7 @@
               <option value="authorName">Author Name</option>
             </select>
             <select bind:value={filter.condition.type} use:exioDropdown>
-              <option value="contains">Contains</option>
+              <option value="includes">Contains</option>
               <option value="startsWith">Starts With</option>
               <option value="endsWith">Ends With</option>
               <option value="equals">Equals</option>
@@ -99,6 +100,13 @@
                 bind:checked={filter.condition.invert} 
                 on:change={updateFilters} />
               <label for="invert-{filter.id}">Invert Filter</label>
+              <input
+                id="case-{filter.id}"
+                type="checkbox"
+                use:exioCheckbox
+                bind:checked={filter.condition.caseSensitive} 
+                on:change={updateFilters} />
+              <label for="case-{filter.id}">Case Sensitive</label>
             </div>
           {/if}
         </div>

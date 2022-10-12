@@ -43,6 +43,7 @@
     enableHighlightedMentions
   } from '../ts/storage';
   import { version } from '../manifest.json';
+  import { shouldFilterMessage } from '../ts/ytcf-logic';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -110,19 +111,25 @@
   //   messageActions = messageActions;
   // };
 
-  const newMessages = (
+  const applyYtcf = async (items: Chat.MessageAction[]) => {
+    await Promise.all(items.map(async a => {
+      if (isMessage(a) && await shouldFilterMessage(a)) messageActions.push(a);
+    }));
+  };
+
+  const newMessages = async (
     messagesAction: Chat.MessagesAction, isInitial: boolean
   ) => {
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
-      messageActions.push(...filterTickers(messagesAction.messages).filter(
+      await applyYtcf(filterTickers(messagesAction.messages).filter(
         (a) => a.message.timestamp.startsWith('-') && shouldShowMessage(a)
       ));
     } else {
-      messageActions.push(...filterTickers(messagesAction.messages).filter(shouldShowMessage));
-      messageActions = messageActions;
+      await applyYtcf(filterTickers(messagesAction.messages).filter(shouldShowMessage));
     }
+    messageActions = messageActions;
     // if (!isInitial) checkTruncateMessages();
   };
 
