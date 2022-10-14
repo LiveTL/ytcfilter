@@ -2,7 +2,7 @@ button, select {
     background-color: #b4b4b4;
 }
 
-button[data-theme=dark], select[data-theme=dark] {
+[data-theme=dark] button, [data-theme=dark] select {
     background-color: #4f4f4f;
 }
 
@@ -11,7 +11,7 @@ input {
     background-color: white;
 }
 
-input[data-theme=dark] {
+[data-theme=dark] input:not([type="checkbox"]) {
     background-color: #191919;
 }
 
@@ -28,6 +28,6 @@ label {
     background-color: #ff5656;
 }
 
-.red-bg[data-theme=dark] {
+[data-theme=dark] .red-bg {
     background-color: #c80000;
 }

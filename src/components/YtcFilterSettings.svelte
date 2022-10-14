@@ -1,16 +1,17 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { dataTheme, chatFilters } from '../ts/storage';
+  import { dataTheme, chatFilters, theme } from '../ts/storage';
   import '../stylesheets/ui.css';
   import { exioButton, exioCheckbox, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { tick } from 'svelte';
+  import { Theme } from '../ts/chat-constants';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
   let lastItem: HTMLDivElement | null = null;
   const newFilter = async () => {
     $chatFilters = [...$chatFilters, {
-      nickname: 'Filter #' + ($chatFilters.length + 1),
+      nickname: 'New Filter',
       type: 'basic',
       id: getRandomString(),
       condition: {
@@ -42,6 +43,17 @@
   style="scrollbar-width: thin; scrollbar-color: #888 transparent;"
   data-theme={$dataTheme}
 >
+  <div class="card">
+    <div class="title">Interface</div>
+    <div class="content">
+      <span>Theme: </span>
+      <select use:exioDropdown bind:value={$theme}>
+        <option value={Theme.YOUTUBE}>Auto</option>
+        <option value={Theme.LIGHT}>Light</option>
+        <option value={Theme.DARK}>Dark</option>
+      </select>
+    </div>
+  </div>
   <div class="card">
     <div class="title">Filters</div>
     <div class="content">

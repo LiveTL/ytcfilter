@@ -112,7 +112,6 @@ const chatLoaded = async (): Promise<void> => {
     console.error('Failed to find .ytcf-iframe');
     return;
   }
-  (document.querySelector('#content-pages') as HTMLElement).style.backgroundColor = 'white';
   const activatorButton = document.querySelector('.ytcf-launch-button') as HTMLButtonElement;
   activatorButton.addEventListener('click', () => {
     // activatorButton.style.display = 'none';

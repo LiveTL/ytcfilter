@@ -61,4 +61,7 @@
   .ytcf-wrapper[data-theme=light] {
     color: black;
   }
+  :global(:not([dark]) .content-pages) {
+    background-color: white;
+  }
 </style>

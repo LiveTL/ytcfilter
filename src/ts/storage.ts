@@ -72,7 +72,13 @@ export const alertDialog = writable(null as null | {
 export const stickySuperchats = writable([] as Ytc.ParsedTicker[]);
 export const isDark = derived(theme, ($theme) => {
   return $theme === Theme.DARK || (
-    $theme === Theme.YOUTUBE && window.location.search.includes('dark')
+    $theme === Theme.YOUTUBE && (
+      window.location.search.includes('dark') ||
+      (
+        !window.location.hostname.includes('youtube') &&
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      )
+    )
   );
 });
 export const currentProgress = writable(null as null | number);
