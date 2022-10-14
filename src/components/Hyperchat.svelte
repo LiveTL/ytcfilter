@@ -310,9 +310,7 @@
   $: ((..._a: any[]) => scrollToBottom())(
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
   );
-
-  const containerClass = 'h-screen w-screen text-black dark:text-white dark:bg-black flex flex-col justify-between';
-
+  const containerClass = 'h-screen w-screen text-black dark:text-white dark:bg-black flex flex-col justify-between max-w-none';
   const isSuperchat = (action: Chat.MessageAction) => (action.message.superChat || action.message.superSticker);
   const isMembership = (action: Chat.MessageAction) => (action.message.membership || action.message.membershipGiftPurchase);
   const isMessage = (action: Chat.MessageAction | Welcome): action is Chat.MessageAction =>
