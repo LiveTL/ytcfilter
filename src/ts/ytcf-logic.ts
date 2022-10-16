@@ -1,7 +1,6 @@
 export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.ChatFilter[]): boolean {
   const msg = action.message;
   for (const filter of filters) {
-    console.log(filter);
     if (filter.enabled) {
       if (filter.condition.type !== 'boolean') {
         let compStr = '';
@@ -21,6 +20,7 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
             compStr = msg.author.name;
             break;
         }
+        if (filter.condition.value === '') continue;
         if (filter.condition.type !== 'regex') {
           const s1 = filter.condition.caseSensitive ? compStr : compStr.toLowerCase();
           const s2 = filter.condition.caseSensitive ? filter.condition.value : filter.condition.value.toLowerCase();
@@ -31,7 +31,6 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
         } else {
           const regex = new RegExp(filter.condition.value, filter.condition.caseSensitive ? '' : 'i');
           const result = regex.test(compStr);
-          console.log(result, filter.condition.invert);
           if (result !== filter.condition.invert) {
             return true;
           }
