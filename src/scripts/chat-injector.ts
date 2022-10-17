@@ -1,4 +1,4 @@
-import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, checkInjected } from '../ts/chat-utils';
+import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, checkInjected, createPopup } from '../ts/chat-utils';
 import { isLiveTL, isAndroid } from '../ts/chat-constants';
 import {
   // hcEnabled,
@@ -113,6 +113,8 @@ const chatLoaded = async (): Promise<void> => {
     return;
   }
   const activatorButton = document.querySelector('.ytcf-launch-button') as HTMLButtonElement;
+  const popoutButton = document.querySelector('.ytcf-popout-button') as HTMLButtonElement;
+  const settingsButton = document.querySelector('.ytcf-settings-button') as HTMLButtonElement;
   activatorButton.addEventListener('click', () => {
     // activatorButton.style.display = 'none';
     const frame = ytcfilterElement.querySelector('iframe');
@@ -126,6 +128,12 @@ const chatLoaded = async (): Promise<void> => {
     iframe.style.width = '100%';
     iframe.style.height = '250px';
     ytcfilterElement.appendChild(iframe);
+  });
+  popoutButton.addEventListener('click', () => {
+    createPopup(source);
+  });
+  settingsButton.addEventListener('click', () => {
+    createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
   });
 
   return;

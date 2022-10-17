@@ -28,13 +28,29 @@
         expand
       </div>
     </button>
+    <button use:exioButton class="activator ytcf-popout-button">
+      <span>Popout</span>
+      <div use:exioIcon class="shifted-icon" style="color: inherit;">
+        open_in_new
+      </div>
+    </button>
+    <button use:exioButton class="activator ytcf-settings-button">
+      <span>Settings</span>
+      <div use:exioIcon class="shifted-icon" style="color: inherit;">
+        settings
+      </div>
+    </button>
   </div>
   <div style="width: 100%;" class="ytcf-iframe" />
 </div>
 <style>
   .static-logo {
-    padding: 0.25em 0px;
+    padding: 0.25em 0.5em;
     border: 2px solid transparent;
+    cursor: pointer;
+    pointer-events: none;
+    user-select: none;
+    touch-action: none;
   }
   .ytcf-button-wrapper {
     display: flex;
