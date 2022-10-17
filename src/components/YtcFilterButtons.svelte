@@ -51,15 +51,17 @@
     pointer-events: none;
     user-select: none;
     touch-action: none;
+    width: 100%;
+    text-align: center;
   }
   .ytcf-button-wrapper {
     display: flex;
     align-content: space-between;
-    justify-content: flex-end;
+    justify-content: space-around;
   }
   .activator {
     background-color: transparent;
-    width: fit-content;
+    width: 100%;
     color: inherit;
   }
   .shifted-icon {
