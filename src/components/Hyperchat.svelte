@@ -112,9 +112,6 @@
   //   messageActions = messageActions;
   // };
 
-  $: console.log('HyperChat.svelte ', $chatFilters);
-  $: console.log('HyperChat.svelte ', $theme);
-
   const applyYtcf = async (items: Chat.MessageAction[]) => {
     await Promise.all(items.map(async a => {
       if (isMessage(a) && shouldFilterMessage(a, $chatFilters)) messageActions.push(a);

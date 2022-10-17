@@ -4,7 +4,7 @@
   import '../stylesheets/ui.css';
   import { exioButton, exioCheckbox, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { Theme } from '../ts/chat-constants';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
@@ -23,6 +23,7 @@
       },
       enabled: true
     }];
+    unsavedFilters = $chatFilters;
     await tick();
     if (lastItem) {
       lastItem.querySelector('input')?.select();
@@ -30,25 +31,32 @@
   };
   const deleteFilter = (item: YtcF.ChatFilter) => {
     $chatFilters = $chatFilters.filter(x => x.id !== item.id);
+    unsavedFilters = $chatFilters;
   };
 
-  type CachedFilter = { unsaved: YtcF.ChatFilter, saved: YtcF.ChatFilter };
+  let unsavedFilters: YtcF.ChatFilter[] = [];
 
-  const saveFilter = (item: CachedFilter) => {
-    return async () => {
-      // Object.apply(item.saved, item.unsaved as any);
-      // $chatFilters = [...$chatFilters];
-    };
-  };
-  $: console.log('YtcFilterSettings.svelte ', $chatFilters);
-  $: console.log('YtcFilterSettings.svelte ', $theme);
+  chatFilters.ready().then(() => {
+    unsavedFilters = $chatFilters;
+  });
 
-  const filterIter = (arr: YtcF.ChatFilter[]): CachedFilter[] => {
-    return arr.map(item => ({
-      saved: item,
-      unsaved: { ...item }
-    }));
+  let saveTimeout: any = null;
+
+  const saveFilters = async () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+    saveTimeout = setTimeout(async () => {
+      unsavedFilters = [...unsavedFilters];
+      $chatFilters = unsavedFilters;
+    }, 50);
   };
+
+  onDestroy(() => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+  });
 </script>
 
 <svelte:head>
@@ -77,36 +85,36 @@
       <button use:exioButton on:click={newFilter}>
         Create New Filter
       </button>
-      {#each filterIter($chatFilters) as filter (filter.unsaved.id)}
+      {#each unsavedFilters as filter (filter.id)}
         <div class="filter" bind:this={lastItem}>
           <span>Name: </span>
           <input
             class="filter-name"
-            bind:value={filter.unsaved.nickname}
+            bind:value={filter.nickname}
             use:exioTextbox
-            on:input={saveFilter(filter)}
+            on:input={saveFilters}
           />
-          <!-- <select bind:value={filter.unsaved.type} use:exioDropdown>
+          <!-- <select bind:value={filter.type} use:exioDropdown>
             <option value="basic">Basic</option>
           </select> -->
           <button
             use:exioButton
             class="red-bg delete"
-            on:click={() => deleteFilter(filter.saved)}
+            on:click={() => deleteFilter(filter)}
           >Delete</button>
           <div class="items">
             <select
-              bind:value={filter.unsaved.condition.property}
+              bind:value={filter.condition.property}
               use:exioDropdown
-              on:change={saveFilter(filter)}
+              on:change={saveFilters}
             >
               <option value="message">Message Text</option>
               <option value="authorName">Author Name</option>
             </select>
             <select
-              bind:value={filter.unsaved.condition.type}
+              bind:value={filter.condition.type}
               use:exioDropdown
-              on:change={saveFilter(filter)}
+              on:change={saveFilters}
             >
               <option value="includes">Contains</option>
               <option value="startsWith">Starts With</option>
@@ -116,37 +124,37 @@
             </select>
             <input
               class="filter-content"
-              bind:value={filter.unsaved.condition.value}
+              bind:value={filter.condition.value}
               use:exioTextbox
-              on:input={saveFilter(filter)}
+              on:input={saveFilters}
             />
           </div>
-          {#if 'invert' in filter.unsaved.condition}
+          {#if 'invert' in filter.condition}
             <div class="items">
               <input
-                id="enable-{filter.unsaved.id}"
+                id="enable-{filter.id}"
                 type="checkbox"
                 use:exioCheckbox
-                bind:checked={filter.unsaved.enabled}
-                on:change={saveFilter(filter)}
+                bind:checked={filter.enabled}
+                on:change={saveFilters}
                 />
-              <label for="enable-{filter.unsaved.id}">Enable Filter</label>
+              <label for="enable-{filter.id}">Enable Filter</label>
               <input
-                id="invert-{filter.unsaved.id}"
+                id="invert-{filter.id}"
                 type="checkbox"
                 use:exioCheckbox
-                bind:checked={filter.unsaved.condition.invert}
-                on:change={saveFilter(filter)}
+                bind:checked={filter.condition.invert}
+                on:change={saveFilters}
               />
-              <label for="invert-{filter.unsaved.id}">Invert Filter</label>
+              <label for="invert-{filter.id}">Invert Filter</label>
               <input
-                id="case-{filter.unsaved.id}"
+                id="case-{filter.id}"
                 type="checkbox"
                 use:exioCheckbox
-                bind:checked={filter.unsaved.condition.caseSensitive}
-                on:change={saveFilter(filter)}
+                bind:checked={filter.condition.caseSensitive}
+                on:change={saveFilters}
               />
-              <label for="case-{filter.unsaved.id}">Case Sensitive</label>
+              <label for="case-{filter.id}">Case Sensitive</label>
             </div>
           {/if}
         </div>
