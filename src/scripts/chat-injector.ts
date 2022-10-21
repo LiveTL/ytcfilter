@@ -118,15 +118,20 @@ const chatLoaded = async (): Promise<void> => {
   activatorButton.addEventListener('click', () => {
     // activatorButton.style.display = 'none';
     const frame = ytcfilterElement.querySelector('iframe');
+    const resizeBar = document.querySelector('.ytcf-resize-bar') as HTMLDivElement;
     if (frame) {
       ytcfilterElement.removeChild(frame);
+      resizeBar.style.display = 'none';
+      (ytcfilterElement as HTMLDivElement).style.display = 'none';
       return;
     }
+    (ytcfilterElement as HTMLDivElement).style.display = 'block';
+    resizeBar.style.display = 'flex';
     const iframe = document.createElement('iframe');
     iframe.src = source;
     iframe.style.border = '0px';
     iframe.style.width = '100%';
-    iframe.style.height = '250px';
+    iframe.style.height = '100%';
     ytcfilterElement.appendChild(iframe);
   });
   popoutButton.addEventListener('click', () => {

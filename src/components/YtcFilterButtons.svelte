@@ -5,16 +5,36 @@
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
+  let resizing = false;
   onMount(() => {
     attrObserver = new MutationObserver((_) => {
       dark = document.documentElement.hasAttribute('dark');
     });
     attrObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dark'] });
+    const resize = (e: MouseEvent) => {
+      height += e.movementY;
+    };
+    resizeBar.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizing = true;
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', resize);
+        resizing = false;
+      });
+    });
   });
   onDestroy(() => {
     attrObserver.disconnect();
   });
+  let resizeBar: HTMLDivElement;
+  let height = 250;
+  // eslint-disable-next-line prefer-const
+  let windowHeight = window.innerHeight;
+  $: calcHeight = resizing ? `${height}px` : `${100 * height / windowHeight}vh`;
 </script>
+
+<svelte:body bind:clientHeight={windowHeight} />
 
 <div data-theme={dark ? 'dark' : 'light'} class="ytcf-wrapper">
   <div class="ytcf-button-wrapper">
@@ -41,9 +61,34 @@
       </div>
     </button>
   </div>
-  <div style="width: 100%;" class="ytcf-iframe" />
+  <div
+    style="
+      width: 100%;
+      height: {calcHeight};
+      pointer-events: {resizing ? 'none' : 'unset'};
+      touch-action: {resizing ? 'none' : 'unset'};
+      display: none;
+    "
+    class="ytcf-iframe"
+  />
+  <div class="ytcf-resize-bar" style="display: none;" bind:this={resizeBar}>
+    <span use:exioIcon style="font-size: 2rem;">drag_handle</span>
+  </div>
 </div>
 <style>
+  .ytcf-wrapper {
+    user-select: none;
+  }
+  :global([dark]) .ytcf-resize-bar {
+    width: 100%;
+    height: 10px;
+    background-color: rgb(128 128 128 / 30%);
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    cursor: row-resize;
+    user-select: none;
+  }
   .static-logo {
     padding: 0.25em 0.5em;
     border: 2px solid transparent;
