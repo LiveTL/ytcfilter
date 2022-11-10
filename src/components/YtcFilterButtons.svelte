@@ -1,7 +1,7 @@
 <script lang="ts">
   import { isLiveTL } from '../ts/chat-constants';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
@@ -13,10 +13,10 @@
     });
     attrObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dark'] });
     const resizeMouse = (e: MouseEvent) => {
-      height += e.movementY;
+      height = e.y - ytcfIframe.getBoundingClientRect().top;
     };
     const resizeTouch = (e: TouchEvent) => {
-      height += e.touches[0].clientY - touchOrigin!.y;
+      height = e.touches[0].clientY - ytcfIframe.getBoundingClientRect().top;
     };
     resizeBar.addEventListener('mousedown', (e) => {
       e.preventDefault();
@@ -37,6 +37,9 @@
         resizing = false;
       });
     });
+    window.addEventListener('resize', () => {
+      windowHeight = window.innerHeight;
+    });
   });
   onDestroy(() => {
     attrObserver.disconnect();
@@ -46,7 +49,9 @@
   // eslint-disable-next-line prefer-const
   let windowHeight = window.innerHeight;
   let buttons: HTMLDivElement;
-  $: calcHeight = resizing ? `${Math.min(window.innerHeight - 200 - buttons.clientHeight, Math.max(height, 100))}px` : `${100 * height / windowHeight}vh`;
+  let ytcfIframe: HTMLDivElement;
+  $: pxHeight = Math.min(windowHeight - 200 - (buttons ? buttons.clientHeight : 0), Math.max(height, 100));
+  $: calcHeight = resizing ? `${pxHeight}px` : `${100 * pxHeight / windowHeight}vh`;
   $: toggleMouse(resizing);
   function toggleMouse(toggle: boolean) {
     const elem = document.querySelector('#hyperchat') as HTMLIFrameElement | null;
@@ -94,6 +99,7 @@
       display: none;
     "
     class="ytcf-iframe"
+    bind:this={ytcfIframe}
   />
   <div class="ytcf-resize-bar" style="display: none;" bind:this={resizeBar}>
     <span use:exioIcon style="font-size: 2rem;">drag_handle</span>
