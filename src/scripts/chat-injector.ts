@@ -16,14 +16,14 @@ import YtcFilterButtons from '../components/YtcFilterButtons.svelte';
 
 // const isFirefox = navigator.userAgent.includes('Firefox');
 
-const hcWarning = 'An existing HyperChat button has been detected. This ' +
-  'usually means both LiveTL and standalone HyperChat are enabled. ' +
-  'LiveTL already includes HyperChat, so please enable only one of them.\n\n' +
-  'Having multiple instances of the same scripts running WILL cause ' +
-  'problems such as chat messages not loading.';
+// const hcWarning = 'An existing HyperChat button has been detected. This ' +
+//   'usually means both LiveTL and standalone HyperChat are enabled. ' +
+//   'LiveTL already includes HyperChat, so please enable only one of them.\n\n' +
+//   'Having multiple instances of the same scripts running WILL cause ' +
+//   'problems such as chat messages not loading.';
 
 const chatLoaded = async (): Promise<void> => {
-  if (!isLiveTL && checkInjected(hcWarning)) return;
+  // if (!isLiveTL && checkInjected(hcWarning)) return;
 
   // Init and inject interceptor
   initInterceptor('ytc', window.ytcfg, frameIsReplay);

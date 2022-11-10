@@ -6,20 +6,34 @@
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
   let resizing = false;
+  let touchOrigin: { x: number, y: number } | null = null;
   onMount(() => {
     attrObserver = new MutationObserver((_) => {
       dark = document.documentElement.hasAttribute('dark');
     });
     attrObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dark'] });
-    const resize = (e: MouseEvent) => {
+    const resizeMouse = (e: MouseEvent) => {
       height += e.movementY;
+    };
+    const resizeTouch = (e: TouchEvent) => {
+      height += e.touches[0].clientY - touchOrigin!.y;
     };
     resizeBar.addEventListener('mousedown', (e) => {
       e.preventDefault();
       resizing = true;
-      document.addEventListener('mousemove', resize);
+      document.addEventListener('mousemove', resizeMouse);
       document.addEventListener('mouseup', () => {
-        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mousemove', resizeMouse);
+        resizing = false;
+      });
+    });
+    resizeBar.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      touchOrigin = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      resizing = true;
+      document.addEventListener('touchmove', resizeTouch);
+      document.addEventListener('touchend', () => {
+        document.removeEventListener('touchmove', resizeTouch);
         resizing = false;
       });
     });
@@ -31,13 +45,23 @@
   let height = 250;
   // eslint-disable-next-line prefer-const
   let windowHeight = window.innerHeight;
-  $: calcHeight = resizing ? `${height}px` : `${100 * height / windowHeight}vh`;
+  let buttons: HTMLDivElement;
+  $: calcHeight = resizing ? `${Math.min(window.innerHeight - 200 - buttons.clientHeight, Math.max(height, 100))}px` : `${100 * height / windowHeight}vh`;
+  $: toggleMouse(resizing);
+  function toggleMouse(toggle: boolean) {
+    const elem = document.querySelector('#hyperchat') as HTMLIFrameElement | null;
+    if (elem) {
+      console.log(elem, toggle);
+      elem.style.pointerEvents = toggle ? 'none' : 'auto';
+      elem.style.touchAction = toggle ? 'none' : 'auto';
+    }
+  }
 </script>
 
 <svelte:body bind:clientHeight={windowHeight} />
 
 <div data-theme={dark ? 'dark' : 'light'} class="ytcf-wrapper">
-  <div class="ytcf-button-wrapper">
+  <div class="ytcf-button-wrapper" bind:this={buttons}>
     <div class="static-logo">
       <img src={logo} alt="logo" class="logo"/>
       YtcFilter
