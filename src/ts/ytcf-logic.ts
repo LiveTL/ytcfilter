@@ -2,7 +2,10 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
   const msg = action.message;
   for (const filter of filters) {
     if (filter.enabled) {
-      if (filter.condition.type !== 'boolean') {
+      if (filter.condition.type === 'boolean') {
+        if (filter.condition.property === 'superchat' && msg.superChat) return true;
+        if (msg.author.types.includes(filter.condition.property)) return true;
+      } else {
         let compStr = '';
         switch (filter.condition.property) {
           case 'message':

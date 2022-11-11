@@ -12,8 +12,7 @@ declare namespace YtcF {
   }
   interface BooleanCondition extends BaseCondition {
     type: 'boolean';
-    property: 'isSuperchat' | 'isVerified' | 'isModerator' | 'isOwner' | 'isMember';
-    value: boolean;
+    property: 'superchat' | 'verified' | 'moderator' | 'owner' | 'member';
   }
   interface ChatFilter {
     nickname?: string;
@@ -21,5 +20,8 @@ declare namespace YtcF {
     condition: StringCondition | BooleanCondition;
     id: string;
     enabled: boolean;
+  }
+  interface _TextFilter extends ChatFilter {
+    condition: StringCondition;
   }
 }

@@ -57,6 +57,9 @@
       clearTimeout(saveTimeout);
     }
   });
+
+  const isTextFilter = (filter: YtcF.ChatFilter): filter is YtcF._TextFilter =>
+    filter.type === 'basic' || ['message', 'authorName'].includes(filter.condition.property);
 </script>
 
 <svelte:head>
@@ -103,33 +106,35 @@
             on:click={() => deleteFilter(filter)}
           >Delete</button>
           <div class="items">
-            <select
-              bind:value={filter.condition.property}
-              use:exioDropdown
-              on:change={saveFilters}
-            >
-              <option value="message">Message Text</option>
-              <option value="authorName">Author Name</option>
-            </select>
-            <select
-              bind:value={filter.condition.type}
-              use:exioDropdown
-              on:change={saveFilters}
-            >
-              <option value="includes">Contains</option>
-              <option value="startsWith">Starts With</option>
-              <option value="endsWith">Ends With</option>
-              <option value="equals">Equals</option>
-              <option value="regex">Regex</option>
-            </select>
-            <input
-              class="filter-content"
-              bind:value={filter.condition.value}
-              use:exioTextbox
-              on:input={saveFilters}
-            />
+            {#if isTextFilter(filter)}
+              <select
+                bind:value={filter.condition.property}
+                use:exioDropdown
+                on:change={saveFilters}
+              >
+                <option value="message">Message Text</option>
+                <option value="authorName">Author Name</option>
+              </select>
+              <select
+                bind:value={filter.condition.type}
+                use:exioDropdown
+                on:change={saveFilters}
+              >
+                <option value="includes">Contains</option>
+                <option value="startsWith">Starts With</option>
+                <option value="endsWith">Ends With</option>
+                <option value="equals">Equals</option>
+                <option value="regex">Regex</option>
+              </select>
+              <input
+                class="filter-content"
+                bind:value={filter.condition.value}
+                use:exioTextbox
+                on:input={saveFilters}
+              />
+            {/if}
           </div>
-          {#if 'invert' in filter.condition}
+          {#if isTextFilter(filter)}
             <div class="items">
               <input
                 id="enable-{filter.id}"
