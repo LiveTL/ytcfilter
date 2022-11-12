@@ -1,5 +1,6 @@
 button, select {
     background-color: #b4b4b4;
+    width: fit-content;
 }
 
 [data-theme=dark] button, [data-theme=dark] select {

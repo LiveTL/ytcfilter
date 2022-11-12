@@ -14,14 +14,12 @@ declare namespace YtcF {
     type: 'boolean';
     property: 'superchat' | 'verified' | 'moderator' | 'owner' | 'member';
   }
+  type FilterCondition = StringCondition | BooleanCondition;
   interface ChatFilter {
     nickname?: string;
     type: 'basic' | 'advanced';
-    condition: StringCondition | BooleanCondition;
+    conditions: FilterCondition[];
     id: string;
     enabled: boolean;
-  }
-  interface _TextFilter extends ChatFilter {
-    condition: StringCondition;
   }
 }

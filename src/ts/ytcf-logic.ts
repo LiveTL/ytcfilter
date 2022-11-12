@@ -2,42 +2,49 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
   const msg = action.message;
   for (const filter of filters) {
     if (filter.enabled) {
-      if (filter.condition.type === 'boolean') {
-        if (filter.condition.property === 'superchat' && msg.superChat) return true;
-        if (msg.author.types.includes(filter.condition.property)) return true;
-      } else {
-        let compStr = '';
-        switch (filter.condition.property) {
-          case 'message':
-            compStr = msg.message.map(m => {
-              if (m.type === 'text') {
-                return m.text;
-              } else if (m.type === 'emoji') {
-                return `:${m.alt}:`;
-              } else {
-                return m.text;
-              }
-            }).join('');
-            break;
-          case 'authorName':
-            compStr = msg.author.name;
-            break;
-        }
-        if (filter.condition.value === '') continue;
-        if (filter.condition.type !== 'regex') {
-          const s1 = filter.condition.caseSensitive ? compStr : compStr.toLowerCase();
-          const s2 = filter.condition.caseSensitive ? filter.condition.value : filter.condition.value.toLowerCase();
-          const result = s1[filter.condition.type](s2);
-          if (result !== filter.condition.invert) {
-            return true;
-          }
+      let numSatisfied = 0;
+      for (const condition of filter.conditions) {
+        if (condition.type === 'boolean') {
+          if (condition.property === 'superchat' && msg.superChat) return true;
+          if (msg.author.types.includes(condition.property)) return true;
         } else {
-          const regex = new RegExp(filter.condition.value, filter.condition.caseSensitive ? '' : 'i');
-          const result = regex.test(compStr);
-          if (result !== filter.condition.invert) {
-            return true;
+          let compStr = '';
+          switch (condition.property) {
+            case 'message':
+              compStr = msg.message.map(m => {
+                if (m.type === 'text') {
+                  return m.text;
+                } else if (m.type === 'emoji') {
+                  return `:${m.alt}:`;
+                } else {
+                  return m.text;
+                }
+              }).join('');
+              break;
+            case 'authorName':
+              compStr = msg.author.name;
+              break;
+          }
+          if (condition.value === '') continue;
+          if (condition.type !== 'regex') {
+            const s1 = condition.caseSensitive ? compStr : compStr.toLowerCase();
+            const s2 = condition.caseSensitive ? condition.value : condition.value.toLowerCase();
+            const result = s1[condition.type](s2);
+            if (result === condition.invert) {
+              break;
+            }
+          } else {
+            const regex = new RegExp(condition.value, condition.caseSensitive ? '' : 'i');
+            const result = regex.test(compStr);
+            if (result === condition.invert) {
+              break;
+            }
           }
         }
+        numSatisfied++;
+      }
+      if (numSatisfied === filter.conditions.length) {
+        return true;
       }
     }
   }

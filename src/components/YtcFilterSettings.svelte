@@ -14,13 +14,13 @@
       nickname: 'New Filter',
       type: 'basic',
       id: getRandomString(),
-      condition: {
+      conditions: [{
         type: 'includes',
         property: 'message',
         value: '',
         invert: false,
         caseSensitive: false
-      },
+      }],
       enabled: true
     }];
     unsavedFilters = $chatFilters;
@@ -58,8 +58,8 @@
     }
   });
 
-  const isTextFilter = (filter: YtcF.ChatFilter): filter is YtcF._TextFilter =>
-    filter.type === 'basic' || ['message', 'authorName'].includes(filter.condition.property);
+  const isTextFilter = (filter: YtcF.FilterCondition): filter is YtcF.StringCondition =>
+    ['message', 'authorName'].includes(filter.property);
 </script>
 
 <svelte:head>
@@ -90,7 +90,6 @@
       </button>
       {#each unsavedFilters as filter (filter.id)}
         <div class="filter" bind:this={lastItem}>
-          <span>Name: </span>
           <input
             class="filter-name"
             bind:value={filter.nickname}
@@ -105,36 +104,38 @@
             class="red-bg delete"
             on:click={() => deleteFilter(filter)}
           >Delete</button>
-          <div class="items">
-            {#if isTextFilter(filter)}
-              <select
-                bind:value={filter.condition.property}
-                use:exioDropdown
-                on:change={saveFilters}
-              >
-                <option value="message">Message Text</option>
-                <option value="authorName">Author Name</option>
-              </select>
-              <select
-                bind:value={filter.condition.type}
-                use:exioDropdown
-                on:change={saveFilters}
-              >
-                <option value="includes">Contains</option>
-                <option value="startsWith">Starts With</option>
-                <option value="endsWith">Ends With</option>
-                <option value="equals">Equals</option>
-                <option value="regex">Regex</option>
-              </select>
-              <input
-                class="filter-content"
-                bind:value={filter.condition.value}
-                use:exioTextbox
-                on:input={saveFilters}
-              />
-            {/if}
-          </div>
-          {#if isTextFilter(filter)}
+          {#each filter.conditions as condition}
+            <div class="items">
+              {#if isTextFilter(condition)}
+                <select
+                  bind:value={condition.property}
+                  use:exioDropdown
+                  on:change={saveFilters}
+                >
+                  <option value="message">Message Text</option>
+                  <option value="authorName">Author Name</option>
+                </select>
+                <select
+                  bind:value={condition.type}
+                  use:exioDropdown
+                  on:change={saveFilters}
+                >
+                  <option value="includes">Contains</option>
+                  <option value="startsWith">Starts With</option>
+                  <option value="endsWith">Ends With</option>
+                  <option value="equals">Equals</option>
+                  <option value="regex">Regex</option>
+                </select>
+                <input
+                  class="filter-content"
+                  bind:value={condition.value}
+                  use:exioTextbox
+                  on:input={saveFilters}
+                />
+              {/if}
+            </div>
+          {/each}
+          <!-- {#if isTextFilter(filter)}
             <div class="items">
               <input
                 id="enable-{filter.id}"
@@ -161,7 +162,7 @@
               />
               <label for="case-{filter.id}">Case Sensitive</label>
             </div>
-          {/if}
+          {/if} -->
         </div>
       {/each}
     </div>
@@ -172,6 +173,9 @@
   .card {
     background-color: rgba(128, 128, 128, 0.2);
     padding: 10px;
+  }
+  .filter-content {
+    width: 100%;
   }
   .card > .title {
     font-size: 18px;
@@ -189,10 +193,30 @@
     background-color: rgb(128 128 128 / 25%);
   }
   .filter > .items {
-    display: flex;
+    display: grid;
     gap: 10px;
     margin-top: 10px;
     align-items: center;
+    grid-template-columns: repeat(2, fit-content(50%)) 1fr;
+  }
+  @media (max-width: 600px) {
+    .filter > .items {
+      grid-template-columns: fit-content(50%) auto;
+    }
+    .filter > .items > *:last-child {
+      grid-column: span 2;
+    }
+  }
+  @media (max-width: 400px) {
+    .filter > .items {
+      grid-template-columns: auto;
+    }
+    .filter > .items > *:last-child {
+      grid-column: span 1;
+    }
+    .filter > .items select {
+      width: 100%;
+    }
   }
   .wrapper {
     color: black;
