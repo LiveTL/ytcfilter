@@ -32,3 +32,7 @@ label {
 [data-theme=dark] .red-bg {
     background-color: #c80000;
 }
+
+.offset-1px {
+    vertical-align: -1px;
+}

@@ -2,7 +2,7 @@
   import '../stylesheets/scrollbar.css';
   import { dataTheme, chatFilters, theme } from '../ts/storage';
   import '../stylesheets/ui.css';
-  import { exioButton, exioCheckbox, exioDropdown, exioTextbox } from 'exio/svelte';
+  import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
   import { Theme } from '../ts/chat-constants';
@@ -27,6 +27,7 @@
     await tick();
     if (lastItem) {
       lastItem.querySelector('input')?.select();
+      lastItem.scrollIntoView({ behavior: 'smooth' });
     }
   };
   const deleteFilter = (item: YtcF.ChatFilter) => {
@@ -60,10 +61,15 @@
 
   const isTextFilter = (filter: YtcF.FilterCondition): filter is YtcF.StringCondition =>
     ['message', 'authorName'].includes(filter.property);
+
+  const deleteCondition = (filter: YtcF.ChatFilter, index: number) => {
+    filter.conditions.splice(index, 1);
+    saveFilters();
+  };
 </script>
 
 <svelte:head>
-  <title>HyperChat Settings</title>
+  <title>YtcFilter Settings</title>
 </svelte:head>
 
 <div
@@ -103,36 +109,47 @@
             use:exioButton
             class="red-bg delete"
             on:click={() => deleteFilter(filter)}
-          >Delete</button>
-          {#each filter.conditions as condition}
-            <div class="items">
-              {#if isTextFilter(condition)}
-                <select
-                  bind:value={condition.property}
-                  use:exioDropdown
-                  on:change={saveFilters}
-                >
-                  <option value="message">Message Text</option>
-                  <option value="authorName">Author Name</option>
-                </select>
-                <select
-                  bind:value={condition.type}
-                  use:exioDropdown
-                  on:change={saveFilters}
-                >
-                  <option value="includes">Contains</option>
-                  <option value="startsWith">Starts With</option>
-                  <option value="endsWith">Ends With</option>
-                  <option value="equals">Equals</option>
-                  <option value="regex">Regex</option>
-                </select>
-                <input
-                  class="filter-content"
-                  bind:value={condition.value}
-                  use:exioTextbox
-                  on:input={saveFilters}
-                />
-              {/if}
+          >
+            <span use:exioIcon class="offset-1px">delete_forever</span>
+          </button>
+          {#each filter.conditions as condition, i}
+            <div class="filter-items-wrapper">
+              <div class="items">
+                {#if isTextFilter(condition)}
+                  <select
+                    bind:value={condition.property}
+                    use:exioDropdown
+                    on:change={saveFilters}
+                  >
+                    <option value="message">Message Text</option>
+                    <option value="authorName">Author Name</option>
+                  </select>
+                  <select
+                    bind:value={condition.type}
+                    use:exioDropdown
+                    on:change={saveFilters}
+                  >
+                    <option value="includes">Contains</option>
+                    <option value="startsWith">Starts With</option>
+                    <option value="endsWith">Ends With</option>
+                    <option value="equals">Equals</option>
+                    <option value="regex">Regex</option>
+                  </select>
+                  <input
+                    class="filter-content"
+                    bind:value={condition.value}
+                    use:exioTextbox
+                    on:input={saveFilters}
+                  />
+                {/if}
+              </div>
+              <button
+                use:exioButton
+                class="red-bg delete"
+                on:click={() => deleteCondition(filter, i)}
+              >
+                <span use:exioIcon class="offset-1px">close</span>
+              </button>
             </div>
           {/each}
           <!-- {#if isTextFilter(filter)}
@@ -185,36 +202,32 @@
     padding-top: 10px;
   }
   .filter {
-    margin-top: 10px;
     padding: 10px;
     background-color: rgb(128 128 128 / 15%);
+    margin: 10px 0px;
   }
   [data-theme='dark'] .filter {
     background-color: rgb(128 128 128 / 25%);
   }
-  .filter > .items {
-    display: grid;
+  .filter-items-wrapper {
+    display: flex;
+    justify-content: space-between;
     gap: 10px;
     margin-top: 10px;
+  }
+  .filter-items-wrapper > .items {
+    display: grid;
+    gap: 10px;
     align-items: center;
     grid-template-columns: repeat(2, fit-content(50%)) 1fr;
+    width: 100%;
   }
   @media (max-width: 600px) {
-    .filter > .items {
-      grid-template-columns: fit-content(50%) auto;
+    .filter-items-wrapper > .items {
+      display: flex;
+      flex-direction: column;
     }
-    .filter > .items > *:last-child {
-      grid-column: span 2;
-    }
-  }
-  @media (max-width: 400px) {
-    .filter > .items {
-      grid-template-columns: auto;
-    }
-    .filter > .items > *:last-child {
-      grid-column: span 1;
-    }
-    .filter > .items select {
+    .filter-items-wrapper > .items select {
       width: 100%;
     }
   }
