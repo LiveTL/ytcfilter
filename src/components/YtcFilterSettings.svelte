@@ -11,7 +11,7 @@
   let lastItem: HTMLDivElement | null = null;
   const newFilter = async () => {
     $chatFilters = [...$chatFilters, {
-      nickname: 'New Filter',
+      nickname: 'Unnamed Filter',
       type: 'basic',
       id: getRandomString(),
       conditions: [{
@@ -66,6 +66,16 @@
     filter.conditions.splice(index, 1);
     saveFilters();
   };
+  const addCondition = (filter: YtcF.ChatFilter) => {
+    filter.conditions.push({
+      type: 'includes',
+      property: 'message',
+      value: '',
+      invert: false,
+      caseSensitive: false
+    });
+    saveFilters();
+  };
 </script>
 
 <svelte:head>
@@ -96,22 +106,36 @@
       </button>
       {#each unsavedFilters as filter (filter.id)}
         <div class="filter" bind:this={lastItem}>
-          <input
-            class="filter-name"
-            bind:value={filter.nickname}
-            use:exioTextbox
-            on:input={saveFilters}
-          />
           <!-- <select bind:value={filter.type} use:exioDropdown>
             <option value="basic">Basic</option>
           </select> -->
-          <button
-            use:exioButton
-            class="red-bg delete"
-            on:click={() => deleteFilter(filter)}
-          >
-            <span use:exioIcon class="offset-1px">delete_forever</span>
-          </button>
+          <div class="filter-header">
+            <div class="item">
+              <input
+                class="filter-name"
+                bind:value={filter.nickname}
+                use:exioTextbox
+                on:input={saveFilters}
+              />
+              <button
+                use:exioButton
+                class="red-bg delete"
+                on:click={() => deleteFilter(filter)}
+              >
+                <span use:exioIcon class="offset-1px">delete_forever</span>
+              </button>
+            </div>
+            <div class="item">
+              <input
+                id="enable-{filter.id}"
+                type="checkbox"
+                use:exioCheckbox
+                bind:checked={filter.enabled}
+                on:change={saveFilters}
+                />
+              <label for="enable-{filter.id}">Enable Filter</label>
+            </div>
+          </div>
           {#each filter.conditions as condition, i}
             <div class="filter-items-wrapper">
               <div class="items">
@@ -152,6 +176,16 @@
               </button>
             </div>
           {/each}
+          <button class="add-condition-button" use:exioButton on:click={() => addCondition(filter)}>
+            <div class="add-condition-inner">
+              <span class="line" />
+              <span>
+                <span use:exioIcon class="offset-1px">add</span>
+                Add a Filter Condition
+              </span>
+              <span class="line" />
+            </div>
+          </button>
           <!-- {#if isTextFilter(filter)}
             <div class="items">
               <input
@@ -202,9 +236,9 @@
     padding-top: 10px;
   }
   .filter {
-    padding: 10px;
+    padding: 10px 10px 5px 10px;
     background-color: rgb(128 128 128 / 15%);
-    margin: 10px 0px;
+    margin: 10px 0px 0px 0px;
   }
   [data-theme='dark'] .filter {
     background-color: rgb(128 128 128 / 25%);
@@ -214,6 +248,18 @@
     justify-content: space-between;
     gap: 10px;
     margin-top: 10px;
+  }
+  .filter-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-header > .item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
   }
   .filter-items-wrapper > .items {
     display: grid;
@@ -242,6 +288,23 @@
   .delete {
     vertical-align: bottom;
     display: inline-block;
+  }
+  .add-condition-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .add-condition-button {
+    background-color: transparent;
+    padding: 0px;
+    font-size: 0.85rem;
+    width: 100%;
+  }
+  .add-condition-inner > .line {
+    width: 100%;
+    height: 1px;
+    background-color: rgba(128, 128, 128, 0.8);
   }
   :global(html) {
     background-color: white;
