@@ -5,7 +5,7 @@
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
-  import { Theme } from '../ts/chat-constants';
+  import { Theme, isLiveTL } from '../ts/chat-constants';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
   let lastItem: HTMLDivElement | null = null;
@@ -60,7 +60,7 @@
   });
 
   const isTextFilter = (filter: YtcF.FilterCondition): filter is YtcF.StringCondition =>
-    ['message', 'authorName'].includes(filter.property);
+    ['message', 'authorName', 'authorChannelId'].includes(filter.property);
 
   const deleteCondition = (filter: YtcF.ChatFilter, index: number) => {
     filter.conditions.splice(index, 1);
@@ -87,23 +87,22 @@
   style="scrollbar-width: thin; scrollbar-color: #888 transparent;"
   data-theme={$dataTheme}
 >
-  <div class="card">
-    <div class="title">Interface</div>
-    <div class="content">
-      <span>Theme: </span>
-      <select use:exioDropdown bind:value={$theme}>
-        <option value={Theme.YOUTUBE}>Auto</option>
-        <option value={Theme.LIGHT}>Light</option>
-        <option value={Theme.DARK}>Dark</option>
-      </select>
+  {#if !isLiveTL}
+    <div class="card">
+      <div class="title">Interface</div>
+      <div class="content">
+        <span>Theme: </span>
+        <select use:exioDropdown bind:value={$theme}>
+          <option value={Theme.YOUTUBE}>Auto</option>
+          <option value={Theme.LIGHT}>Light</option>
+          <option value={Theme.DARK}>Dark</option>
+        </select>
+      </div>
     </div>
-  </div>
-  <div class="card">
+  {/if}
+  <div class="card" style="padding: 10px 10px 5px 10px;">
     <div class="title">Filters</div>  
-    <div class="content">
-      <button use:exioButton on:click={newFilter}>
-        Create New Filter
-      </button>
+    <div class="content" style="padding-top: 0px;">
       {#each unsavedFilters as filter (filter.id)}
         <div class="filter" bind:this={lastItem}>
           <!-- <select bind:value={filter.type} use:exioDropdown>
@@ -139,15 +138,18 @@
           {#each filter.conditions as condition, i}
             <div class="filter-items-wrapper">
               <div class="items">
+                <select
+                  bind:value={condition.property}
+                  use:exioDropdown
+                  on:change={saveFilters}
+                >
+                  <option value="message">Message Text</option>
+                  <option value="authorName">Author Name</option>
+                  <option value="authorChannelId">Author YT ID</option>
+                  <!-- <option value="videoId">Video ID</option>
+                  <option value="videoChannelId">Video Channel ID</option> -->
+                </select>
                 {#if isTextFilter(condition)}
-                  <select
-                    bind:value={condition.property}
-                    use:exioDropdown
-                    on:change={saveFilters}
-                  >
-                    <option value="message">Message Text</option>
-                    <option value="authorName">Author Name</option>
-                  </select>
                   <select
                     bind:value={condition.type}
                     use:exioDropdown
@@ -251,6 +253,16 @@
           {/if} -->
         </div>
       {/each}
+      <button class="add-filter-button" use:exioButton on:click={newFilter}>
+        <div class="add-condition-inner">
+          <span class="line" />
+          <span>
+            <span use:exioIcon class="offset-1px">add</span>
+            Create New Filter
+          </span>
+          <span class="line" />
+        </div>
+      </button>
     </div>
   </div>
 </div>
@@ -259,6 +271,7 @@
   .card {
     background-color: rgba(128, 128, 128, 0.2);
     padding: 10px;
+    margin-top: 10px;
   }
   .filter-content {
     width: 100%;
@@ -268,7 +281,7 @@
     font-weight: bold;
   }
   .card > .content {
-    padding-top: 10px;
+    padding-top: 5px;
   }
   .filter {
     padding: 10px 10px 5px 10px;
@@ -355,6 +368,11 @@
     background-color: transparent;
     padding: 0px;
     font-size: 0.85rem;
+    width: 100%;
+  }
+  .add-filter-button {
+    background-color: transparent;
+    padding: 0px;
     width: 100%;
   }
   .line {

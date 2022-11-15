@@ -3,7 +3,7 @@ import { derived, readable, writable } from 'svelte/store';
 import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
-import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode } from './chat-constants';
+import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
 
 export const stores = webExtStores();
 
@@ -86,4 +86,4 @@ export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySu
 export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', true);
 export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '');
 export const chatFilters = stores.addSyncStore('ytcf.chatFilters', [] as YtcF.ChatFilter[], true);
-export const dataTheme = derived(isDark, ($isDark) => $isDark ? 'dark' : 'light');
+export const dataTheme = derived(isDark, ($isDark) => isLiveTL || $isDark ? 'dark' : 'light');

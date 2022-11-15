@@ -5,7 +5,7 @@ declare namespace YtcF {
   }
   interface StringCondition extends BaseCondition {
     type: 'includes' | 'startsWith' | 'endsWith' | 'regex';
-    property: 'message' | 'authorName';
+    property: 'message' | 'authorName' | 'authorChannelId';
     value: string;
     invert: boolean;
     caseSensitive: boolean;

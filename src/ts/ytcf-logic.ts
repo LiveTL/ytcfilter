@@ -24,6 +24,9 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
             case 'authorName':
               compStr = msg.author.name;
               break;
+            case 'authorChannelId':
+              compStr = msg.author.id;
+              break;
           }
           if (condition.value === '') continue;
           if (condition.type !== 'regex') {
