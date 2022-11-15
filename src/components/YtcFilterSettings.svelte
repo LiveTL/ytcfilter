@@ -1,8 +1,8 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { dataTheme, chatFilters, theme } from '../ts/storage';
+  import { dataTheme, chatFilters, theme, isDark } from '../ts/storage';
   import '../stylesheets/ui.css';
-  import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
+  import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox, exioDialog } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
   import { Theme, isLiveTL } from '../ts/chat-constants';
@@ -30,9 +30,14 @@
       lastItem.scrollIntoView({ behavior: 'smooth' });
     }
   };
-  const deleteFilter = (item: YtcF.ChatFilter) => {
+  let deleteDialog: YtcF.ChatFilter | null = null;
+  let lastDialogName = '';
+  $: lastDialogName = deleteDialog?.nickname ?? lastDialogName;
+  const deleteFilter = () => {
+    const item = deleteDialog as YtcF.ChatFilter;
     $chatFilters = $chatFilters.filter(x => x.id !== item.id);
     unsavedFilters = $chatFilters;
+    deleteDialog = null;
   };
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
@@ -82,6 +87,21 @@
   <title>YtcFilter Settings</title>
 </svelte:head>
 
+<dialog
+  use:exioDialog={{
+    backgroundColor: $isDark ? 'black' : 'white'
+  }}
+  open={Boolean(deleteDialog)}
+  style="font-size: 1rem;"
+>
+  <div class="title">Delete "{lastDialogName}"?</div>
+  <p>This action cannot be undone.</p>
+  <div style="display: flex; justify-content: flex-end; gap: 10px;">
+    <button on:click={() => (deleteDialog = null)} use:exioButton>Cancel</button>
+    <button on:click={() => deleteFilter()} use:exioButton class="red-bg">Delete</button>
+  </div>
+</dialog>
+
 <div
   class="wrapper"
   style="scrollbar-width: thin; scrollbar-color: #888 transparent;"
@@ -116,23 +136,23 @@
                 use:exioTextbox
                 on:input={saveFilters}
               />
+              <div class="condition-no-break">
+                <input
+                  id="enable-{filter.id}"
+                  type="checkbox"
+                  use:exioCheckbox
+                  bind:checked={filter.enabled}
+                  on:change={saveFilters}
+                  />
+                <label for="enable-{filter.id}">Enabled</label>
+              </div>
               <button
                 use:exioButton
                 class="red-bg delete"
-                on:click={() => deleteFilter(filter)}
+                on:click={() => (deleteDialog = filter)}
               >
                 <span use:exioIcon class="offset-1px">delete_forever</span>
               </button>
-            </div>
-            <div class="item">
-              <input
-                id="enable-{filter.id}"
-                type="checkbox"
-                use:exioCheckbox
-                bind:checked={filter.enabled}
-                on:change={saveFilters}
-                />
-              <label for="enable-{filter.id}">Enable Filter</label>
             </div>
           </div>
           {#each filter.conditions as condition, i}
@@ -145,7 +165,12 @@
                 >
                   <option value="message">Message Text</option>
                   <option value="authorName">Author Name</option>
-                  <option value="authorChannelId">Author YT ID</option>
+                  <option value="authorChannelId">Author Channel ID</option>
+                  <option value="moderator">Author is Moderator</option>
+                  <option value="member">Author is Member</option>
+                  <option value="owner">Author is Owner</option>
+                  <option value="verified">Author is Verified</option>
+                  <option value="superchat">Message is Superchat</option>
                   <!-- <option value="videoId">Video ID</option>
                   <option value="videoChannelId">Video Channel ID</option> -->
                 </select>
@@ -170,28 +195,19 @@
                 {/if}
               </div>
               <div class="condition-options">
-                <div>
-                  <button
-                    use:exioButton
-                    class="red-bg delete"
-                    on:click={() => deleteCondition(filter, i)}
-                  >
-                    <span use:exioIcon class="offset-1px">close</span>
-                  </button>
-                </div>
                 <div class="condition-checkboxes">
+                  <div class="condition-no-break">
+                    <input
+                      id="invert-{filter.id}-{i}"
+                      type="checkbox"
+                      class="condition-checkbox"
+                      use:exioCheckbox
+                      bind:checked={condition.invert}
+                      on:change={saveFilters}
+                    />
+                    <label for="invert-{filter.id}-{i}">Invert Condition</label>
+                  </div>
                   {#if isTextFilter(condition)}
-                    <div class="condition-no-break">
-                      <input
-                        id="invert-{filter.id}-{i}"
-                        type="checkbox"
-                        class="condition-checkbox"
-                        use:exioCheckbox
-                        bind:checked={condition.invert}
-                        on:change={saveFilters}
-                      />
-                      <label for="invert-{filter.id}-{i}">Invert Condition</label>
-                    </div>
                     <div class="condition-no-break">
                       <input
                         id="case-{filter.id}-{i}"
@@ -204,6 +220,15 @@
                       <label for="case-{filter.id}-{i}">Case Sensitive</label>
                     </div>
                   {/if}
+                </div>
+                <div>
+                  <button
+                    use:exioButton
+                    class="red-bg delete"
+                    on:click={() => deleteCondition(filter, i)}
+                  >
+                    <span use:exioIcon class="offset-1px">close</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -269,23 +294,26 @@
 
 <style>
   .card {
-    background-color: rgba(128, 128, 128, 0.2);
+    background-color: rgba(128, 128, 128, 0.1);
     padding: 10px;
     margin-top: 10px;
+  }
+  [data-theme='dark'] .card {
+    background-color: rgba(128, 128, 128, 0.15);
   }
   .filter-content {
     width: 100%;
   }
-  .card > .title {
+  .title {
     font-size: 18px;
     font-weight: bold;
   }
-  .card > .content {
+  .content {
     padding-top: 5px;
   }
   .filter {
     padding: 10px 10px 5px 10px;
-    background-color: rgb(128 128 128 / 15%);
+    background-color: rgb(128 128 128 / 20%);
     margin: 10px 0px 0px 0px;
   }
   [data-theme='dark'] .filter {
@@ -305,10 +333,11 @@
     flex-wrap: wrap;
   }
   .filter-header > .item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    justify-content: space-between;
+    width: 100%;
     gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
   }
   .filter-items-wrapper > .items {
     display: grid;
@@ -324,7 +353,7 @@
     display: flex;
     flex-direction: column;
   }
-  @media (max-width: 700px) {
+  @media (max-width: 750px) {
     .filter-items-wrapper > .items {
       display: flex;
       flex-direction: column;
@@ -337,13 +366,12 @@
     }
     .condition-options {
       width: 100%;
-      flex-direction: row-reverse;
+      flex-direction: row;
       justify-content: space-between;
     }
   }
   .condition-options {
     display: flex;
-    gap: 10px;
     align-items: center;
   }
   .wrapper {

@@ -5,8 +5,11 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
       let numSatisfied = 0;
       for (const condition of filter.conditions) {
         if (condition.type === 'boolean') {
-          if (condition.property === 'superchat' && msg.superChat) return true;
-          if (msg.author.types.includes(condition.property)) return true;
+          if ((
+            condition.property === 'superchat' && Boolean(msg.superChat) === condition.invert
+          ) || (
+            msg.author.types.includes(condition.property) === condition.invert
+          )) numSatisfied++;
         } else {
           let compStr = '';
           switch (condition.property) {
