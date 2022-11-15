@@ -167,14 +167,49 @@
                   />
                 {/if}
               </div>
-              <button
-                use:exioButton
-                class="red-bg delete"
-                on:click={() => deleteCondition(filter, i)}
-              >
-                <span use:exioIcon class="offset-1px">close</span>
-              </button>
+              <div class="condition-options">
+                <div>
+                  <button
+                    use:exioButton
+                    class="red-bg delete"
+                    on:click={() => deleteCondition(filter, i)}
+                  >
+                    <span use:exioIcon class="offset-1px">close</span>
+                  </button>
+                </div>
+                <div class="condition-checkboxes">
+                  {#if isTextFilter(condition)}
+                    <div class="condition-no-break">
+                      <input
+                        id="invert-{filter.id}-{i}"
+                        type="checkbox"
+                        class="condition-checkbox"
+                        use:exioCheckbox
+                        bind:checked={condition.invert}
+                        on:change={saveFilters}
+                      />
+                      <label for="invert-{filter.id}-{i}">Invert Condition</label>
+                    </div>
+                    <div class="condition-no-break">
+                      <input
+                        id="case-{filter.id}-{i}"
+                        type="checkbox"
+                        class="condition-checkbox"
+                        use:exioCheckbox
+                        bind:checked={condition.caseSensitive}
+                        on:change={saveFilters}
+                      />
+                      <label for="case-{filter.id}-{i}">Case Sensitive</label>
+                    </div>
+                  {/if}
+                </div>
+              </div>
             </div>
+            {#if i !== filter.conditions.length - 1}
+              <div class="condition-separator">
+                <span class="line" />
+              </div>
+            {/if}
           {/each}
           <button class="add-condition-button" use:exioButton on:click={() => addCondition(filter)}>
             <div class="add-condition-inner">
@@ -246,6 +281,7 @@
   .filter-items-wrapper {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 10px;
     margin-top: 10px;
   }
@@ -268,7 +304,14 @@
     grid-template-columns: repeat(2, fit-content(50%)) 1fr;
     width: 100%;
   }
-  @media (max-width: 600px) {
+  .condition-checkbox {
+    display: inline-block;
+  }
+  .condition-checkboxes {
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 700px) {
     .filter-items-wrapper > .items {
       display: flex;
       flex-direction: column;
@@ -276,6 +319,19 @@
     .filter-items-wrapper > .items select {
       width: 100%;
     }
+    .filter-items-wrapper {
+      flex-direction: column;
+    }
+    .condition-options {
+      width: 100%;
+      flex-direction: row-reverse;
+      justify-content: space-between;
+    }
+  }
+  .condition-options {
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
   .wrapper {
     color: black;
@@ -301,10 +357,21 @@
     font-size: 0.85rem;
     width: 100%;
   }
-  .add-condition-inner > .line {
+  .line {
     width: 100%;
     height: 1px;
     background-color: rgba(128, 128, 128, 0.8);
+    display: block;
+  }
+  .condition-separator {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .condition-no-break {
+    white-space: nowrap;
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
   :global(html) {
     background-color: white;
