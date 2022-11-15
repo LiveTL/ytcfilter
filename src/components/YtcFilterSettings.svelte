@@ -53,6 +53,15 @@
       clearTimeout(saveTimeout);
     }
     saveTimeout = setTimeout(async () => {
+      for (const filter of unsavedFilters) {
+        for (const condition of filter.conditions) {
+          if (!isTextFilter(condition)) {
+            condition.type = 'boolean';
+          } else if (condition.type as string === 'boolean') {
+            condition.type = 'includes';
+          }
+        }
+      }
       unsavedFilters = [...unsavedFilters];
       $chatFilters = unsavedFilters;
     }, 50);
