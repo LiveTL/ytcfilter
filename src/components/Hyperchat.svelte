@@ -198,11 +198,12 @@
         $currentProgress = action.playerProgress;
         break;
       case 'forceUpdate':
-        messageKeys.clear();
-        messageActions = [...action.messages].filter(shouldShowMessage);
-        if (action.showWelcome) {
-          messageActions = [...messageActions]; //, welcome];
-        }
+        // messageKeys.clear();
+        // messageActions = [...action.messages].filter(shouldShowMessage);
+        // if (action.showWelcome) {
+        //   messageActions = [...messageActions]; //, welcome];
+        // }
+        newMessages({ type: 'messages', messages: action.messages }, false);
         break;
     }
   };
@@ -362,23 +363,50 @@
   $: numMessages = messageActions.filter(isMessage).length;
 
   let screenshotElement: HTMLDivElement | undefined;
+  let hiddenElement: HTMLDivElement | undefined;
   const screenshot = async () => {
     const { default: html2canvas } = await import('html2canvas');
     const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
     clonedNode.id = 'screenshot-element';
-    document.body.appendChild(clonedNode);
+    hiddenElement?.appendChild(clonedNode);
     const style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
     style.innerHTML = `
       #screenshot-element img {
         transform: translateY(35%);
       }
-      .hide-while-screenshotting {
+      #screenshot-element .hide-while-screenshotting {
         display: none;
+      }
+      #screenshot-element > * {
+        transform: translateY(-5px);
+      }
+      #screenshot-element {
+        padding-bottom: 20px;
+      }
+      #screenshot-element::after {
+        width: 100vw;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        content: 'Exported from YtcFilter by LiveTL';
+        position: absolute;
+        bottom: 7px;
+        font-weight: bold;
+      }
+      #screenshot-element::before {
+        background-color: transparent; /* rgba(128, 128, 128, 0.1); */
+        width: 100vw;
+        height: 20px;
+        bottom: 0px;
+        content: '';
+        position: absolute;
       }
     `;
     html2canvas(clonedNode, {
       useCORS: true,
-      backgroundColor: getComputedStyle(document.body).backgroundColor
+      backgroundColor: getComputedStyle(document.body).backgroundColor,
+      width: screenshotElement?.clientWidth
     }).then((canvas: HTMLCanvasElement) => {
       const a = document.createElement('a');
       a.href = canvas.toDataURL('image/png');
@@ -392,6 +420,7 @@
       clonedNode.remove();
     });
   };
+  $: showWelcome = initialized && messageActions.length === 0;
 </script>
 
 <ReportBanDialog />
@@ -401,6 +430,8 @@
   scrollToBottom();
   topBarResized();
 }} on:load={onLoad} />
+
+<div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
@@ -413,7 +444,7 @@
       <span style="display: flex; align-items: center; padding: 2px 5px; cursor: default; user-select: none;">
         {numMessages} Entries
       </span>
-      <select use:exioDropdown on:change={executeExport}>
+      <select use:exioDropdown on:change={executeExport} disabled={showWelcome}>
         <option selected disabled value="export">Export as...</option>
         <option value="screenshot">Screenshot</option>
         <option value="textfile">Text File</option>
@@ -429,8 +460,8 @@
     <div class="min-h-0 flex justify-end flex-col relative h-full">
       <div bind:this={div} on:scroll={checkAtBottom} class="content h-full overflow-y-scroll">
         <div style="height: {topBarSize}px;" />
-        <div bind:this={screenshotElement}>
-          {#if initialized && messageActions.length === 0}
+        <div bind:this={screenshotElement} class="h-full">
+          {#if showWelcome}
             <div class="w-full h-full flex justify-center items-center">
               <WelcomeMessage />
             </div>
