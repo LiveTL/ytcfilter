@@ -2,6 +2,7 @@
   import '../stylesheets/scrollbar.css';
   import { dataTheme, chatFilters, theme, isDark } from '../ts/storage';
   import '../stylesheets/ui.css';
+  import '../stylesheets/line.css';
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox, exioDialog } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
@@ -411,12 +412,6 @@
     background-color: transparent;
     padding: 0px;
     width: 100%;
-  }
-  .line {
-    width: 100%;
-    height: 1px;
-    background-color: rgba(128, 128, 128, 0.8);
-    display: block;
   }
   .condition-separator {
     width: 100%;

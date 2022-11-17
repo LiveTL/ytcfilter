@@ -3,7 +3,7 @@
   import { onDestroy, afterUpdate, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import dark from 'smelte/src/dark';
-  import WelcomeMessage from './WelcomeMessage.svelte';
+  import WelcomeMessage from './YtcFilterWelcome.svelte';
   import Message from './Message.svelte';
   // import PinnedMessage from './PinnedMessage.svelte';
   import PaidMessage from './PaidMessage.svelte';
@@ -41,10 +41,13 @@
     lastOpenedVersion,
     selfChannelName,
     enableHighlightedMentions,
-    chatFilters
+    chatFilters,
+    dataTheme
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage } from '../ts/ytcf-logic';
+  import { exioButton, exioDropdown } from 'exio/svelte';
+  import '../stylesheets/line.css';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -197,7 +200,7 @@
         messageKeys.clear();
         messageActions = [...action.messages].filter(shouldShowMessage);
         if (action.showWelcome) {
-          messageActions = [...messageActions, welcome];
+          messageActions = [...messageActions]; //, welcome];
         }
         break;
     }
@@ -223,7 +226,7 @@
         response.initialData.forEach((action) => {
           onChatAction(action, true);
         });
-        messageActions = [...messageActions, welcome];
+        messageActions = [...messageActions]; //, welcome];
         $selfChannel = response.selfChannel;
         break;
       case 'themeUpdate':
@@ -310,7 +313,7 @@
   $: ((..._a: any[]) => scrollToBottom())(
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
   );
-  const containerClass = 'h-screen w-screen text-black dark:text-white dark:bg-black flex flex-col justify-between max-w-none';
+  const containerClass = 'h-full w-screen text-black dark:text-white dark:bg-black flex flex-col justify-between max-w-none overflow-y-hidden';
   const isSuperchat = (action: Chat.MessageAction) => (action.message.superChat || action.message.superSticker);
   const isMembership = (action: Chat.MessageAction) => (action.message.membership || action.message.membershipGiftPurchase);
   const isMessage = (action: Chat.MessageAction | Welcome): action is Chat.MessageAction =>
@@ -348,6 +351,11 @@
       }
     }).join('').includes(`@${$selfChannelName}`);
   };
+  const executeExport = (e: any) => {
+    (e.target as HTMLSelectElement).value = 'export';
+  };
+
+  $: numMessages = messageActions.filter(isMessage).length;
 </script>
 
 <ReportBanDialog />
@@ -358,54 +366,80 @@
   topBarResized();
 }} on:load={onLoad} />
 
-<div class="{containerClass} container" style="font-size: 13px;" >
-  {#if $enableStickySuperchatBar}
-    <StickyBar />
-  {/if}
-  <div class="w-screen min-h-0 flex justify-end flex-col relative">
-    <div bind:this={div} on:scroll={checkAtBottom} class="content overflow-y-scroll">
-      <div style="height: {topBarSize}px;" />
-      {#each messageActions as action (action.message.messageId)}
-        <div
-          class="hover-highlight p-1.5 w-full block"
-          class:flex = {!isWelcome(action)}
-          class:mention = {$enableHighlightedMentions && isMessage(action) && isMention(action.message)}
-          class:mention-light = {!$smelteDark}
-          on:mouseover={() => setHover(action)}
-          on:focus={() => setHover(action)}
-          on:mouseout={() => setHover(null)}
-          on:blur={() => setHover(null)}
-        >
-          {#if isWelcome(action)}
-            <WelcomeMessage />
-          {:else if isSuperchat(action)}
-            <PaidMessage message={action.message} />
-          {:else if isMembership(action)}
-            <MembershipItem message={action.message} />
-          {:else if isMessage(action)}
-            <Message
-              message={action.message}
-              deleted={action.deleted}
-            />
-          {/if}
-        </div>
-      {/each}
+<div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen">
+  <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
+    <div style="display: flex; justify-content: flex-start;">
+      <select use:exioDropdown>
+        <option selected>Preset 1</option>
+      </select>
     </div>
-    <!-- {#if pinned}
-      <div class="absolute top-0 w-full" bind:this={topBar}>
-        <div class="mx-1.5 mt-1.5">
-          <PinnedMessage pinned={pinned} on:resize={topBarResized} />
-        </div>
-      </div>
-    {/if} -->
-    {#if !isAtBottom}
-      <div
-        class="absolute left-1/2 transform -translate-x-1/2 bottom-0 pb-1"
-        transition:fade={{ duration: 150 }}
-      >
-        <Button icon="arrow_downward" on:click={scrollToBottom} small />
-      </div>
+    <div style="display: flex; justify-content: flex-end;">
+      <span style="display: flex; align-items: center; padding: 2px 5px; cursor: default; user-select: none;">
+        {numMessages} Entries
+      </span>
+      <select use:exioDropdown on:change={executeExport}>
+        <option selected disabled value="export">Export as...</option>
+        <option>Screenshot</option>
+        <option>Text File</option>
+      </select>
+      <button use:exioButton>Clear All</button>
+    </div>
+  </div>
+  <div class="line" />
+  <div class="{containerClass} container" style="font-size: 13px;" >
+    {#if $enableStickySuperchatBar}
+      <StickyBar />
     {/if}
+    <div class="min-h-0 flex justify-end flex-col relative h-full">
+      <div bind:this={div} on:scroll={checkAtBottom} class="content h-full overflow-y-scroll">
+        <div style="height: {topBarSize}px;" />
+        {#if messageActions.length === 0}
+          <div class="w-full h-full flex justify-center items-center">
+            <WelcomeMessage />
+          </div>
+        {/if}
+        {#each messageActions as action (action.message.messageId)}
+          <div
+            class="hover-highlight p-1.5 w-full block"
+            class:flex = {!isWelcome(action)}
+            class:mention = {$enableHighlightedMentions && isMessage(action) && isMention(action.message)}
+            class:mention-light = {!$smelteDark}
+            on:mouseover={() => setHover(action)}
+            on:focus={() => setHover(action)}
+            on:mouseout={() => setHover(null)}
+            on:blur={() => setHover(null)}
+          >
+            {#if isWelcome(action)}
+              <WelcomeMessage />
+            {:else if isSuperchat(action)}
+              <PaidMessage message={action.message} />
+            {:else if isMembership(action)}
+              <MembershipItem message={action.message} />
+            {:else if isMessage(action)}
+              <Message
+                message={action.message}
+                deleted={action.deleted}
+              />
+            {/if}
+          </div>
+        {/each}
+      </div>
+      <!-- {#if pinned}
+        <div class="absolute top-0 w-full" bind:this={topBar}>
+          <div class="mx-1.5 mt-1.5">
+            <PinnedMessage pinned={pinned} on:resize={topBarResized} />
+          </div>
+        </div>
+      {/if} -->
+      {#if !isAtBottom}
+        <div
+          class="absolute left-1/2 transform -translate-x-1/2 bottom-0 pb-1"
+          transition:fade={{ duration: 150 }}
+        >
+          <Button icon="arrow_downward" on:click={scrollToBottom} small />
+        </div>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -430,5 +464,24 @@
   }
   :global(.mode-dark) .container {
     background-color: #181818 !important;
+  }
+  .top-button-wrapper button, .top-button-wrapper select {
+    cursor: default;
+    padding: 2px 5px;
+  }
+  :global(.mode-dark) .top-button-wrapper button, :global(.mode-dark) .top-button-wrapper select {
+    background-color: #181818;
+  }
+  .top-button-wrapper {
+    font-size: 12px;
+    height: fit-content;
+    width: 100%;
+    display: grid;
+    align-content: space-between;
+    justify-content: space-between;
+    grid-template-columns: auto 1fr;
+  }
+  :global(.mode-dark) .top-button-wrapper {
+    background-color: #181818;
   }
 </style>

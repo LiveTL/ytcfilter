@@ -45,7 +45,7 @@ export const translatorClient = readable(null as (null | IframeTranslatorClient)
 });
 export const refreshScroll = writable(false);
 export const theme = stores.addSyncStore('ytcf.theme', Theme.YOUTUBE);
-export const showProfileIcons = stores.addSyncStore('ytcf.messages.showProfileIcons', false);
+export const showProfileIcons = stores.addSyncStore('ytcf.messages.showProfileIcons', true);
 export const showUsernames = stores.addSyncStore('ytcf.messages.showUsernames', true);
 export const showTimestamps = stores.addSyncStore('ytcf.messages.showTimestamps', false);
 export const showUserBadges = stores.addSyncStore('ytcf.messages.showUserBadges', true);
