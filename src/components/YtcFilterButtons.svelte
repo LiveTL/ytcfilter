@@ -50,7 +50,12 @@
   let windowHeight = window.innerHeight;
   let buttons: HTMLDivElement;
   let ytcfIframe: HTMLDivElement;
-  $: pxHeight = Math.min(windowHeight - 200 - (buttons ? buttons.clientHeight : 0), Math.max(height, 100));
+  $: pxHeight = Math.min(
+    windowHeight - 10 -
+    (buttons ? buttons.getBoundingClientRect().top : 0) -
+    (buttons ? buttons.clientHeight : 0),
+    Math.max(height, 0)
+  );
   $: calcHeight = resizing ? `${pxHeight}px` : `${100 * pxHeight / windowHeight}vh`;
   $: toggleMouse(resizing);
   function toggleMouse(toggle: boolean) {
