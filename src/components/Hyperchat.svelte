@@ -68,6 +68,7 @@
   const isReplay = paramsIsReplay;
   let ytDark = false;
   const smelteDark = dark();
+  let initialized = false;
 
   type MessageBlocker = (a: Chat.MessageAction) => boolean;
 
@@ -223,6 +224,7 @@
     }
     switch (response.type) {
       case 'initialData':
+        initialized = true;
         response.initialData.forEach((action) => {
           onChatAction(action, true);
         });
@@ -352,10 +354,44 @@
     }).join('').includes(`@${$selfChannelName}`);
   };
   const executeExport = (e: any) => {
-    (e.target as HTMLSelectElement).value = 'export';
+    const el = (e.target as HTMLSelectElement);
+    if (el.value === 'screenshot') screenshot();
+    el.value = 'export';
   };
 
   $: numMessages = messageActions.filter(isMessage).length;
+
+  let screenshotElement: HTMLDivElement | undefined;
+  const screenshot = async () => {
+    const { default: html2canvas } = await import('html2canvas');
+    const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
+    clonedNode.id = 'screenshot-element';
+    document.body.appendChild(clonedNode);
+    const style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
+    style.innerHTML = `
+      #screenshot-element img {
+        transform: translateY(35%);
+      }
+      .hide-while-screenshotting {
+        display: none;
+      }
+    `;
+    html2canvas(clonedNode, {
+      useCORS: true,
+      backgroundColor: getComputedStyle(document.body).backgroundColor
+    }).then((canvas: HTMLCanvasElement) => {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `chat-${new Date().toISOString()}.png`;
+      a.click();
+      style.innerHTML = '';
+      clonedNode.remove();
+    }).catch((err: any) => {
+      console.error(err);
+      style.innerHTML = '';
+      clonedNode.remove();
+    });
+  };
 </script>
 
 <ReportBanDialog />
@@ -379,10 +415,10 @@
       </span>
       <select use:exioDropdown on:change={executeExport}>
         <option selected disabled value="export">Export as...</option>
-        <option>Screenshot</option>
-        <option>Text File</option>
+        <option value="screenshot">Screenshot</option>
+        <option value="textfile">Text File</option>
       </select>
-      <button use:exioButton>Clear All</button>
+      <button use:exioButton on:click={() => (messageActions = [])}>Clear All</button>
     </div>
   </div>
   <div class="line" />
@@ -393,36 +429,38 @@
     <div class="min-h-0 flex justify-end flex-col relative h-full">
       <div bind:this={div} on:scroll={checkAtBottom} class="content h-full overflow-y-scroll">
         <div style="height: {topBarSize}px;" />
-        {#if messageActions.length === 0}
-          <div class="w-full h-full flex justify-center items-center">
-            <WelcomeMessage />
-          </div>
-        {/if}
-        {#each messageActions as action (action.message.messageId)}
-          <div
-            class="hover-highlight p-1.5 w-full block"
-            class:flex = {!isWelcome(action)}
-            class:mention = {$enableHighlightedMentions && isMessage(action) && isMention(action.message)}
-            class:mention-light = {!$smelteDark}
-            on:mouseover={() => setHover(action)}
-            on:focus={() => setHover(action)}
-            on:mouseout={() => setHover(null)}
-            on:blur={() => setHover(null)}
-          >
-            {#if isWelcome(action)}
+        <div bind:this={screenshotElement}>
+          {#if initialized && messageActions.length === 0}
+            <div class="w-full h-full flex justify-center items-center">
               <WelcomeMessage />
-            {:else if isSuperchat(action)}
-              <PaidMessage message={action.message} />
-            {:else if isMembership(action)}
-              <MembershipItem message={action.message} />
-            {:else if isMessage(action)}
-              <Message
-                message={action.message}
-                deleted={action.deleted}
-              />
-            {/if}
-          </div>
-        {/each}
+            </div>
+          {/if}
+          {#each messageActions as action (action.message.messageId)}
+            <div
+              class="hover-highlight p-1.5 w-full block"
+              class:flex = {!isWelcome(action)}
+              class:mention = {$enableHighlightedMentions && isMessage(action) && isMention(action.message)}
+              class:mention-light = {!$smelteDark}
+              on:mouseover={() => setHover(action)}
+              on:focus={() => setHover(action)}
+              on:mouseout={() => setHover(null)}
+              on:blur={() => setHover(null)}
+            >
+              {#if isWelcome(action)}
+                <WelcomeMessage />
+              {:else if isSuperchat(action)}
+                <PaidMessage message={action.message} />
+              {:else if isMembership(action)}
+                <MembershipItem message={action.message} />
+              {:else if isMessage(action)}
+                <Message
+                  message={action.message}
+                  deleted={action.deleted}
+                />
+              {/if}
+            </div>
+          {/each}
+        </div>
       </div>
       <!-- {#if pinned}
         <div class="absolute top-0 w-full" bind:this={topBar}>
@@ -447,19 +485,19 @@
   .hover-highlight {
     background-color: transparent;
   }
-  .hover-highlight:hover {
+  :not(.screenshot-element) .hover-highlight:hover {
     background-color: #80808040;
   }
   .mention {
     background-color: #ffe60038;
   }
-  .mention:hover {
+  :not(.screenshot-element) .mention:hover {
     background-color: #fff48f3f;
   }
   .mention.mention-light {
     background-color: #ffe60085;
   }
-  .mention.mention-light:hover {
+  :not(.screenshot-element) .mention.mention-light:hover {
     background-color: #bfb2408f;
   }
   :global(.mode-dark) .container {

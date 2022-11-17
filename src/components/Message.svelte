@@ -150,7 +150,7 @@
     {/if}
   </div>
   {#if message.author.id !== $selfChannelId && !hideDropdown}
-    <Menu items={menuItems} visible={$hoveredItem === message.messageId} class="mr-2 ml-auto context-menu">
+    <Menu items={menuItems} visible={$hoveredItem === message.messageId} class="mr-2 ml-auto context-menu hide-while-screenshotting">
       <Icon slot="activator" style="font-size: 1.5em;">more_vert</Icon>
     </Menu>
   {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { isLiveTL } from '../ts/chat-constants';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
