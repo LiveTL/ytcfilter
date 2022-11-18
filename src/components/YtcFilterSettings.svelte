@@ -116,7 +116,7 @@
   };
   const deletePreset = () => {
     $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
-    currentPreset = $chatFilterPresets[0];
+    currentPreset = $chatFilterPresets[$chatFilterPresets.length - 1] ?? currentPreset;
     if ($currentFilterPresetId === presetDropdownValue) {
       $currentFilterPresetId = currentPreset.id;
     }
@@ -146,7 +146,7 @@
 
 <div
   class="wrapper"
-  style="scrollbar-width: thin; scrollbar-color: #888 transparent;"
+  style="scrollbar-width: thin; scrollbar-color: #888 transparent; user-select: none;"
   data-theme={$dataTheme}
 >
   {#if !isLiveTL}
@@ -163,7 +163,7 @@
     </div>
   {/if}
   <div class="card" style="padding: 10px 10px 5px 10px;">
-    <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+    <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; user-select: none;">
       <div class="title">Filters</div>
       <div>
         <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue}>
