@@ -357,6 +357,7 @@
   const executeExport = (e: any) => {
     const el = (e.target as HTMLSelectElement);
     if (el.value === 'screenshot') screenshot();
+    // if (el.value === 'textfile') exportTextFile();
     el.value = 'export';
   };
 

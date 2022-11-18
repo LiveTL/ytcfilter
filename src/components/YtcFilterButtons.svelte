@@ -123,6 +123,7 @@
     justify-content: center;
     cursor: row-resize;
     user-select: none;
+    position: relative;
   }
   .static-logo {
     padding: 0.25em 0.5em;
