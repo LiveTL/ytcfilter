@@ -113,6 +113,7 @@
 <style>
   .ytcf-wrapper {
     user-select: none;
+    white-space: nowrap;
   }
   :global([dark]) .ytcf-resize-bar {
     width: 100%;

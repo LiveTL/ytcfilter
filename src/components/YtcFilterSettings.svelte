@@ -418,7 +418,7 @@
       </button>
       {#if unsavedFilters.length === 0}
         <div style="display: flex; justify-content: center; align-items: center; font-size: 0.9rem; margin-top: 5px; flex-direction: column;">
-          <span use:exioIcon style="font-size: 2em; position: absolute;" class="floating-animation">expand_less</span>
+          <span use:exioIcon style="font-size: 2em; position: absolute; pointer-events: none; touch-action: none;" class="floating-animation">expand_less</span>
           <div class="blue-bg" style="padding: 0px 10px; border-radius: 1000px; line-height: 2rem;">
             <span>
               Tip: Create your first filter!

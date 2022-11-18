@@ -17,9 +17,10 @@
     // paramsIsReplay,
     Theme,
     YoutubeEmojiRenderMode,
-    chatUserActionsItems
+    chatUserActionsItems,
+    isLiveTL
   } from '../ts/chat-constants';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction } from '../ts/chat-utils';
+  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
     stores,
@@ -49,7 +50,7 @@
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage } from '../ts/ytcf-logic';
-  import { exioButton, exioDropdown } from 'exio/svelte';
+  import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
@@ -120,25 +121,25 @@
   //   messageActions = messageActions;
   // };
 
-  const applyYtcf = async (items: Chat.MessageAction[]) => {
-    await Promise.all(items.map(async a => {
-      if (isMessage(a) && shouldFilterMessage(a, $currentFilterPreset.filters)) messageActions.push(a);
-    }));
+  const applyYtcf = (items: Chat.MessageAction[]) => {
+    for (const a of items) {
+      if (isMessage(a) && (!messageActionStorageInit || shouldFilterMessage(a, $currentFilterPreset.filters))) messageActions.push(a);
+    }
   };
 
-  const newMessages = async (
+  const newMessages = (
     messagesAction: Chat.MessagesAction, isInitial: boolean
   ) => {
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
-      await applyYtcf(filterTickers(messagesAction.messages).filter(
+      applyYtcf(filterTickers(messagesAction.messages).filter(
         (a) => a.message.timestamp.startsWith('-') && shouldShowMessage(a)
       ));
     } else {
-      await applyYtcf(filterTickers(messagesAction.messages).filter(shouldShowMessage));
+      applyYtcf(filterTickers(messagesAction.messages).filter(shouldShowMessage));
     }
-    messageActions = messageActions;
+    messageActions = [...messageActions];
     // if (!isInitial) checkTruncateMessages();
   };
 
@@ -374,6 +375,14 @@
     el.value = 'export';
   };
 
+  const executeImport = (e: any) => {
+    const el = (e.target as HTMLSelectElement);
+    // switch (el.value) {
+    //   break;
+    // }
+    el.value = 'import';
+  };
+
   $: numMessages = messageActions.filter(isMessage).length;
 
   let screenshotElement: HTMLDivElement | undefined;
@@ -442,7 +451,7 @@
         if (run.type === 'text' || run.type === 'link') {
           return run.text;
         } else {
-          return run.alt;
+          return `:${run.alt}:`;
         }
       }).join('');
       return `[${msg.timestamp}] ${author}: ${message}`;
@@ -461,24 +470,36 @@
   };
   $: showWelcome = initialized && messageActions.length === 0;
 
-  const messageActionStorage = stores.addSyncStore(`ytcf.messageActions.${paramsContinuation}`, messageActions);
+  const messageActionStorage = stores.addSyncStore(`ytcf.messageActions.${paramsContinuation}`, {
+    actions: messageActions.filter(isMessage)
+  });
   let messageActionStorageInit = false;
-  $: if (messageActionStorageInit) messageActionStorage.set(messageActions);
-  messageActionStorage.ready().then(async () => {
-    newMessages({
-      type: 'messages',
-      messages: await messageActionStorage.get() as Chat.MessageAction[]
-    }, false);
+  $: if (messageActionStorageInit) {
+    messageActionStorage.set({
+      actions: messageActions.filter(isMessage)
+    });
+  }
+  messageActionStorage.ready().then(() => {
+    const data = messageActionStorage.getCurrent();
+    if (data.actions.length) {
+      newMessages({
+        type: 'messages',
+        messages: data.actions as Chat.MessageAction[]
+      }, false);
+    }
     messageActionStorageInit = true;
   });
+  let isPopout = false;
   onMount(() => {
     try {
       if (window.parent === window) {
         import('../ts/resize-tracker');
+        isPopout = true;
       }
     } catch (e) {
     }
   });
+  const openSettings = () => createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
 </script>
 
 <ReportBanDialog />
@@ -494,9 +515,9 @@
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
     <div style="display: flex; justify-content: flex-start;">
-      <span class="tiny-text">
+      <!-- <span class="tiny-text">
         Preset:
-      </span>
+      </span> -->
       <select use:exioDropdown bind:value={$currentFilterPresetId}>
         {#each $chatFilterPresets as preset}
           <option selected value={preset.id}>{preset.nickname}</option>
@@ -504,16 +525,26 @@
       </select>
     </div>
     <div style="display: flex; justify-content: flex-end;">
-      <span class="tiny-text">
-        {numMessages} {numMessages === 1 ? 'Entry' : 'Entries'}
-      </span>
-      <select use:exioDropdown on:change={executeExport} disabled={showWelcome}>
-        <option selected disabled value="export">Export as...</option>
+      <select use:exioDropdown on:change={executeImport} style="margin-right: 2.5px; width: 83px;">
+        <option selected disabled value="import">Import...</option>
+        <option value="savedarchive">From History</option>
+        <option value="jsondump">JSON Dump</option>
+      </select>
+      <select use:exioDropdown on:change={executeExport} disabled={showWelcome} style="width: 80px;">
+        <option selected disabled value="export">Export...</option>
         <option value="screenshot">Screenshot</option>
         <option value="textfile">Text File</option>
         <option value="jsondump">JSON Dump</option>
       </select>
-      <button use:exioButton on:click={() => (messageActions = [])}>Clear All</button>
+      <button use:exioButton on:click={() => (messageActions = [])} class="whitespace-nowrap">Clear All</button>
+      {#if isPopout}
+        <button use:exioButton on:click={openSettings} class="inline-flex gap-1">
+          Settings
+          <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
+            settings
+          </div>
+        </button>
+      {/if}
     </div>
   </div>
   <div class="line" />
