@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { dataTheme, chatFilters, theme, isDark } from '../ts/storage';
+  import { dataTheme, currentFilterPreset, chatFilterPresets, theme, isDark, currentFilterPresetId } from '../ts/storage';
   import '../stylesheets/ui.css';
   import '../stylesheets/line.css';
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox, exioDialog } from 'exio/svelte';
@@ -10,9 +10,10 @@
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
   let lastItem: HTMLDivElement | null = null;
+  let currentPreset = $currentFilterPreset;
   const newFilter = async () => {
-    $chatFilters = [...$chatFilters, {
-      nickname: 'Unnamed Filter',
+    currentPreset.filters.push({
+      nickname: 'Unnamed Filter #' + (currentPreset.filters.length + 1),
       type: 'basic',
       id: getRandomString(),
       conditions: [{
@@ -23,8 +24,9 @@
         caseSensitive: false
       }],
       enabled: true
-    }];
-    unsavedFilters = $chatFilters;
+    });
+    unsavedFilters = currentPreset.filters;
+    $chatFilterPresets = [...$chatFilterPresets];
     await tick();
     if (lastItem) {
       lastItem.querySelector('input')?.select();
@@ -36,15 +38,16 @@
   $: lastDialogName = deleteDialog?.nickname ?? lastDialogName;
   const deleteFilter = () => {
     const item = deleteDialog as YtcF.ChatFilter;
-    $chatFilters = $chatFilters.filter(x => x.id !== item.id);
-    unsavedFilters = $chatFilters;
+    currentPreset.filters = currentPreset.filters.filter(x => x.id !== item.id);
+    unsavedFilters = currentPreset.filters;
+    $chatFilterPresets = [...$chatFilterPresets];
     deleteDialog = null;
   };
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
 
-  chatFilters.ready().then(() => {
-    unsavedFilters = $chatFilters;
+  chatFilterPresets.ready().then(() => {
+    unsavedFilters = currentPreset.filters;
   });
 
   let saveTimeout: any = null;
@@ -64,7 +67,8 @@
         }
       }
       unsavedFilters = [...unsavedFilters];
-      $chatFilters = unsavedFilters;
+      currentPreset.filters = unsavedFilters;
+      $chatFilterPresets = [...$chatFilterPresets];
     }, 50);
   };
 
@@ -90,6 +94,34 @@
       caseSensitive: false
     });
     saveFilters();
+  };
+  const newPreset = () => {
+    const id = getRandomString();
+    $chatFilterPresets = [...$chatFilterPresets, {
+      id,
+      nickname: 'Preset ' + ($chatFilterPresets.length + 1),
+      filters: []
+    }];
+    currentPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
+    unsavedFilters = currentPreset.filters;
+    presetDropdownValue = id;
+  };
+  let presetDropdownValue = '';
+  currentFilterPresetId.ready().then(() => {
+    presetDropdownValue = $currentFilterPresetId;
+  });
+  const changeEditingPreset = () => {
+    currentPreset = $chatFilterPresets.find(x => x.id === presetDropdownValue) ?? currentPreset;
+    unsavedFilters = currentPreset.filters;
+  };
+  const deletePreset = () => {
+    $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
+    currentPreset = $chatFilterPresets[0];
+    if ($currentFilterPresetId === presetDropdownValue) {
+      $currentFilterPresetId = currentPreset.id;
+    }
+    unsavedFilters = currentPreset.filters;
+    presetDropdownValue = currentPreset.id;
   };
 </script>
 
@@ -131,7 +163,24 @@
     </div>
   {/if}
   <div class="card" style="padding: 10px 10px 5px 10px;">
-    <div class="title">Filters</div>  
+    <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+      <div class="title">Filters</div>
+      <div>
+        <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue}>
+          {#each $chatFilterPresets as preset}
+            <option value={preset.id} selected={preset.id === currentPreset.id}>
+              {preset.nickname}
+            </option>
+          {/each}
+        </select>
+        <button on:click={newPreset} use:exioButton>
+          <span use:exioIcon class="offset-1px">add</span>
+        </button>
+        <button on:click={deletePreset} use:exioButton class="red-bg" disabled={$chatFilterPresets.length === 1}>
+          <span use:exioIcon class="offset-1px">delete_forever</span>
+        </button>
+      </div>
+    </div>
     <div class="content" style="padding-top: 0px;">
       {#each unsavedFilters as filter (filter.id)}
         <div class="filter" bind:this={lastItem}>

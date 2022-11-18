@@ -5,6 +5,8 @@ import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
 import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
 
+const INITIAL_PRESET_ID = 'initial-preset-id'; // all other ids will be random
+
 export const stores = webExtStores();
 
 export const hcEnabled = stores.addSyncStore('ytcf.enabled', true);
@@ -85,5 +87,17 @@ export const currentProgress = writable(null as null | number);
 export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySuperchatBar', false);
 export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', true);
 export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '');
-export const chatFilters = stores.addSyncStore('ytcf.chatFilters', [] as YtcF.ChatFilter[], true);
+export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [{
+  filters: [],
+  nickname: 'Preset 1',
+  id: INITIAL_PRESET_ID
+}] as YtcF.FilterPreset[], true);
+export const currentFilterPresetId = stores.addSyncStore('ytcf.currentFilterPresetId', INITIAL_PRESET_ID);
+export const currentFilterPreset = derived(
+  [chatFilterPresets, currentFilterPresetId],
+  ([$chatFilterPresets, $currentFilterPresetId]) => {
+    if ($currentFilterPresetId === null) return $chatFilterPresets[0];
+    return $chatFilterPresets.find(preset => preset.id === $currentFilterPresetId) as YtcF.FilterPreset;
+  }
+);
 export const dataTheme = derived(isDark, ($isDark) => isLiveTL || $isDark ? 'dark' : 'light');

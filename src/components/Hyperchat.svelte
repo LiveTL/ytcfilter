@@ -41,8 +41,10 @@
     lastOpenedVersion,
     selfChannelName,
     enableHighlightedMentions,
-    chatFilters,
-    dataTheme
+    currentFilterPreset,
+    chatFilterPresets,
+    dataTheme,
+    currentFilterPresetId
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage } from '../ts/ytcf-logic';
@@ -118,7 +120,7 @@
 
   const applyYtcf = async (items: Chat.MessageAction[]) => {
     await Promise.all(items.map(async a => {
-      if (isMessage(a) && shouldFilterMessage(a, $chatFilters)) messageActions.push(a);
+      if (isMessage(a) && shouldFilterMessage(a, $currentFilterPreset.filters)) messageActions.push(a);
     }));
   };
 
@@ -437,8 +439,10 @@
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
     <div style="display: flex; justify-content: flex-start;">
-      <select use:exioDropdown>
-        <option selected>Preset 1</option>
+      <select use:exioDropdown bind:value={$currentFilterPresetId}>
+        {#each $chatFilterPresets as preset}
+          <option selected value={preset.id}>{preset.nickname}</option>
+        {/each}
       </select>
     </div>
     <div style="display: flex; justify-content: flex-end;">

@@ -23,4 +23,9 @@ declare namespace YtcF {
     id: string;
     enabled: boolean;
   }
+  interface FilterPreset {
+    nickname: string;
+    filters: ChatFilter[];
+    id: string;
+  }
 }
