@@ -12,7 +12,7 @@
   let lastItem: HTMLDivElement | null = null;
   let currentPreset = $currentFilterPreset;
   const newFilter = async () => {
-    currentPreset.filters.push({
+    currentPreset.filters = [...currentPreset.filters, {
       nickname: 'Unnamed Filter #' + (currentPreset.filters.length + 1),
       type: 'basic',
       id: getRandomString(),
@@ -24,7 +24,7 @@
         caseSensitive: false
       }],
       enabled: true
-    });
+    }];
     unsavedFilters = currentPreset.filters;
     $chatFilterPresets = [...$chatFilterPresets];
     await tick();
@@ -46,7 +46,9 @@
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
 
-  chatFilterPresets.ready().then(() => {
+  currentFilterPresetId.ready().then(async () => {
+    await tick();
+    currentPreset = $currentFilterPreset;
     unsavedFilters = currentPreset.filters;
   });
 
@@ -68,7 +70,7 @@
       }
       unsavedFilters = [...unsavedFilters];
       currentPreset.filters = unsavedFilters;
-      $chatFilterPresets = [...$chatFilterPresets];
+      $chatFilterPresets = $chatFilterPresets.map(x => x.id === currentPreset.id ? currentPreset : x);
     }, 50);
   };
 
@@ -86,13 +88,13 @@
     saveFilters();
   };
   const addCondition = (filter: YtcF.ChatFilter) => {
-    filter.conditions.push({
+    filter.conditions = [...filter.conditions, {
       type: 'includes',
       property: 'message',
       value: '',
       invert: false,
       caseSensitive: false
-    });
+    }];
     saveFilters();
   };
   const newPreset = () => {
@@ -110,7 +112,8 @@
   currentFilterPresetId.ready().then(() => {
     presetDropdownValue = $currentFilterPresetId;
   });
-  const changeEditingPreset = () => {
+  const changeEditingPreset = async () => {
+    await tick();
     currentPreset = $chatFilterPresets.find(x => x.id === presetDropdownValue) ?? currentPreset;
     unsavedFilters = currentPreset.filters;
   };
