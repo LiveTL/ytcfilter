@@ -101,3 +101,11 @@ export const currentFilterPreset = derived(
   }
 );
 export const dataTheme = derived(isDark, ($isDark) => isLiveTL || $isDark ? 'dark' : 'light');
+export const confirmDialog = writable(null as null | {
+  title: string;
+  message: string;
+  action: {
+    text: string;
+    callback: () => void;
+  };
+});

@@ -1,19 +1,20 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { dataTheme, currentFilterPreset, chatFilterPresets, theme, isDark, currentFilterPresetId } from '../ts/storage';
+  import { dataTheme, currentFilterPreset, chatFilterPresets, theme, isDark, currentFilterPresetId, confirmDialog } from '../ts/storage';
   import '../stylesheets/ui.css';
   import '../stylesheets/line.css';
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox, exioDialog } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
   import { Theme, isLiveTL } from '../ts/chat-constants';
+  import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
   let lastItem: HTMLDivElement | null = null;
   let currentPreset = $currentFilterPreset;
   const newFilter = async () => {
     currentPreset.filters = [...currentPreset.filters, {
-      nickname: 'Unnamed Filter #' + (currentPreset.filters.length + 1),
+      nickname: 'Unnamed Filter ' + (currentPreset.filters.length + 1),
       type: 'basic',
       id: getRandomString(),
       conditions: [{
@@ -34,15 +35,11 @@
     }
     saveFilters();
   };
-  let deleteDialog: YtcF.ChatFilter | null = null;
-  let deleteDialogLastName = '';
-  $: deleteDialogLastName = deleteDialog?.nickname ?? deleteDialogLastName;
-  const deleteFilter = () => {
-    const item = deleteDialog as YtcF.ChatFilter;
+
+  const deleteFilter = (item: YtcF.ChatFilter) => {
     currentPreset.filters = currentPreset.filters.filter(x => x.id !== item.id);
     unsavedFilters = currentPreset.filters;
     $chatFilterPresets = [...$chatFilterPresets];
-    deleteDialog = null;
   };
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
@@ -146,20 +143,7 @@
   <title>YtcFilter Settings</title>
 </svelte:head>
 
-<dialog
-  use:exioDialog={{
-    backgroundColor: $isDark ? 'black' : 'white'
-  }}
-  open={Boolean(deleteDialog)}
-  style="font-size: 1rem;"
->
-  <div class="big-text">Delete "{deleteDialogLastName}"?</div>
-  <p>This action cannot be undone.</p>
-  <div style="display: flex; justify-content: flex-end; gap: 10px;">
-    <button on:click={() => (deleteDialog = null)} use:exioButton>Cancel</button>
-    <button on:click={() => deleteFilter()} use:exioButton class="red-bg">Delete</button>
-  </div>
-</dialog>
+<YtcFilterConfirmation />
 
 <dialog
   use:exioDialog={{
@@ -197,7 +181,7 @@
 >
   {#if !isLiveTL}
     <div class="card">
-      <div class="title">Interface</div>
+      <div class="title big-text">Interface</div>
       <div class="content">
         <span>Theme: </span>
         <select use:exioDropdown bind:value={$theme}>
@@ -210,7 +194,7 @@
   {/if}
   <div class="card">
     <div style="user-select: none;">
-      <div class="title">Filters</div>
+      <div class="title big-text">Filters</div>
       <div class="preset-selector">
         <div class="dropdown">
           <div style="font-size: 18px;">Preset: </div>
@@ -265,7 +249,18 @@
               <button
                 use:exioButton
                 class="red-bg delete"
-                on:click={() => (deleteDialog = filter)}
+                on:click={() => {
+                  $confirmDialog = {
+                    action: {
+                      text: 'Delete',
+                      callback: () => {
+                        deleteFilter(filter);
+                      }
+                    },
+                    title: `Delete "${filter.nickname}"?`,
+                    message: 'This action cannot be undone.'
+                  };
+                }}
               >
                 <span use:exioIcon class="offset-1px">delete_forever</span>
               </button>
@@ -420,14 +415,8 @@
     width: 100%;
   }
   .title {
-    font-size: 18px;
-    font-weight: bold;
     background-color: rgba(128, 128, 128, 0.2);
     padding: 5px 10px;
-  }
-  .big-text {
-    font-size: 18px;
-    font-weight: bold;
   }
   .content {
     padding: 10px 10px 10px 10px;

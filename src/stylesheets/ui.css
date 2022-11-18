@@ -1,9 +1,11 @@
-button, select {
+button,
+select {
     background-color: #bfbfbf;
     width: fit-content;
 }
 
-[data-theme=dark] button, [data-theme=dark] select {
+[data-theme=dark] button,
+[data-theme=dark] select {
     background-color: #4f4f4f;
 }
 
@@ -43,4 +45,9 @@ label {
 
 .offset-1px {
     vertical-align: -1px;
+}
+
+.big-text {
+    font-size: 18px;
+    font-weight: bold;
 }
