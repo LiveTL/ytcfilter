@@ -451,7 +451,7 @@
         if (run.type === 'text' || run.type === 'link') {
           return run.text;
         } else {
-          return `:${run.alt}:`;
+          return run.standardEmoji ? run.alt : `:${run.alt}:`;
         }
       }).join('');
       return `[${msg.timestamp}] ${author}: ${message}`;
