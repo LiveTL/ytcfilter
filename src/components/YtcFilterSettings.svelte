@@ -32,10 +32,11 @@
       lastItem.querySelector('input')?.select();
       lastItem.scrollIntoView({ behavior: 'smooth' });
     }
+    saveFilters();
   };
   let deleteDialog: YtcF.ChatFilter | null = null;
-  let lastDialogName = '';
-  $: lastDialogName = deleteDialog?.nickname ?? lastDialogName;
+  let deleteDialogLastName = '';
+  $: deleteDialogLastName = deleteDialog?.nickname ?? deleteDialogLastName;
   const deleteFilter = () => {
     const item = deleteDialog as YtcF.ChatFilter;
     currentPreset.filters = currentPreset.filters.filter(x => x.id !== item.id);
@@ -126,6 +127,19 @@
     unsavedFilters = currentPreset.filters;
     presetDropdownValue = currentPreset.id;
   };
+  let renameDialog: YtcF.FilterPreset | null = null;
+  const renameItem = () => {
+    const item = renameDialog as YtcF.FilterPreset;
+    item.nickname = newPresetName;
+    $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
+    renameDialog = null;
+  };
+  let newPresetName = '';
+  let presetLastName = '';
+  const renamePreset = () => {
+    newPresetName = presetLastName = currentPreset.nickname;
+    renameDialog = currentPreset;
+  };
 </script>
 
 <svelte:head>
@@ -139,11 +153,40 @@
   open={Boolean(deleteDialog)}
   style="font-size: 1rem;"
 >
-  <div class="title">Delete "{lastDialogName}"?</div>
+  <div class="big-text">Delete "{deleteDialogLastName}"?</div>
   <p>This action cannot be undone.</p>
   <div style="display: flex; justify-content: flex-end; gap: 10px;">
     <button on:click={() => (deleteDialog = null)} use:exioButton>Cancel</button>
     <button on:click={() => deleteFilter()} use:exioButton class="red-bg">Delete</button>
+  </div>
+</dialog>
+
+<dialog
+  use:exioDialog={{
+    backgroundColor: $isDark ? 'black' : 'white'
+  }}
+  open={Boolean(renameDialog)}
+  style="font-size: 1rem;"
+>
+  <div class="big-text">Rename "{presetLastName}"</div>
+  <p>
+    <input
+      type="text"
+      bind:value={newPresetName}
+      use:exioTextbox
+      style="width: 100%;"
+      on:keydown={e => {
+        if (e.key === 'Enter') {
+          renameItem();
+        } else if (e.key === 'Escape') {
+          renameDialog = null;
+        }
+      }}
+    />
+  </p>
+  <div style="display: flex; justify-content: flex-end; gap: 10px;">
+    <button on:click={() => (renameDialog = null)} use:exioButton>Cancel</button>
+    <button on:click={() => renameItem()} use:exioButton class="blue-bg">Rename</button>
   </div>
 </dialog>
 
@@ -165,23 +208,34 @@
       </div>
     </div>
   {/if}
-  <div class="card" style="padding: 10px 10px 5px 10px;">
-    <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+  <div class="card">
+    <div style="user-select: none;">
       <div class="title">Filters</div>
-      <div>
-        <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue}>
-          {#each $chatFilterPresets as preset}
-            <option value={preset.id} selected={preset.id === currentPreset.id}>
-              {preset.nickname}
-            </option>
-          {/each}
-        </select>
-        <button on:click={newPreset} use:exioButton>
-          <span use:exioIcon class="offset-1px">add</span>
-        </button>
-        <button on:click={deletePreset} use:exioButton class="red-bg" disabled={$chatFilterPresets.length === 1}>
-          <span use:exioIcon class="offset-1px">delete_forever</span>
-        </button>
+      <div class="preset-selector">
+        <div class="dropdown">
+          <div style="font-size: 18px;">Preset: </div>
+          <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue} style="width: 100%; height: calc(100px/3);">
+            {#each $chatFilterPresets as preset}
+              <option value={preset.id} selected={preset.id === currentPreset.id}>
+                {preset.nickname}
+              </option>
+            {/each}
+          </select>
+        </div>
+        <div class="buttons">
+          <button on:click={renamePreset} use:exioButton>
+            <span use:exioIcon class="offset-1px">drive_file_rename_outline</span>
+            Rename
+          </button>
+          <button on:click={deletePreset} use:exioButton class="red-bg" disabled={$chatFilterPresets.length === 1}>
+            <span use:exioIcon class="offset-1px">delete_forever</span>
+            Delete
+          </button>
+          <button on:click={newPreset} use:exioButton class="blue-bg">
+            <span use:exioIcon class="offset-1px">add</span>
+            New Preset
+          </button>
+        </div>
       </div>
     </div>
     <div class="content" style="padding-top: 0px;">
@@ -357,7 +411,6 @@
 <style>
   .card {
     background-color: rgba(128, 128, 128, 0.1);
-    padding: 10px;
     margin-top: 10px;
   }
   [data-theme='dark'] .card {
@@ -369,9 +422,15 @@
   .title {
     font-size: 18px;
     font-weight: bold;
+    background-color: rgba(128, 128, 128, 0.2);
+    padding: 5px 10px;
+  }
+  .big-text {
+    font-size: 18px;
+    font-weight: bold;
   }
   .content {
-    padding-top: 5px;
+    padding: 10px 10px 10px 10px;
   }
   .filter {
     padding: 10px 10px 5px 10px;
@@ -415,6 +474,29 @@
     display: flex;
     flex-direction: column;
   }
+  .preset-selector {
+    display: grid;
+    width: calc(100% - 20px);
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    margin: 10px;
+  }
+  .preset-selector > .buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .preset-selector > .buttons button {
+    width: 100%;
+  }
+  .preset-selector > .dropdown {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+  }
   @media (max-width: 750px) {
     .filter-items-wrapper > .items {
       display: flex;
@@ -430,6 +512,9 @@
       width: 100%;
       flex-direction: row;
       justify-content: space-between;
+    }
+    .preset-selector {
+      grid-template-columns: 1fr;
     }
   }
   .condition-options {

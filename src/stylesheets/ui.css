@@ -29,6 +29,14 @@ label {
     background-color: #ff5656;
 }
 
+.blue-bg {
+    background-color: #5dceff;
+}
+
+[data-theme=dark] .blue-bg {
+    background-color: #0080e9;
+}
+
 [data-theme=dark] .red-bg {
     background-color: #c80000;
 }
