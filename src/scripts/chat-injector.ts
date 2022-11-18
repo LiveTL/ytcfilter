@@ -1,4 +1,4 @@
-import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, checkInjected, createPopup } from '../ts/chat-utils';
+import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, createPopup } from '../ts/chat-utils';
 import { isLiveTL, isAndroid } from '../ts/chat-constants';
 import {
   // hcEnabled,
@@ -102,6 +102,7 @@ const chatLoaded = async (): Promise<void> => {
   const params = new URLSearchParams();
   params.set('tabid', frameInfo.tabId.toString());
   params.set('frameid', frameInfo.frameId.toString());
+  params.set('continuation', new URLSearchParams(window.location.search).get('continuation') ?? '');
   if (frameIsReplay) params.set('isReplay', 'true');
   const source = chrome.runtime.getURL(
     (isLiveTL ? 'hyperchat/index.html' : 'hyperchat.html') +

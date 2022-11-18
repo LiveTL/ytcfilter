@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { onDestroy, afterUpdate, tick } from 'svelte';
+  import { onDestroy, afterUpdate, tick, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import dark from 'smelte/src/dark';
   import WelcomeMessage from './YtcFilterWelcome.svelte';
@@ -22,6 +22,7 @@
   import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
+    stores,
     theme,
     showOnlyMemberChat,
     showProfileIcons,
@@ -58,6 +59,7 @@
   const paramsTabId = params.get('tabid');
   const paramsFrameId = params.get('frameid');
   const paramsIsReplay = params.get('isReplay');
+  const paramsContinuation = params.get('continuation');
 
   // const CHAT_HISTORY_SIZE = 150;
   // const TRUNCATE_SIZE = 20;
@@ -358,8 +360,17 @@
   };
   const executeExport = (e: any) => {
     const el = (e.target as HTMLSelectElement);
-    if (el.value === 'screenshot') screenshot();
-    // if (el.value === 'textfile') exportTextFile();
+    switch (el.value) {
+      case 'screenshot':
+        exportScreenshot();
+        break;
+      case 'textfile':
+        exportTextFile();
+        break;
+      case 'jsondump':
+        exportJsonDump();
+        break;
+    }
     el.value = 'export';
   };
 
@@ -367,7 +378,7 @@
 
   let screenshotElement: HTMLDivElement | undefined;
   let hiddenElement: HTMLDivElement | undefined;
-  const screenshot = async () => {
+  const exportScreenshot = async () => {
     const { default: html2canvas } = await import('html2canvas');
     const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
     clonedNode.id = 'screenshot-element';
@@ -423,14 +434,51 @@
       clonedNode.remove();
     });
   };
+  const exportTextFile = () => {
+    const str = messageActions.filter(isMessage).map(action => {
+      const msg = action.message;
+      const author = msg.author.name;
+      const message = msg.message.map(run => {
+        if (run.type === 'text' || run.type === 'link') {
+          return run.text;
+        } else {
+          return run.alt;
+        }
+      }).join('');
+      return `[${msg.timestamp}] ${author}: ${message}`;
+    }).join('\n');
+    const a = document.createElement('a');
+    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(str)}`;
+    a.download = `chat-${new Date().toISOString()}.txt`;
+    a.click();
+  };
+  const exportJsonDump = () => {
+    const str = JSON.stringify(messageActions.filter(isMessage).map(action => action.message), null, 2);
+    const a = document.createElement('a');
+    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(str)}`;
+    a.download = `chat-${new Date().toISOString()}.json`;
+    a.click();
+  };
   $: showWelcome = initialized && messageActions.length === 0;
 
-  try {
-    if (window.parent === window) {
-      import('../ts/resize-tracker');
+  const messageActionStorage = stores.addSyncStore(`ytcf.messageActions.${paramsContinuation}`, messageActions);
+  let messageActionStorageInit = false;
+  $: if (messageActionStorageInit) messageActionStorage.set(messageActions);
+  messageActionStorage.ready().then(async () => {
+    newMessages({
+      type: 'messages',
+      messages: await messageActionStorage.get() as Chat.MessageAction[]
+    }, false);
+    messageActionStorageInit = true;
+  });
+  onMount(() => {
+    try {
+      if (window.parent === window) {
+        import('../ts/resize-tracker');
+      }
+    } catch (e) {
     }
-  } catch (e) {
-  }
+  });
 </script>
 
 <ReportBanDialog />
@@ -457,12 +505,13 @@
     </div>
     <div style="display: flex; justify-content: flex-end;">
       <span class="tiny-text">
-        {numMessages} Entries
+        {numMessages} {numMessages === 1 ? 'Entry' : 'Entries'}
       </span>
       <select use:exioDropdown on:change={executeExport} disabled={showWelcome}>
         <option selected disabled value="export">Export as...</option>
         <option value="screenshot">Screenshot</option>
         <option value="textfile">Text File</option>
+        <option value="jsondump">JSON Dump</option>
       </select>
       <button use:exioButton on:click={() => (messageActions = [])}>Clear All</button>
     </div>
