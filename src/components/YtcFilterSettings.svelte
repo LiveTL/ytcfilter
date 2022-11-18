@@ -11,7 +11,7 @@
   import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
-  let lastItem: HTMLDivElement | null = null;
+  let lastFilterItem: HTMLDivElement | null = null;
   let currentPreset = $currentFilterPreset;
   const newFilter = async () => {
     currentPreset.filters = [...currentPreset.filters, {
@@ -30,9 +30,9 @@
     unsavedFilters = currentPreset.filters;
     $chatFilterPresets = [...$chatFilterPresets];
     await tick();
-    if (lastItem) {
-      lastItem.querySelector('input')?.select();
-      lastItem.scrollIntoView({ behavior: 'smooth' });
+    if (lastFilterItem) {
+      lastFilterItem.querySelector('input')?.select();
+      lastFilterItem.scrollIntoView({ behavior: 'smooth' });
     }
     saveFilters();
   };
@@ -86,7 +86,7 @@
     filter.conditions.splice(index, 1);
     saveFilters();
   };
-  const addCondition = (filter: YtcF.ChatFilter) => {
+  const addCondition = async (filter: YtcF.ChatFilter) => {
     filter.conditions = [...filter.conditions, {
       type: 'includes',
       property: 'message',
@@ -95,6 +95,9 @@
       caseSensitive: false
     }];
     saveFilters();
+    setTimeout(() => {
+      lastFilterItem?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
+    }, 100);
   };
   const commitNewPreset = (name: string) => {
     const id = getRandomString();
@@ -236,7 +239,7 @@
     </div>
     <div class="content" style="padding-top: 0px;">
       {#each unsavedFilters as filter (filter.id)}
-        <div class="filter" bind:this={lastItem}>
+        <div class="filter" bind:this={lastFilterItem}>
           <!-- <select bind:value={filter.type} use:exioDropdown>
             <option value="basic">Basic</option>
           </select> -->
@@ -413,6 +416,16 @@
           <span class="line" />
         </div>
       </button>
+      {#if unsavedFilters.length === 0}
+        <div style="display: flex; justify-content: center; align-items: center; font-size: 0.9rem; margin-top: 5px; flex-direction: column;">
+          <span use:exioIcon style="font-size: 2em; position: absolute;" class="floating-animation">expand_less</span>
+          <div class="blue-bg" style="padding: 0px 10px; border-radius: 1000px; line-height: 2rem;">
+            <span>
+              Tip: Create your first filter!
+            </span>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
@@ -567,6 +580,20 @@
     display: flex;
     gap: 10px;
     align-items: center;
+  }
+  .floating-animation {
+    animation: floating 1.5s ease-in-out infinite;
+  }
+  @keyframes floating {
+    0% {
+      transform: translateY(-18px);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+    100% {
+      transform: translateY(-18px);
+    }
   }
   :global(html) {
     background-color: white;

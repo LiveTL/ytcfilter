@@ -1,4 +1,5 @@
 import { isLiveTL } from '../ts/chat-constants';
+import { popoutDims } from '../ts/storage';
 
 chrome.action.onClicked.addListener(() => {
   if (isLiveTL) {
@@ -12,11 +13,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'getFrameInfo') {
     sendResponse({ tabId: sender.tab?.id, frameId: sender.frameId });
   } else if (request.type === 'createPopup') {
-    chrome.windows.create({
-      url: request.url,
-      type: 'popup',
-      width: 600,
-      height: 400
-    }, () => {});
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    popoutDims.ready().then(() => {
+      const vals = popoutDims.getCurrent();
+      try {
+        chrome.windows.create({
+          url: request.url,
+          type: 'popup',
+          ...vals
+        }, () => {});
+      } catch (e) {
+        chrome.windows.create({
+          url: request.url,
+          type: 'popup'
+        }, () => {});
+      }
+    });
   }
 });

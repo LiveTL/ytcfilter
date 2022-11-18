@@ -19,8 +19,8 @@
   open={Boolean($confirmDialog)}
   style="font-size: 1rem;"
 >
-  <div class="big-text">{title}</div>
-  <p>{message}</p>
+  <div class="big-text select-none">{title}</div>
+  <p class="select-none">{message}</p>
   <div style="display: flex; justify-content: flex-end; gap: 10px;">
     <button on:click={() => ($confirmDialog = null)} use:exioButton>Cancel</button>
     <button on:click={() => {
@@ -29,3 +29,9 @@
     }} use:exioButton class="red-bg">{action.text}</button>
   </div>
 </dialog>
+
+<style>
+  .select-none {
+    user-select: none;
+  }
+</style>

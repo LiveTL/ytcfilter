@@ -26,9 +26,9 @@
   open={Boolean($inputDialog)}
   style="font-size: 1rem;"
 >
-  <div class="big-text">{title}</div>
+  <div class="big-text select-none">{title}</div>
   <p>
-    <span>{message}</span>
+    <span class="select-none">{message}</span>
     <br />
     <input
       type="text"
@@ -61,5 +61,8 @@
 <style>
   [data-theme='light'] input {
     background-color: rgb(230, 230, 230);
+  }
+  .select-none {
+    user-select: none;
   }
 </style>

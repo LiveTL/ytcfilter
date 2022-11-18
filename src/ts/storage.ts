@@ -118,3 +118,7 @@ export const inputDialog = writable(null as null | {
     callback: (value: string) => void;
   };
 });
+export const popoutDims = stores.addSyncStore('ytcf.popoutDims', {
+  width: 777,
+  height: 600
+});

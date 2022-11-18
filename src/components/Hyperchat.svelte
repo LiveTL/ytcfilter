@@ -424,6 +424,13 @@
     });
   };
   $: showWelcome = initialized && messageActions.length === 0;
+
+  try {
+    if (window.parent === window) {
+      import('../ts/resize-tracker');
+    }
+  } catch (e) {
+  }
 </script>
 
 <ReportBanDialog />
