@@ -1,13 +1,14 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { dataTheme, currentFilterPreset, chatFilterPresets, theme, isDark, currentFilterPresetId, confirmDialog } from '../ts/storage';
+  import { dataTheme, currentFilterPreset, chatFilterPresets, theme, currentFilterPresetId, confirmDialog, inputDialog } from '../ts/storage';
   import '../stylesheets/ui.css';
   import '../stylesheets/line.css';
-  import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox, exioDialog } from 'exio/svelte';
+  import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
-  import { Theme, isLiveTL } from '../ts/chat-constants';
+  import { Theme, isLiveTL, UNDONE_MSG } from '../ts/chat-constants';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
+  import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 
   let lastItem: HTMLDivElement | null = null;
@@ -39,7 +40,7 @@
   const deleteFilter = (item: YtcF.ChatFilter) => {
     currentPreset.filters = currentPreset.filters.filter(x => x.id !== item.id);
     unsavedFilters = currentPreset.filters;
-    $chatFilterPresets = [...$chatFilterPresets];
+    $chatFilterPresets = $chatFilterPresets.map(x => x.id === currentPreset.id ? currentPreset : x);
   };
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
@@ -95,16 +96,27 @@
     }];
     saveFilters();
   };
-  const newPreset = () => {
+  const commitNewPreset = (name: string) => {
     const id = getRandomString();
     $chatFilterPresets = [...$chatFilterPresets, {
       id,
-      nickname: 'Preset ' + ($chatFilterPresets.length + 1),
+      nickname: name,
       filters: []
     }];
     currentPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
     unsavedFilters = currentPreset.filters;
     presetDropdownValue = id;
+  };
+  const newPreset = () => {
+    $inputDialog = {
+      title: 'Create New Preset',
+      message: 'Enter a name for the new preset.',
+      action: {
+        text: 'Create',
+        callback: commitNewPreset
+      },
+      originalValue: 'Preset ' + ($chatFilterPresets.length + 1)
+    };
   };
   let presetDropdownValue = '';
   currentFilterPresetId.ready().then(() => {
@@ -116,6 +128,17 @@
     unsavedFilters = currentPreset.filters;
   };
   const deletePreset = () => {
+    if ($chatFilterPresets.length === 1) {
+      $chatFilterPresets = [{
+        id: currentPreset.id,
+        nickname: 'Preset 1',
+        filters: []
+      }];
+      currentPreset = $chatFilterPresets[0];
+      unsavedFilters = currentPreset.filters;
+      $currentFilterPresetId = currentPreset.id;
+      return;
+    }
     $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
     currentPreset = $chatFilterPresets[$chatFilterPresets.length - 1] ?? currentPreset;
     if ($currentFilterPresetId === presetDropdownValue) {
@@ -124,18 +147,12 @@
     unsavedFilters = currentPreset.filters;
     presetDropdownValue = currentPreset.id;
   };
-  let renameDialog: YtcF.FilterPreset | null = null;
-  const renameItem = () => {
-    const item = renameDialog as YtcF.FilterPreset;
-    item.nickname = newPresetName;
-    $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
-    renameDialog = null;
-  };
-  let newPresetName = '';
-  let presetLastName = '';
-  const renamePreset = () => {
-    newPresetName = presetLastName = currentPreset.nickname;
-    renameDialog = currentPreset;
+  const renameItemCallback = (item: YtcF.FilterPreset) => {
+    const renameItem = (name: string) => {
+      item.nickname = name;
+      $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
+    };
+    return renameItem;
   };
 </script>
 
@@ -144,35 +161,7 @@
 </svelte:head>
 
 <YtcFilterConfirmation />
-
-<dialog
-  use:exioDialog={{
-    backgroundColor: $isDark ? 'black' : 'white'
-  }}
-  open={Boolean(renameDialog)}
-  style="font-size: 1rem;"
->
-  <div class="big-text">Rename "{presetLastName}"</div>
-  <p>
-    <input
-      type="text"
-      bind:value={newPresetName}
-      use:exioTextbox
-      style="width: 100%;"
-      on:keydown={e => {
-        if (e.key === 'Enter') {
-          renameItem();
-        } else if (e.key === 'Escape') {
-          renameDialog = null;
-        }
-      }}
-    />
-  </p>
-  <div style="display: flex; justify-content: flex-end; gap: 10px;">
-    <button on:click={() => (renameDialog = null)} use:exioButton>Cancel</button>
-    <button on:click={() => renameItem()} use:exioButton class="blue-bg">Rename</button>
-  </div>
-</dialog>
+<YtcFilterInputDialog />
 
 <div
   class="wrapper"
@@ -207,20 +196,43 @@
           </select>
         </div>
         <div class="buttons">
-          <button on:click={renamePreset} use:exioButton>
+          <button on:click={() => {
+            $inputDialog = {
+              title: `Rename Preset "${currentPreset.nickname}"`,
+              message: 'Enter a new name for the preset.',
+              originalValue: currentPreset.nickname,
+              action: {
+                callback: renameItemCallback(currentPreset),
+                text: 'Rename'
+              }
+            };
+          }} use:exioButton>
             <span use:exioIcon class="offset-1px">drive_file_rename_outline</span>
             Rename
           </button>
-          <button on:click={deletePreset} use:exioButton class="red-bg" disabled={$chatFilterPresets.length === 1}>
+          <button on:click={() => {
+            $confirmDialog = {
+              title: `Delete Preset "${currentPreset.nickname}"?`,
+              message: UNDONE_MSG,
+              action: {
+                callback: deletePreset,
+                text: 'Delete'
+              }
+            };
+          }} use:exioButton class="red-bg">
             <span use:exioIcon class="offset-1px">delete_forever</span>
             Delete
           </button>
           <button on:click={newPreset} use:exioButton class="blue-bg">
             <span use:exioIcon class="offset-1px">add</span>
-            New Preset
+            New
           </button>
         </div>
       </div>
+    </div>
+    <div style="margin: 0px 10px; display: grid; gap: 1px;">
+      <span class="line" />
+      <span class="line" />
     </div>
     <div class="content" style="padding-top: 0px;">
       {#each unsavedFilters as filter (filter.id)}
@@ -257,8 +269,8 @@
                         deleteFilter(filter);
                       }
                     },
-                    title: `Delete "${filter.nickname}"?`,
-                    message: 'This action cannot be undone.'
+                    title: `Delete Filter "${filter.nickname}"?`,
+                    message: UNDONE_MSG
                   };
                 }}
               >
@@ -345,6 +357,8 @@
             </div>
             {#if i !== filter.conditions.length - 1}
               <div class="condition-separator">
+                <span class="line" />
+                <span>AND</span>
                 <span class="line" />
               </div>
             {/if}
@@ -542,6 +556,11 @@
   .condition-separator {
     width: 100%;
     margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
   }
   .condition-no-break {
     white-space: nowrap;

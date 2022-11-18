@@ -109,3 +109,12 @@ export const confirmDialog = writable(null as null | {
     callback: () => void;
   };
 });
+export const inputDialog = writable(null as null | {
+  title: string;
+  originalValue: string;
+  message: string;
+  action: {
+    text: string;
+    callback: (value: string) => void;
+  };
+});

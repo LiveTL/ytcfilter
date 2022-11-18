@@ -439,6 +439,9 @@
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
     <div style="display: flex; justify-content: flex-start;">
+      <span class="tiny-text">
+        Preset:
+      </span>
       <select use:exioDropdown bind:value={$currentFilterPresetId}>
         {#each $chatFilterPresets as preset}
           <option selected value={preset.id}>{preset.nickname}</option>
@@ -446,7 +449,7 @@
       </select>
     </div>
     <div style="display: flex; justify-content: flex-end;">
-      <span style="display: flex; align-items: center; padding: 2px 5px; cursor: default; user-select: none;">
+      <span class="tiny-text">
         {numMessages} Entries
       </span>
       <select use:exioDropdown on:change={executeExport} disabled={showWelcome}>
@@ -557,5 +560,13 @@
   }
   :global(.mode-dark) .top-button-wrapper {
     background-color: #181818;
+  }
+  .tiny-text {
+    display: flex;
+    align-items: center;
+    padding: 2px 5px;
+    cursor: default;
+    user-select: none;
+    transform: translateY(0.25px);
   }
 </style>
