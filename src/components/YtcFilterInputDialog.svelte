@@ -1,6 +1,7 @@
 <script lang="ts">
   import { dataTheme, inputDialog, isDark } from '../ts/storage';
   import { exioDialog, exioButton, exioTextbox } from 'exio/svelte';
+  import '../stylesheets/ui.css';
   let title = '';
   $: title = $inputDialog?.title ?? title;
   let action = {
@@ -61,8 +62,5 @@
 <style>
   [data-theme='light'] input {
     background-color: rgb(230, 230, 230);
-  }
-  .select-none {
-    user-select: none;
   }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { confirmDialog, isDark } from '../ts/storage';
   import { exioDialog, exioButton } from 'exio/svelte';
+  import '../stylesheets/ui.css';
   let title = '';
   $: title = $confirmDialog?.title ?? title;
   let message = '';
@@ -29,9 +30,3 @@
     }} use:exioButton class="red-bg">{action.text}</button>
   </div>
 </dialog>
-
-<style>
-  .select-none {
-    user-select: none;
-  }
-</style>
