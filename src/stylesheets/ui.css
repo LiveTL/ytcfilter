@@ -35,6 +35,10 @@ label {
     background-color: #5dceff;
 }
 
+.gray-bg {
+    background-color: var(--gray-bg);
+}
+
 [data-theme=dark] .blue-bg {
     background-color: #0080e9;
 }
@@ -45,6 +49,13 @@ label {
 
 [data-theme=dark] .blue-bg {
     background-color: #0080e9 !important;
+}
+
+.blue-text {
+    color: #0064d1;
+}
+[data-theme=dark] .blue-text {
+    color: #3ba7ff;
 }
 
 .offset-1px {

@@ -222,7 +222,7 @@
             <span use:exioIcon class="offset-1px">delete_forever</span>
           </button>
           <button on:click={newPreset} use:exioButton class="blue-bg">
-            <span use:exioIcon class="offset-1px">add</span>
+            <span use:exioIcon class="offset-1px">playlist_add</span>
           </button>
         </div>
       </div>
@@ -240,6 +240,7 @@
                 bind:value={filter.nickname}
                 use:exioTextbox
                 on:input={saveFilters}
+                placeholder="Filter Name"
               />
               <div class="condition-no-break">
                 <input
@@ -307,6 +308,7 @@
                     bind:value={condition.value}
                     use:exioTextbox
                     on:input={saveFilters}
+                    placeholder="Filter Content"
                   />
                 {/if}
               </div>
@@ -323,7 +325,7 @@
                     />
                     <label for="invert-{filter.id}-{i}">Invert Condition</label>
                   </div>
-                  {#if isTextFilter(condition)}
+                  {#if isTextFilter(condition) && condition.type !== 'regex'}
                     <div class="condition-no-break">
                       <input
                         id="case-{filter.id}-{i}"
@@ -351,19 +353,19 @@
             {#if i !== filter.conditions.length - 1}
               <div class="condition-separator">
                 <span class="line" />
-                <span>AND</span>
+                <span class="blue-text">AND</span>
                 <span class="line" />
               </div>
             {/if}
           {/each}
           <button class="add-condition-button" use:exioButton on:click={() => addCondition(filter)}>
-            <div class="add-condition-inner">
-              <span class="line" />
+            <div class="add-condition-inner blue-text">
+              <!-- <span class="line" /> -->
               <span>
-                <span use:exioIcon class="offset-1px">add</span>
+                <span use:exioIcon class="offset-1px" style="color: inherit;">add</span>
                 Add a Filter Condition
               </span>
-              <span class="line" />
+              <!-- <span class="line" /> -->
             </div>
           </button>
           <!-- {#if isTextFilter(filter)}
@@ -397,16 +399,16 @@
         </div>
       {/each}
       <button class="add-filter-button" use:exioButton on:click={newFilter}>
-        <div class="add-condition-inner">
-          <span class="line" />
+        <div class="add-condition-inner blue-text">
+          <!-- <span class="line" /> -->
           <span>
-            <span use:exioIcon class="offset-1px">add</span>
+            <span use:exioIcon class="offset-1px" style="color: inherit;">add</span>
             Create New Filter
           </span>
-          <span class="line" />
+          <!-- <span class="line" /> -->
         </div>
       </button>
-      {#if unsavedFilters.length === 0}
+      <!-- {#if unsavedFilters.length === 0}
         <div style="display: flex; justify-content: center; align-items: center; font-size: 0.9rem; margin-top: 5px; flex-direction: column;">
           <span use:exioIcon style="font-size: 2em; position: absolute; pointer-events: none; touch-action: none;" class="floating-animation">expand_less</span>
           <div class="blue-bg" style="padding: 0px 10px; border-radius: 1000px; line-height: 2rem;">
@@ -415,7 +417,7 @@
             </span>
           </div>
         </div>
-      {/if}
+      {/if} -->
     </div>
   </div>
 </div>
@@ -424,6 +426,7 @@
   .card {
     background-color: rgba(128, 128, 128, 0.1);
     margin-top: 10px;
+    --filter-color: rgb(128 128 128 / 20%);
   }
   [data-theme='dark'] .card {
     background-color: rgba(128, 128, 128, 0.15);
@@ -449,8 +452,8 @@
     padding: 10px 10px 10px 10px;
   }
   .filter {
-    padding: 10px 10px 5px 10px;
-    background-color: rgb(128 128 128 / 20%);
+    padding: 10px 10px 10px 10px;
+    background-color: var(--filter-color);
     margin: 10px 0px 0px 0px;
   }
   [data-theme='dark'] .filter {
@@ -551,27 +554,32 @@
   }
   .add-condition-inner {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 10px;
   }
   .add-condition-button {
-    background-color: transparent;
     padding: 0px;
     font-size: 0.85rem;
     width: 100%;
+    height: 36px;
+    margin-top: 10px;
+    background-color: var(--filter-color);
+    padding: 0px 10px;
   }
   .add-filter-button {
-    background-color: transparent;
     padding: 0px;
     width: 100%;
+    margin-top: 10px;
+    height: 96px;
+    background-color: var(--filter-color);
+    padding: 0px 10px;
   }
   .condition-separator {
     width: 100%;
     margin-top: 10px;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    grid-template-columns: 1fr auto 1fr;
     gap: 10px;
     font-size: 0.8rem;
   }
@@ -581,9 +589,9 @@
     gap: 10px;
     align-items: center;
   }
-  .floating-animation {
+  /* .floating-animation {
     animation: floating 1.5s ease-in-out infinite;
-  }
+  } */
   @keyframes floating {
     0% {
       transform: translateY(-18px);
