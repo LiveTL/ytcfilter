@@ -185,20 +185,17 @@
     </div>
   {/if}
   <div class="card">
-    <div style="user-select: none;">
-      <div class="title big-text">Filters</div>
+    <div class="title big-text filters-title">
       <div class="preset-selector">
-        <div class="dropdown">
-          <div style="font-size: 18px;">Preset: </div>
-          <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue} style="width: 100%; height: calc(100px/3);">
+        <span>Filters</span>
+        <div class="buttons">
+          <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue} class="preset-dropdown">
             {#each $chatFilterPresets as preset}
               <option value={preset.id} selected={preset.id === currentPreset.id}>
                 {preset.nickname}
               </option>
             {/each}
           </select>
-        </div>
-        <div class="buttons">
           <button on:click={() => {
             $inputDialog = {
               title: `Rename Preset "${currentPreset.nickname}"`,
@@ -210,8 +207,7 @@
               }
             };
           }} use:exioButton>
-            <span use:exioIcon class="offset-1px">drive_file_rename_outline</span>
-            Rename
+            <span use:exioIcon class="offset-1px">border_color</span>
           </button>
           <button on:click={() => {
             $confirmDialog = {
@@ -224,18 +220,12 @@
             };
           }} use:exioButton class="red-bg">
             <span use:exioIcon class="offset-1px">delete_forever</span>
-            Delete
           </button>
           <button on:click={newPreset} use:exioButton class="blue-bg">
             <span use:exioIcon class="offset-1px">add</span>
-            New
           </button>
         </div>
       </div>
-    </div>
-    <div style="margin: 0px 10px; display: grid; gap: 1px;">
-      <span class="line" />
-      <span class="line" />
     </div>
     <div class="content" style="padding-top: 0px;">
       {#each unsavedFilters as filter (filter.id)}
@@ -442,8 +432,18 @@
     width: 100%;
   }
   .title {
-    background-color: rgba(128, 128, 128, 0.2);
     padding: 5px 10px;
+    height: 30px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    background-color: rgb(0 110 189 / 30%);
+  }
+  [data-theme='dark'] .title {
+    background-color: rgb(0 110 189 / 30%);
+  }
+  [data-theme='light'] .title {
+    background-color: rgb(126 182 255 / 30%);
   }
   .content {
     padding: 10px 10px 10px 10px;
@@ -492,26 +492,29 @@
   }
   .preset-selector {
     display: grid;
-    width: calc(100% - 20px);
+    width: 100%;
     grid-template-columns: 1fr auto;
     align-items: center;
     gap: 10px;
-    margin: 10px;
   }
   .preset-selector > .buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: auto auto auto auto;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
+    font-size: 0.9rem !important;
   }
-  .preset-selector > .buttons button {
+  .preset-selector > .buttons button,
+  .preset-selector > .buttons select {
     width: 100%;
+    height: 32px;
   }
-  .preset-selector > .dropdown {
-    display: grid;
-    grid-template-columns: auto 1fr;
+  .filters-title {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 10px;
+    padding: 5px 5px 5px 10px;
   }
   @media (max-width: 750px) {
     .filter-items-wrapper > .items {
@@ -528,9 +531,6 @@
       width: 100%;
       flex-direction: row;
       justify-content: space-between;
-    }
-    .preset-selector {
-      grid-template-columns: 1fr;
     }
   }
   .condition-options {

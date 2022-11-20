@@ -6,7 +6,7 @@ select {
 
 [data-theme=dark] button,
 [data-theme=dark] select {
-    background-color: #4f4f4f;
+    background-color: var(--gray-bg);
 }
 
 input {
@@ -43,6 +43,10 @@ label {
     background-color: #c80000;
 }
 
+[data-theme=dark] .blue-bg {
+    background-color: #0080e9 !important;
+}
+
 .offset-1px {
     vertical-align: -1px;
 }
@@ -54,4 +58,8 @@ label {
 
 .select-none {
     user-select: none;
+}
+
+:root {
+    --gray-bg: #4f4f4f;
 }
