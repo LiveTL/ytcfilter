@@ -2567,10 +2567,10 @@ execa@^4.0.0:
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
-exio@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/exio/-/exio-0.6.0.tgz#369e64485431d3223794cd754880f5a0e029ee92"
-  integrity sha512-LcswfaNl4H62TG4gtTuO4Tch4bZU+9cB6vZhXx2Ob8W9hlyTyyFWosTD8JEJkUO1wxKN2O8Z7976YvXppkTdUQ==
+exio@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/exio/-/exio-0.6.1.tgz#75ad62dd1797b834fcd619ed8858898552a96074"
+  integrity sha512-ybQh0hrqeSLpCDSstCS9T30aO5gyCudbm2X9kTEqVhAX7P3lagKMP+KWW8/HcQkeuA6PnOLn1de0P4XLFBM6KQ==
   dependencies:
     dialog-polyfill "^0.5.6"
 

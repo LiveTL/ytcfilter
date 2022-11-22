@@ -207,7 +207,7 @@
               }
             };
           }} use:exioButton>
-            <span use:exioIcon class="offset-1px">border_color</span>
+            <span use:exioIcon style="vertical-align: super;">edit_square</span>
           </button>
           <button on:click={() => {
             $confirmDialog = {
@@ -219,10 +219,10 @@
               }
             };
           }} use:exioButton class="red-bg">
-            <span use:exioIcon class="offset-1px">playlist_remove</span>
+            <span use:exioIcon class="offset-1px">indeterminate_check_box</span>
           </button>
           <button on:click={newPreset} use:exioButton class="blue-bg">
-            <span use:exioIcon class="offset-1px">playlist_add</span>
+            <span use:exioIcon class="offset-1px">add_box</span>
           </button>
         </div>
       </div>
