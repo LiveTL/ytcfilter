@@ -219,7 +219,7 @@
               }
             };
           }} use:exioButton class="red-bg">
-            <span use:exioIcon class="offset-1px">delete_forever</span>
+            <span use:exioIcon class="offset-1px">playlist_remove</span>
           </button>
           <button on:click={newPreset} use:exioButton class="blue-bg">
             <span use:exioIcon class="offset-1px">playlist_add</span>
