@@ -219,7 +219,7 @@
               }
             };
           }} use:exioButton class="red-bg">
-            <span use:exioIcon class="offset-1px">indeterminate_check_box</span>
+            <span use:exioIcon class="offset-1px">disabled_by_default</span>
           </button>
           <button on:click={newPreset} use:exioButton class="blue-bg">
             <span use:exioIcon class="offset-1px">add_box</span>
