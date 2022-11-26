@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "HyperChat",
-  "homepage_url": "https://livetl.app/en/hyperchat/",
-  "description": "Improved YouTube chat with CPU/RAM optimizations, customization options, and cutting-edge features!",
+  "name": "YtcFilter",
+  "homepage_url": "https://livetl.app/en/ytcfilter/",
+  "description": "YouTube Chat Filter",
   "version": "2.6.8",
   "permissions": [
     "storage"
