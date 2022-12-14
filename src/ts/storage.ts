@@ -4,6 +4,7 @@ import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
 import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
+import { getOverridePreset } from './ytcf-logic';
 
 const INITIAL_PRESET_ID = 'initial-preset-id'; // all other ids will be random
 
@@ -90,14 +91,24 @@ export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '
 export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [{
   filters: [],
   nickname: 'Preset 1',
-  id: INITIAL_PRESET_ID
+  id: INITIAL_PRESET_ID,
+  triggers: []
 }] as YtcF.FilterPreset[], true);
-export const currentFilterPresetId = stores.addSyncStore('ytcf.currentFilterPresetId', INITIAL_PRESET_ID);
+export const defaultFilterPresetId = stores.addSyncStore('ytcf.defaultFilterPresetId', INITIAL_PRESET_ID);
+export const overrideFilterPresetId = writable(null as null | string);
+export const simpleInfo = writable(null as null | SimpleInfo);
 export const currentFilterPreset = derived(
-  [chatFilterPresets, currentFilterPresetId],
-  ([$chatFilterPresets, $currentFilterPresetId]) => {
-    if ($currentFilterPresetId === null) return $chatFilterPresets[0];
-    return $chatFilterPresets.find(preset => preset.id === $currentFilterPresetId) as YtcF.FilterPreset;
+  [chatFilterPresets, defaultFilterPresetId, simpleInfo],
+  ([$chatFilterPresets, $defaultFilterPresetId, $simpleInfo]) => {
+    if ($simpleInfo !== null) {
+      const result = getOverridePreset($chatFilterPresets, $simpleInfo);
+      overrideFilterPresetId.set(result ? result.id : null);
+      if (result) {
+        return result;
+      }
+    }
+    if ($defaultFilterPresetId === null) return $chatFilterPresets[0];
+    return $chatFilterPresets.find(preset => preset.id === $defaultFilterPresetId) as YtcF.FilterPreset;
   }
 );
 export const dataTheme = derived(isDark, ($isDark) => isLiveTL || $isDark ? 'dark' : 'light');

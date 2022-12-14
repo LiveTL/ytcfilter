@@ -46,7 +46,8 @@
     currentFilterPreset,
     chatFilterPresets,
     dataTheme,
-    currentFilterPresetId
+    defaultFilterPresetId,
+    overrideFilterPresetId
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage } from '../ts/ytcf-logic';
@@ -500,6 +501,19 @@
     }
   });
   const openSettings = () => createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
+
+  let currentlyActivePresetId = '';
+  defaultFilterPresetId.ready().then(() => {
+    currentlyActivePresetId = $defaultFilterPresetId;
+  });
+  $: if (currentlyActivePresetId) {
+    currentlyActivePresetId = $overrideFilterPresetId || $defaultFilterPresetId;
+  }
+  const presetChanged = (e: Event) => {
+    const target = e.target as HTMLSelectElement;
+    const presetId = target.value;
+    $defaultFilterPresetId = presetId;
+  };
 </script>
 
 <ReportBanDialog />
@@ -518,7 +532,7 @@
       <!-- <span class="tiny-text">
         Preset:
       </span> -->
-      <select use:exioDropdown bind:value={$currentFilterPresetId}>
+      <select use:exioDropdown value={currentlyActivePresetId} on:change={presetChanged}>
         {#each $chatFilterPresets as preset}
           <option selected value={preset.id}>{preset.nickname}</option>
         {/each}

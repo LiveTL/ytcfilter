@@ -56,3 +56,44 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
   }
   return false;
 }
+
+export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleInfo): boolean {
+  for (const trigger of preset.triggers) {
+    let compStr = '';
+    switch (trigger.property) {
+      case 'authorChannelId':
+        compStr = info.channel.channelId;
+        break;
+      case 'authorName':
+        compStr = info.channel.name;
+        break;
+      case 'videoId':
+        compStr = info.video.videoId;
+        break;
+      case 'videoTitle':
+        compStr = info.video.title;
+        break;
+    }
+    if (trigger.value === '') continue;
+    if (trigger.type !== 'regex') {
+      const s1 = trigger.caseSensitive ? compStr : compStr.toLowerCase();
+      const s2 = trigger.caseSensitive ? trigger.value : trigger.value.toLowerCase();
+      const result = s1[trigger.type](s2);
+      if (result) return true;
+    } else {
+      const regex = new RegExp(trigger.value, trigger.caseSensitive ? '' : 'i');
+      const result = regex.test(compStr);
+      if (result) return true;
+    }
+  }
+  return false;
+}
+
+export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleInfo): YtcF.FilterPreset | null {
+  for (const preset of presets) {
+    if (shouldActivatePreset(preset, info)) {
+      return preset;
+    }
+  }
+  return null;
+}

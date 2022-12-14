@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../../stylesheets/scrollbar.css';
-  import { currentFilterPreset, chatFilterPresets, currentFilterPresetId, confirmDialog, inputDialog } from '../../ts/storage';
+  import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, confirmDialog, inputDialog } from '../../ts/storage';
   import '../../stylesheets/ui.css';
   import '../../stylesheets/line.css';
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
@@ -42,7 +42,7 @@
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
 
-  currentFilterPresetId.ready().then(async () => {
+  defaultFilterPresetId.ready().then(async () => {
     await tick();
     currentPreset = $currentFilterPreset;
     unsavedFilters = currentPreset.filters;
@@ -119,8 +119,8 @@
     };
   };
   let presetDropdownValue = '';
-  currentFilterPresetId.ready().then(() => {
-    presetDropdownValue = $currentFilterPresetId;
+  defaultFilterPresetId.ready().then(() => {
+    presetDropdownValue = $defaultFilterPresetId;
   });
   const changeEditingPreset = async () => {
     await tick();
@@ -136,13 +136,13 @@
       }];
       currentPreset = $chatFilterPresets[0];
       unsavedFilters = currentPreset.filters;
-      $currentFilterPresetId = currentPreset.id;
+      $defaultFilterPresetId = currentPreset.id;
       return;
     }
     $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
     currentPreset = $chatFilterPresets[$chatFilterPresets.length - 1] ?? currentPreset;
-    if ($currentFilterPresetId === presetDropdownValue) {
-      $currentFilterPresetId = currentPreset.id;
+    if ($defaultFilterPresetId === presetDropdownValue) {
+      $defaultFilterPresetId = currentPreset.id;
     }
     unsavedFilters = currentPreset.filters;
     presetDropdownValue = currentPreset.id;
@@ -258,7 +258,7 @@
               <option value="member">Author is Member</option>
               <option value="owner">Author is Owner</option>
               <option value="verified">Author is Verified</option>
-              <option value="superchat">Message is Superchat</option>
+              <option value="superchat">Item is Superchat</option>
               <!-- <option value="videoId">Video ID</option>
               <option value="videoChannelId">Video Channel ID</option> -->
             </select>
