@@ -74,3 +74,34 @@ label {
 :root {
     --gray-bg: #4f4f4f;
 }
+
+.settings-card {
+    background-color: rgba(128, 128, 128, 0.1);
+    margin-top: 10px;
+    --filter-color: rgb(128 128 128 / 20%);
+}
+
+[data-theme='dark'] .settings-card {
+    background-color: rgba(128, 128, 128, 0.15);
+}
+
+.settings-title {
+  padding: 5px 10px;
+  height: 30px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  background-color: rgb(0 110 189 / 30%);
+}
+
+[data-theme='dark'] .settings-title {
+  background-color: rgb(0 110 189 / 30%);
+}
+
+[data-theme='light'] .settings-title {
+  background-color: rgb(126 182 255 / 30%);
+}
+
+.settings-content {
+  padding: 10px 10px 10px 10px;
+}
