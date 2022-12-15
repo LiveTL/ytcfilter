@@ -66,6 +66,7 @@ const registerClient = (
 
   if (getInitialData && isYtcInterceptor(interceptor)) {
     const selfChannel = interceptor.queue.selfChannel.get();
+    const videoInfo = interceptor.queue.videoInfo.get();
     const payload: Chat.InitialData = {
       type: 'initialData',
       initialData: interceptor.queue.getInitialData(),
@@ -74,7 +75,8 @@ const registerClient = (
             name: selfChannel.authorName?.simpleText ?? '',
             channelId: selfChannel.authorExternalChannelId ?? ''
           }
-        : null
+        : null,
+      videoInfo
     };
     port.postMessage(payload);
     console.debug('Sent initial data', { port, interceptor, payload });
@@ -119,7 +121,7 @@ export const processSentMessage = (json: string): void => {
 };
 
 /** Parses and sets initial message data and metadata. */
-export const setInitialData = (json: string): void => {
+export const setInitialData = (json: string, info: SimpleVideoInfo | null): void => {
   if (!isYtcInterceptor(interceptor, true, 'setInitialData', json)) return;
 
   interceptor.queue.addJsonToQueue(json, true, interceptor);
@@ -141,6 +143,7 @@ export const setInitialData = (json: string): void => {
   };
 
   interceptor.queue.selfChannel.set(user);
+  interceptor.queue.videoInfo.set(info);
 };
 
 /** Updates the player progress of the queue of the interceptor. */

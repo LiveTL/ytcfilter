@@ -51,6 +51,7 @@ declare namespace Chat {
     type: 'initialData';
     initialData: Actions[];
     selfChannel: SimpleUserInfo | null;
+    videoInfo: SimpleVideoInfo;
   }
 
   interface ThemeUpdate {

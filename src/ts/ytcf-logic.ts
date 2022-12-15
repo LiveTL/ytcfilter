@@ -14,15 +14,7 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
           let compStr = '';
           switch (condition.property) {
             case 'message':
-              compStr = msg.message.map(m => {
-                if (m.type === 'text') {
-                  return m.text;
-                } else if (m.type === 'emoji') {
-                  return `:${m.alt}:`;
-                } else {
-                  return m.text;
-                }
-              }).join('');
+              compStr = stringifyRuns(msg.message);
               break;
             case 'authorName':
               compStr = msg.author.name;
@@ -57,7 +49,7 @@ export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.Ch
   return false;
 }
 
-export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleInfo): boolean {
+export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVideoInfo): boolean {
   for (const trigger of preset.triggers) {
     let compStr = '';
     switch (trigger.property) {
@@ -89,7 +81,7 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleInfo
   return false;
 }
 
-export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleInfo): YtcF.FilterPreset | null {
+export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleVideoInfo): YtcF.FilterPreset | null {
   for (const preset of presets) {
     if (shouldActivatePreset(preset, info)) {
       return preset;
@@ -97,3 +89,15 @@ export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleInfo
   }
   return null;
 }
+
+export const stringifyRuns = (msg: Ytc.ParsedRun[]): string => {
+  return msg.map(m => {
+    if (m.type === 'text') {
+      return m.text;
+    } else if (m.type === 'emoji') {
+      return `:${m.alt}:`;
+    } else {
+      return m.text;
+    }
+  }).join('');
+};

@@ -101,7 +101,8 @@
     $chatFilterPresets = [...$chatFilterPresets, {
       id,
       nickname: name,
-      filters: []
+      filters: [],
+      triggers: []
     }];
     currentPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
     unsavedFilters = currentPreset.filters;
@@ -132,7 +133,8 @@
       $chatFilterPresets = [{
         id: currentPreset.id,
         nickname: 'Preset 1',
-        filters: []
+        filters: [],
+        triggers: []
       }];
       currentPreset = $chatFilterPresets[0];
       unsavedFilters = currentPreset.filters;

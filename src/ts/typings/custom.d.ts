@@ -5,14 +5,13 @@ interface CustomEvent extends Event {
 interface SimpleUserInfo {
   name: string;
   channelId: string;
+  handle?: string;
 }
 
 interface SimpleVideoInfo {
-  title: string;
-  videoId: string;
-}
-
-interface SimpleInfo {
   channel: SimpleUserInfo;
-  video: SimpleVideoInfo;
+  video: {
+    videoId: string;
+    title: string;
+  };
 }

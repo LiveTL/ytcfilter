@@ -26,7 +26,7 @@ const fixUrl = (url: string): string => {
   }
 };
 
-const parseMessageRuns = (runs?: Ytc.MessageRun[]): Ytc.ParsedRun[] => {
+export const parseMessageRuns = (runs?: Ytc.MessageRun[]): Ytc.ParsedRun[] => {
   const parsedRuns: Ytc.ParsedRun[] = [];
   if (!runs) {
     return parsedRuns;

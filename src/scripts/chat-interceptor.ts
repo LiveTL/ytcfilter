@@ -1,4 +1,6 @@
+import { stringifyRuns } from '../ts/ytcf-logic';
 import { fixLeaks } from '../ts/ytc-fix-memleaks';
+import { parseMessageRuns } from '../ts/chat-parser';
 
 for (const eventName of ['visibilitychange', 'webkitvisibilitychange', 'blur']) {
   window.addEventListener(eventName, event => {
@@ -34,5 +36,32 @@ window.addEventListener('proxyFetchRequest', async (event) => {
     detail: JSON.stringify(response)
   }));
 });
+
+try {
+  const video = (window as any)
+    .parent.yt.config_.SBOX_SETTINGS.SEARCHBOX_COMPONENT.__dataHost.parentComponent
+    .__data.data.response.contents.twoColumnWatchNextResults.results.results.contents[0]
+    .videoPrimaryInfoRenderer;
+  const channel = (window as any).parent.yt.config_.SBOX_SETTINGS.SEARCHBOX_COMPONENT.__dataHost
+    .parentComponent.__data.data.response.contents.twoColumnWatchNextResults.results.results
+    .contents[1].videoSecondaryInfoRenderer.owner.videoOwnerRenderer;
+  window.dispatchEvent(new CustomEvent('videoInfo', {
+    detail: JSON.stringify({
+      video: {
+        title: stringifyRuns(parseMessageRuns(video.title.runs)),
+        videoId: video.updatedMetadataEndpoint.updatedMetadataEndpoint.videoId
+      },
+      channel: {
+        channelId: channel.navigationEndpoint.browseEndpoint.browseId,
+        handle: channel.navigationEndpoint.browseEndpoint.canonicalBaseUrl,
+        name: stringifyRuns(parseMessageRuns(channel.title.runs))
+      }
+    })
+  }));
+} catch (e) {
+  window.dispatchEvent(new CustomEvent('videoInfo', {
+    detail: JSON.stringify(null)
+  }));
+}
 
 fixLeaks();

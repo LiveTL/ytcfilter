@@ -96,12 +96,12 @@ export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [
 }] as YtcF.FilterPreset[], true);
 export const defaultFilterPresetId = stores.addSyncStore('ytcf.defaultFilterPresetId', INITIAL_PRESET_ID);
 export const overrideFilterPresetId = writable(null as null | string);
-export const simpleInfo = writable(null as null | SimpleInfo);
+export const videoInfo = writable(null as null | SimpleVideoInfo);
 export const currentFilterPreset = derived(
-  [chatFilterPresets, defaultFilterPresetId, simpleInfo],
-  ([$chatFilterPresets, $defaultFilterPresetId, $simpleInfo]) => {
-    if ($simpleInfo !== null) {
-      const result = getOverridePreset($chatFilterPresets, $simpleInfo);
+  [chatFilterPresets, defaultFilterPresetId, videoInfo],
+  ([$chatFilterPresets, $defaultFilterPresetId, $videoInfo]) => {
+    if ($videoInfo !== null) {
+      const result = getOverridePreset($chatFilterPresets, $videoInfo);
       overrideFilterPresetId.set(result ? result.id : null);
       if (result) {
         return result;

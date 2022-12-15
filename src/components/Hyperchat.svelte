@@ -47,10 +47,11 @@
     chatFilterPresets,
     dataTheme,
     defaultFilterPresetId,
-    overrideFilterPresetId
+    overrideFilterPresetId,
+    videoInfo
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, stringifyRuns } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -237,6 +238,7 @@
         });
         messageActions = [...messageActions]; //, welcome];
         $selfChannel = response.selfChannel;
+        $videoInfo = response.videoInfo;
         break;
       case 'themeUpdate':
         ytDark = response.dark;
@@ -448,13 +450,7 @@
     const str = messageActions.filter(isMessage).map(action => {
       const msg = action.message;
       const author = msg.author.name;
-      const message = msg.message.map(run => {
-        if (run.type === 'text' || run.type === 'link') {
-          return run.text;
-        } else {
-          return run.standardEmoji ? run.alt : `:${run.alt}:`;
-        }
-      }).join('');
+      const message = stringifyRuns(msg.message);
       return `[${msg.timestamp}] ${author}: ${message}`;
     }).join('\n');
     const a = document.createElement('a');
