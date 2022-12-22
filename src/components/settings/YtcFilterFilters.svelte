@@ -343,7 +343,7 @@
       <div class="condition-no-break" style="margin-top: 10px; height: 0.8rem;">
         <span class="line" />
       </div>
-      <button class="add-condition-button" use:exioButton on:click={() => addCondition(filter)}>
+      <button class="add-condition-button lighter-gray" use:exioButton on:click={() => addCondition(filter)}>
         <div class="add-condition-inner blue-text">
           <!-- <span class="line" /> -->
           <span>
@@ -383,7 +383,7 @@
       {/if} -->
     </div>
   {/each}
-  <button class="add-filter-button" use:exioButton on:click={newFilter}>
+  <button class="add-filter-button lighter-gray" use:exioButton on:click={newFilter}>
     <div class="add-condition-inner blue-text">
       <!-- <span class="line" /> -->
       <span>

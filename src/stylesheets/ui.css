@@ -6,7 +6,7 @@ select {
 
 [data-theme=dark] button,
 [data-theme=dark] select {
-    background-color: var(--gray-bg);
+    background-color: #3f3f3f;
 }
 
 input {
@@ -54,6 +54,7 @@ label {
 .blue-text {
     color: #0064d1;
 }
+
 [data-theme=dark] .blue-text {
     color: #3ba7ff;
 }
@@ -86,22 +87,22 @@ label {
 }
 
 .settings-title {
-  padding: 5px 10px;
-  height: 30px;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  background-color: rgb(0 110 189 / 30%);
+    padding: 5px 10px;
+    height: 30px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    background-color: rgb(0 110 189 / 30%);
 }
 
 [data-theme='dark'] .settings-title {
-  background-color: rgb(0 110 189 / 30%);
+    background-color: rgb(0 110 189 / 30%);
 }
 
 [data-theme='light'] .settings-title {
-  background-color: rgb(126 182 255 / 30%);
+    background-color: rgb(126 182 255 / 30%);
 }
 
 .settings-content {
-  padding: 10px 10px 10px 10px;
+    padding: 10px 10px 10px 10px;
 }
