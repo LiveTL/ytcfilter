@@ -9,13 +9,17 @@
   import { onDestroy, tick } from 'svelte';
   import { UNDONE_MSG } from '../../ts/chat-constants';
 
-  let lastFilterItem: HTMLDivElement | null = null;
+  const getLastFilterItem = (id: string) => {
+    return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
+  };
+
   let currentPreset = $currentFilterPreset;
   const newFilter = async () => {
+    const id = getRandomString();
     currentPreset.filters = [...currentPreset.filters, {
       nickname: 'Unnamed Filter ' + (currentPreset.filters.length + 1),
       type: 'basic',
-      id: getRandomString(),
+      id,
       conditions: [{
         type: 'includes',
         property: 'message',
@@ -28,9 +32,10 @@
     unsavedFilters = currentPreset.filters;
     $chatFilterPresets = [...$chatFilterPresets];
     await tick();
+    const lastFilterItem = getLastFilterItem(id);
     if (lastFilterItem) {
       lastFilterItem.querySelector('input')?.select();
-      lastFilterItem.scrollIntoView({ behavior: 'smooth' });
+      lastFilterItem.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
     }
     saveFilters();
   };
@@ -94,7 +99,10 @@
     }];
     saveFilters();
     setTimeout(() => {
-      lastFilterItem?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
+      const item = getLastFilterItem(filter.id);
+      console.log(item?.querySelector('input'));
+      (Array.from(item?.querySelectorAll('.filter-content-item')).pop() as any)?.select();
+      item?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }, 100);
   };
   const commitNewPreset = (name: string) => {
@@ -203,7 +211,7 @@
 </div>
 <div class="settings-content" style="padding-top: 0px;">
   {#each unsavedFilters as filter (filter.id)}
-    <div class="filter" bind:this={lastFilterItem}>
+    <div class="filter filter-item-{filter.id}">
       <!-- <select bind:value={filter.type} use:exioDropdown>
         <option value="basic">Basic</option>
       </select> -->
@@ -278,7 +286,7 @@
                 <option value="regex">Regex</option>
               </select>
               <input
-                class="filter-content"
+                class="filter-content filter-content-item"
                 bind:value={condition.value}
                 use:exioTextbox
                 on:input={saveFilters}
@@ -332,11 +340,14 @@
           </div>
         {/if}
       {/each}
+      <div class="condition-no-break" style="margin-top: 10px; height: 0.8rem;">
+        <span class="line" />
+      </div>
       <button class="add-condition-button" use:exioButton on:click={() => addCondition(filter)}>
         <div class="add-condition-inner blue-text">
           <!-- <span class="line" /> -->
           <span>
-            <span use:exioIcon class="offset-1px" style="color: inherit;">add</span>
+            <span use:exioIcon class="offset-1px add-icon" style="color: inherit;">add</span>
             Add a Filter Condition
           </span>
           <!-- <span class="line" /> -->
@@ -376,7 +387,7 @@
     <div class="add-condition-inner blue-text">
       <!-- <span class="line" /> -->
       <span>
-        <span use:exioIcon class="offset-1px" style="color: inherit;">add</span>
+        <span use:exioIcon class="offset-1px add-icon" style="color: inherit;">add</span>
         Create New Filter
       </span>
       <!-- <span class="line" /> -->
@@ -393,3 +404,9 @@
     </div>
   {/if} -->
 </div>
+
+<style>
+  .add-icon {
+    vertical-align: -2px;
+  }
+</style>

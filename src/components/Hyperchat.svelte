@@ -528,7 +528,7 @@
       <!-- <span class="tiny-text">
         Preset:
       </span> -->
-      <select use:exioDropdown value={currentlyActivePresetId} on:change={presetChanged}>
+      <select use:exioDropdown value={currentlyActivePresetId} on:change={presetChanged} class="preset-selector">
         {#each $chatFilterPresets as preset}
           <option selected value={preset.id}>{preset.nickname}</option>
         {/each}
@@ -653,7 +653,7 @@
     display: grid;
     align-content: space-between;
     justify-content: space-between;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
   :global(.mode-dark) .top-button-wrapper {
     background-color: #181818;
@@ -665,5 +665,10 @@
     cursor: default;
     user-select: none;
     transform: translateY(0.25px);
+  }
+  .preset-selector {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
 </style>

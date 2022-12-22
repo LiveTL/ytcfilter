@@ -74,23 +74,23 @@
   <div class="ytcf-button-wrapper" bind:this={buttons}>
     <div class="static-logo">
       <img src={logo} alt="logo" class="logo"/>
-      YtcFilter
+      <span class="static-logo-text">YtcFilter</span>
     </div>
     <button use:exioButton class="activator ytcf-launch-button">
       <span>Embed</span>
-      <div use:exioIcon class="shifted-icon" style="color: inherit;">
+      <div use:exioIcon class="shifted-icon top-bar-icon">
         expand
       </div>
     </button>
     <button use:exioButton class="activator ytcf-popout-button">
       <span>Popout</span>
-      <div use:exioIcon class="shifted-icon" style="color: inherit;">
+      <div use:exioIcon class="shifted-icon top-bar-icon">
         open_in_new
       </div>
     </button>
     <button use:exioButton class="activator ytcf-settings-button">
       <span>Settings</span>
-      <div use:exioIcon class="shifted-icon" style="color: inherit;">
+      <div use:exioIcon class="shifted-icon top-bar-icon">
         settings
       </div>
     </button>
@@ -136,6 +136,18 @@
     width: 100%;
     text-align: center;
   }
+  @media (max-width: 350px) {
+    .static-logo-text {
+      display: none;
+    }
+    .ytcf-button-wrapper {
+      display: grid !important;
+      grid-template-columns: auto 1fr 1fr 1fr;
+    }
+    .static-logo {
+      width: auto !important;
+    }
+  }
   .ytcf-button-wrapper {
     display: flex;
     align-content: space-between;
@@ -153,7 +165,7 @@
   .logo {
     width: 15px;
     height: 15px;
-    vertical-align: sub;
+    transform: translateY(2.5px);
   }
   .ytcf-wrapper[data-theme=dark] {
     color: white;
@@ -163,5 +175,8 @@
   }
   :global(:not([dark]) .content-pages) {
     background-color: white;
+  }
+  .top-bar-icon {
+    color: #3ba7ff;
   }
 </style>
