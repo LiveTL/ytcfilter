@@ -23,8 +23,8 @@ declare namespace YtcF {
     id: string;
     enabled: boolean;
   }
-  interface PresetTrigger extends StringCondition {
-    property: 'authorChannelId' | 'authorName' | 'videoId' | 'videoTitle';
+  interface PresetTrigger {
+    property: 'channelName' | 'channelHandle' | 'channelId' | 'videoTitle' | 'videoId';
     type: 'includes' | 'startsWith' | 'endsWith' | 'regex';
     value: string;
     caseSensitive: boolean;
@@ -34,5 +34,6 @@ declare namespace YtcF {
     filters: ChatFilter[];
     id: string;
     triggers: PresetTrigger[];
+    activation: 'manual' | 'auto';
   }
 }

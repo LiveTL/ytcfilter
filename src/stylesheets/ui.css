@@ -9,12 +9,12 @@ select {
     background-color: #3f3f3f;
 }
 
-input {
+input:not([type="radio"]) {
     box-sizing: border-box;
     background-color: white;
 }
 
-[data-theme=dark] input:not([type="checkbox"]) {
+[data-theme=dark] input:not([type="checkbox"]):not([type="radio"]) {
     background-color: #191919;
 }
 

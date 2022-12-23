@@ -92,7 +92,8 @@ export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [
   filters: [],
   nickname: 'Preset 1',
   id: INITIAL_PRESET_ID,
-  triggers: []
+  triggers: [],
+  activation: 'manual'
 }] as YtcF.FilterPreset[], true);
 export const defaultFilterPresetId = stores.addSyncStore('ytcf.defaultFilterPresetId', INITIAL_PRESET_ID);
 export const overrideFilterPresetId = writable(null as null | string);
@@ -123,11 +124,13 @@ export const confirmDialog = writable(null as null | {
 export const inputDialog = writable(null as null | {
   title: string;
   originalValue: string;
-  message: string;
+  message?: string;
   action: {
     text: string;
     callback: (value: string) => void;
   };
+  component?: any;
+  context?: any;
 });
 export const popoutDims = stores.addSyncStore('ytcf.popoutDims', {
   width: 777,

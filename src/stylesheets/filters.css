@@ -82,6 +82,8 @@
     padding: 5px 5px 5px 10px;
 }
 
+/* duplicate css but whatever */
+
 @media (max-width: 750px) {
     .filter-items-wrapper>.items {
         display: flex;
@@ -101,6 +103,25 @@
         flex-direction: row;
         justify-content: space-between;
     }
+}
+
+.narrow-screen .filter-items-wrapper>.items {
+    display: flex;
+    flex-direction: column;
+}
+
+.narrow-screen .filter-items-wrapper>.items select {
+    width: 100%;
+}
+
+.narrow-screen .filter-items-wrapper {
+    flex-direction: column;
+}
+
+.narrow-screen .condition-options {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .condition-options {
@@ -170,4 +191,8 @@
     100% {
         transform: translateY(-18px);
     }
+}
+
+.add-icon {
+    vertical-align: -2px;
 }

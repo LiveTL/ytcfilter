@@ -111,7 +111,8 @@
       id,
       nickname: name,
       filters: [],
-      triggers: []
+      triggers: [],
+      activation: 'manual'
     }];
     currentPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
     unsavedFilters = currentPreset.filters;
@@ -143,7 +144,8 @@
         id: currentPreset.id,
         nickname: 'Preset 1',
         filters: [],
-        triggers: []
+        triggers: [],
+        activation: 'manual'
       }];
       currentPreset = $chatFilterPresets[0];
       unsavedFilters = currentPreset.filters;
@@ -158,9 +160,14 @@
     unsavedFilters = currentPreset.filters;
     presetDropdownValue = currentPreset.id;
   };
-  const renameItemCallback = (item: YtcF.FilterPreset) => {
+  const renameItemCallback = (item: YtcF.FilterPreset, context?: any) => {
     const renameItem = (name: string) => {
+      item = {
+        ...item,
+        ...context
+      };
       item.nickname = name;
+      console.log(item, context);
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
     };
     return renameItem;
@@ -178,15 +185,18 @@
           </option>
         {/each}
       </select>
-      <button on:click={() => {
+      <button on:click={async () => {
+        const { default: component } = await import('./YtcFilterTriggers.svelte');
+        const context = $chatFilterPresets.find(x => x.id === presetDropdownValue);
         $inputDialog = {
-          title: `Rename Preset "${currentPreset.nickname}"`,
-          message: 'Enter a new name for the preset.',
+          title: `Edit "${currentPreset.nickname}"`,
           originalValue: currentPreset.nickname,
           action: {
-            callback: renameItemCallback(currentPreset),
-            text: 'Rename'
-          }
+            callback: renameItemCallback(currentPreset, context),
+            text: 'Save'
+          },
+          component,
+          context
         };
       }} use:exioButton>
         <span use:exioIcon style="vertical-align: super;">edit_square</span>
@@ -404,9 +414,3 @@
     </div>
   {/if} -->
 </div>
-
-<style>
-  .add-icon {
-    vertical-align: -2px;
-  }
-</style>
