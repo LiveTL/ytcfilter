@@ -9,13 +9,17 @@ select {
     background-color: #3f3f3f;
 }
 
-input:not([type="radio"]) {
+input:not([type="radio"]):not([type="checkbox"]) {
     box-sizing: border-box;
     background-color: white;
 }
 
 [data-theme=dark] input:not([type="checkbox"]):not([type="radio"]) {
     background-color: #191919;
+}
+
+input[type="radio"] {
+    transform: translateZ(0px);
 }
 
 input[type="checkbox"] {
@@ -74,12 +78,12 @@ label {
 
 :root {
     --gray-bg: #4f4f4f;
+    --filter-color: rgb(128 128 128 / 20%);
 }
 
 .settings-card {
     background-color: rgba(128, 128, 128, 0.1);
     margin-top: 10px;
-    --filter-color: rgb(128 128 128 / 20%);
 }
 
 [data-theme='dark'] .settings-card {

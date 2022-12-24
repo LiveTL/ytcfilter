@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../../stylesheets/scrollbar.css';
-  import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, confirmDialog, inputDialog } from '../../ts/storage';
+  import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, confirmDialog, inputDialog, currentEditingPreset } from '../../ts/storage';
   import '../../stylesheets/ui.css';
   import '../../stylesheets/line.css';
   import '../../stylesheets/filters.css';
@@ -13,11 +13,11 @@
     return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
   };
 
-  let currentPreset = $currentFilterPreset;
+  $currentEditingPreset = $currentFilterPreset;
   const newFilter = async () => {
     const id = getRandomString();
-    currentPreset.filters = [...currentPreset.filters, {
-      nickname: 'Unnamed Filter ' + (currentPreset.filters.length + 1),
+    $currentEditingPreset.filters = [...$currentEditingPreset.filters, {
+      nickname: 'Unnamed Filter ' + ($currentEditingPreset.filters.length + 1),
       type: 'basic',
       id,
       conditions: [{
@@ -29,7 +29,7 @@
       }],
       enabled: true
     }];
-    unsavedFilters = currentPreset.filters;
+    unsavedFilters = $currentEditingPreset.filters;
     $chatFilterPresets = [...$chatFilterPresets];
     await tick();
     const lastFilterItem = getLastFilterItem(id);
@@ -41,17 +41,17 @@
   };
 
   const deleteFilter = (item: YtcF.ChatFilter) => {
-    currentPreset.filters = currentPreset.filters.filter(x => x.id !== item.id);
-    unsavedFilters = currentPreset.filters;
-    $chatFilterPresets = $chatFilterPresets.map(x => x.id === currentPreset.id ? currentPreset : x);
+    $currentEditingPreset.filters = $currentEditingPreset.filters.filter(x => x.id !== item.id);
+    unsavedFilters = $currentEditingPreset.filters;
+    $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
   };
 
   let unsavedFilters: YtcF.ChatFilter[] = [];
 
   defaultFilterPresetId.ready().then(async () => {
     await tick();
-    currentPreset = $currentFilterPreset;
-    unsavedFilters = currentPreset.filters;
+    $currentEditingPreset = $currentFilterPreset;
+    unsavedFilters = $currentEditingPreset.filters;
   });
 
   let saveTimeout: any = null;
@@ -71,8 +71,8 @@
         }
       }
       unsavedFilters = [...unsavedFilters];
-      currentPreset.filters = unsavedFilters;
-      $chatFilterPresets = $chatFilterPresets.map(x => x.id === currentPreset.id ? currentPreset : x);
+      $currentEditingPreset.filters = unsavedFilters;
+      $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
     }, 50);
   };
 
@@ -114,8 +114,8 @@
       triggers: [],
       activation: 'manual'
     }];
-    currentPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
-    unsavedFilters = currentPreset.filters;
+    $currentEditingPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
+    unsavedFilters = $currentEditingPreset.filters;
     presetDropdownValue = id;
   };
   const newPreset = () => {
@@ -135,39 +135,34 @@
   });
   const changeEditingPreset = async () => {
     await tick();
-    currentPreset = $chatFilterPresets.find(x => x.id === presetDropdownValue) ?? currentPreset;
-    unsavedFilters = currentPreset.filters;
+    $currentEditingPreset = $chatFilterPresets.find(x => x.id === presetDropdownValue) ?? $currentEditingPreset;
+    unsavedFilters = $currentEditingPreset.filters;
   };
   const deletePreset = () => {
     if ($chatFilterPresets.length === 1) {
       $chatFilterPresets = [{
-        id: currentPreset.id,
+        id: $currentEditingPreset.id,
         nickname: 'Preset 1',
         filters: [],
         triggers: [],
         activation: 'manual'
       }];
-      currentPreset = $chatFilterPresets[0];
-      unsavedFilters = currentPreset.filters;
-      $defaultFilterPresetId = currentPreset.id;
+      $currentEditingPreset = $chatFilterPresets[0];
+      unsavedFilters = $currentEditingPreset.filters;
+      $defaultFilterPresetId = $currentEditingPreset.id;
       return;
     }
     $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
-    currentPreset = $chatFilterPresets[$chatFilterPresets.length - 1] ?? currentPreset;
+    $currentEditingPreset = $chatFilterPresets[$chatFilterPresets.length - 1] ?? $currentEditingPreset;
     if ($defaultFilterPresetId === presetDropdownValue) {
-      $defaultFilterPresetId = currentPreset.id;
+      $defaultFilterPresetId = $currentEditingPreset.id;
     }
-    unsavedFilters = currentPreset.filters;
-    presetDropdownValue = currentPreset.id;
+    unsavedFilters = $currentEditingPreset.filters;
+    presetDropdownValue = $currentEditingPreset.id;
   };
-  const renameItemCallback = (item: YtcF.FilterPreset, context?: any) => {
+  const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string) => {
-      item = {
-        ...item,
-        ...context
-      };
       item.nickname = name;
-      console.log(item, context);
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
     };
     return renameItem;
@@ -180,30 +175,34 @@
     <div class="buttons">
       <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue} class="preset-dropdown">
         {#each $chatFilterPresets as preset}
-          <option value={preset.id} selected={preset.id === currentPreset.id}>
+          <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
             {preset.nickname}
           </option>
         {/each}
       </select>
       <button on:click={async () => {
         const { default: component } = await import('./YtcFilterTriggers.svelte');
-        const context = $chatFilterPresets.find(x => x.id === presetDropdownValue);
+        const beforeEdit = JSON.parse(JSON.stringify($currentEditingPreset));
         $inputDialog = {
-          title: `Edit "${currentPreset.nickname}"`,
-          originalValue: currentPreset.nickname,
+          title: `Edit "${$currentEditingPreset.nickname}"`,
+          originalValue: $currentEditingPreset.nickname,
           action: {
-            callback: renameItemCallback(currentPreset, context),
+            callback: renameItemCallback($currentEditingPreset),
+            cancelled: () => {
+              setTimeout(() => {
+                $currentEditingPreset = beforeEdit;
+              }, 100);
+            },
             text: 'Save'
           },
-          component,
-          context
+          component
         };
       }} use:exioButton>
         <span use:exioIcon style="vertical-align: super;">edit_square</span>
       </button>
       <button on:click={() => {
         $confirmDialog = {
-          title: `Delete Preset "${currentPreset.nickname}"?`,
+          title: `Delete Preset "${$currentEditingPreset.nickname}"?`,
           message: UNDONE_MSG,
           action: {
             callback: deletePreset,

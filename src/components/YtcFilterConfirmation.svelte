@@ -11,13 +11,21 @@
     callback: () => {}
   };
   $: action = $confirmDialog?.action ?? action;
+  let open = false;
+  $: {
+    const toOpen = Boolean($confirmDialog);
+    open = false;
+    setTimeout(() => {
+      open = toOpen;
+    }, 0);
+  }
 </script>
 
 <dialog
   use:exioDialog={{
     backgroundColor: $isDark ? 'black' : 'white'
   }}
-  open={Boolean($confirmDialog)}
+  {open}
   style="font-size: 1rem;"
 >
   <div class="big-text select-none">{title}</div>

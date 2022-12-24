@@ -7,9 +7,13 @@
   let action = {
     text: '',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    callback: (s: string) => {}
+    callback: (s: string) => {},
+    cancelled: () => {}
   };
-  $: action = $inputDialog?.action ?? action;
+  $: action = {
+    ...($inputDialog?.action ?? action),
+    cancelled: $inputDialog?.action.cancelled ?? (() => {})
+  };
   let value = '';
   const setValue = (v?: string) => {
     if (v) value = v;
@@ -19,6 +23,14 @@
   $: message = $inputDialog?.component ? '' : ($inputDialog?.message ?? message);
   let component: any = null;
   $: component = $inputDialog?.message ? null : ($inputDialog?.component ?? component);
+  let open = false;
+  $: {
+    const toOpen = Boolean($inputDialog);
+    open = false;
+    setTimeout(() => {
+      open = toOpen;
+    }, 0);
+  }
 </script>
 
 <dialog
@@ -26,7 +38,7 @@
   use:exioDialog={{
     backgroundColor: $isDark ? 'black' : 'white'
   }}
-  open={Boolean($inputDialog)}
+  {open}
   style="font-size: 1rem;"
   class:reactive-width={Boolean(component)}
 >
@@ -46,6 +58,7 @@
           action.callback(value);
           $inputDialog = null;
         } else if (e.key === 'Escape') {
+          action.cancelled();
           $inputDialog = null;
         }
       }}
@@ -56,7 +69,10 @@
     {/if}
   </p>
   <div style="display: flex; justify-content: flex-end; gap: 10px;">
-    <button on:click={() => ($inputDialog = null)} use:exioButton>Cancel</button>
+    <button on:click={() => {
+      $inputDialog = null;
+      action.cancelled();
+    }} use:exioButton>Cancel</button>
     <button
       on:click={() => {
         action.callback(value);

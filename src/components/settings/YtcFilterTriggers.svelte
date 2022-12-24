@@ -1,10 +1,9 @@
 <script lang="ts">
   import { exioButton, exioIcon, exioDropdown, exioTextbox, exioCheckbox, exioRadio } from 'exio/svelte';
-  import { inputDialog } from '../../ts/storage';
-  const preset = $inputDialog?.context as YtcF.FilterPreset;
+  import { currentEditingPreset } from '../../ts/storage';
 
   const addTrigger = async () => {
-    preset.triggers = [...preset.triggers, {
+    $currentEditingPreset.triggers = [...$currentEditingPreset.triggers, {
       caseSensitive: false,
       property: 'channelName',
       type: 'includes',
@@ -28,7 +27,7 @@
       class="trigger-radio"
       value="manual"
       use:exioRadio
-      bind:group={preset.activation} 
+      bind:group={$currentEditingPreset.activation} 
     />
     <label for="trigger-manually" class="filter-tab">Activate manually</label>
   </div>
@@ -40,13 +39,21 @@
       class="trigger-radio"
       value="auto"
       use:exioRadio
-      bind:group={preset.activation} 
+      bind:group={$currentEditingPreset.activation} 
     />
     <label for="trigger-automatically" class="filter-tab">Activate automatically if:</label>
   </div>
-  <div style="padding-left: 2rem;" class:disabled-item={preset.activation === 'manual'}>
-    {#each preset.triggers as trigger, i}
-      <div class="filter-items-wrapper">
+  <div
+    style="
+      margin-left: 2rem;
+      margin-top: 5px;
+      padding: 5px;
+      background-color: rgba(128, 128, 128, 0.3);
+    "
+    class:disabled-item={$currentEditingPreset.activation === 'manual'}
+  >
+    {#each $currentEditingPreset.triggers as trigger, i}
+      <div class="filter-items-wrapper" style={i === 0 ? 'margin-top: 0px;' : ''}>
         <div class="items">
           <select
             bind:value={trigger.property}
@@ -100,7 +107,7 @@
           </div>
         </div>
       </div>
-      {#if i !== preset.triggers.length - 1}
+      {#if i !== $currentEditingPreset.triggers.length - 1}
         <div class="condition-separator">
           <span class="line" />
           <span class="blue-text">OR</span>
@@ -108,7 +115,7 @@
         </div>
       {/if}
     {/each}
-    {#if preset.triggers.length > 0}
+    {#if $currentEditingPreset.triggers.length > 0}
       <div class="condition-no-break" style="margin-top: 10px; height: 0.8rem;">
         <span class="line" />
       </div>
@@ -133,7 +140,7 @@
     margin-right: 0.5rem;
   }
   .disabled-item {
-    filter: grayscale(100%) brightness(0.5);
+    filter: grayscale(100%) opacity(0.5);
     touch-action: none;
     pointer-events: none;
     user-select: none;
