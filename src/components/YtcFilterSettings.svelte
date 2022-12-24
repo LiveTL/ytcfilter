@@ -6,7 +6,7 @@
   import { isLiveTL } from '../ts/chat-constants';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
   import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';
-  import YtcFilterInterface from './settings/YtcFilterInterface.svelte';
+  import YtcFilterGeneral from './settings/YtcFilterGeneral.svelte';
   import YtcFilterFilters from './settings/YtcFilterFilters.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
 </script>
@@ -25,7 +25,7 @@
 >
   {#if !isLiveTL}
     <div class="settings-card">
-      <YtcFilterInterface />
+      <YtcFilterGeneral />
     </div>
   {/if}
   <div class="settings-card">

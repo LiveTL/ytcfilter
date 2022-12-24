@@ -5,7 +5,7 @@
   import '../../stylesheets/ui.css';
 </script> 
 
-<div class="settings-title big-text">Interface</div>
+<div class="settings-title big-text">General</div>
 <div class="settings-content">
   <span>Theme: </span>
   <select use:exioDropdown bind:value={$theme}>
