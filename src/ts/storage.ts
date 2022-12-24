@@ -133,7 +133,7 @@ export const inputDialog = writable(null as null | {
   component?: any;
 });
 export const popoutDims = stores.addSyncStore('ytcf.popoutDims', {
-  width: 777,
+  width: 800,
   height: 600
 });
 export const currentEditingPreset = writable(null as any as YtcF.FilterPreset);

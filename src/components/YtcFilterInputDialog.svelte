@@ -89,6 +89,6 @@
     background-color: rgb(230, 230, 230);
   }
   .reactive-width {
-    width: min(450px, calc(100% - 60px));
+    width: min(450px, calc(100% - 40px));
   }
 </style>

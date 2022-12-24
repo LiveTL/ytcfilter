@@ -109,7 +109,7 @@
     const id = getRandomString();
     $chatFilterPresets = [...$chatFilterPresets, {
       id,
-      nickname: name,
+      nickname: name || 'Unnamed Preset',
       filters: [],
       triggers: [],
       activation: 'manual'
@@ -162,7 +162,7 @@
   };
   const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string) => {
-      item.nickname = name;
+      item.nickname = name || 'Unnamed Preset';
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
     };
     return renameItem;
@@ -184,7 +184,7 @@
         const { default: component } = await import('./YtcFilterTriggers.svelte');
         const beforeEdit = JSON.parse(JSON.stringify($currentEditingPreset));
         $inputDialog = {
-          title: `Edit "${$currentEditingPreset.nickname}"`,
+          title: `Edit Preset "${$currentEditingPreset.nickname}"`,
           originalValue: $currentEditingPreset.nickname,
           action: {
             callback: renameItemCallback($currentEditingPreset),
@@ -262,6 +262,9 @@
             <span use:exioIcon class="offset-1px">delete_forever</span>
           </button>
         </div>
+      </div>
+      <div class="condition-no-break" style="margin-top: 10px; height: 0.8rem;">
+        <span class="line" />
       </div>
       {#each filter.conditions as condition, i}
         <div class="filter-items-wrapper">
