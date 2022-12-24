@@ -13,8 +13,8 @@ import {
   setTheme
 } from '../ts/messaging';
 import YtcFilterButtons from '../components/YtcFilterButtons.svelte';
-import { parseMessageRuns } from '../ts/chat-parser';
-import { stringifyRuns } from '../ts/ytcf-logic';
+// import { parseMessageRuns } from '../ts/chat-parser';
+// import { stringifyRuns } from '../ts/ytcf-logic';
 
 // const isFirefox = navigator.userAgent.includes('Firefox');
 
@@ -166,6 +166,8 @@ const chatLoaded = async (): Promise<void> => {
   }
 
   // Inject hyperchat
+  // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
+  // @ts-ignore
   ytcItemList.outerHTML = `
   <iframe id="hyperchat" src="${source}" style="border: 0px; width: 100%; height: 100%;"/>
   `;
@@ -189,6 +191,8 @@ const chatLoaded = async (): Promise<void> => {
     console.error('Failed to find #ticker');
     return;
   }
+  // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
+  // @ts-ignore
   ytcTicker.remove();
 
   // Hide input panel on android
@@ -204,6 +208,8 @@ const chatLoaded = async (): Promise<void> => {
       console.error('Failed to find Live Chat menu item');
       return;
     }
+    // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
+    // @ts-ignore
     live.click();
   }
 };

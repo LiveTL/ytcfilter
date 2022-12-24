@@ -20,7 +20,7 @@
     chatUserActionsItems,
     isLiveTL
   } from '../ts/chat-constants';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup } from '../ts/chat-utils';
+  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
     stores,
@@ -48,12 +48,14 @@
     dataTheme,
     defaultFilterPresetId,
     overrideFilterPresetId,
-    videoInfo
+    videoInfo,
+    storedMessageDumpKeys
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage, stringifyRuns } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
+  import type { SyncStore } from 'svelte-webext-stores';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -97,8 +99,10 @@
 
   const messageBlockers = [memberOnlyBlocker, emojiSpamBlocker, duplicateKeyBlocker];
 
-  const shouldShowMessage = (m: Chat.MessageAction): boolean => (
-    !messageBlockers.some(blocker => blocker(m))
+  const shouldShowMessage = (m: Chat.MessageAction, forceDisplay = false): boolean => (
+    !messageBlockers.some(blocker => blocker(m)) || forceDisplay
+    // do not flip the order of the conditions above
+    // this gives the duplicateKeyBlocker a chance to add the key
   );
 
   const isWelcome = (m: Chat.MessageAction | Welcome): m is Welcome =>
@@ -123,23 +127,23 @@
   //   messageActions = messageActions;
   // };
 
-  const applyYtcf = (items: Chat.MessageAction[]) => {
+  const applyYtcf = (items: Chat.MessageAction[], forceDisplay = false) => {
     for (const a of items) {
-      if (isMessage(a) && (!messageActionStorageInit || shouldFilterMessage(a, $currentFilterPreset.filters))) messageActions.push(a);
+      if (isMessage(a) && (forceDisplay || shouldFilterMessage(a, $currentFilterPreset.filters))) messageActions.push(a);
     }
   };
 
   const newMessages = (
-    messagesAction: Chat.MessagesAction, isInitial: boolean
+    messagesAction: Chat.MessagesAction, isInitial: boolean, forceDisplay = false
   ) => {
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
       applyYtcf(filterTickers(messagesAction.messages).filter(
-        (a) => a.message.timestamp.startsWith('-') && shouldShowMessage(a)
-      ));
+        (a) => a.message.timestamp.startsWith('-') && shouldShowMessage(a, forceDisplay)
+      ), forceDisplay);
     } else {
-      applyYtcf(filterTickers(messagesAction.messages).filter(shouldShowMessage));
+      applyYtcf(filterTickers(messagesAction.messages).filter(item => shouldShowMessage(item, forceDisplay)), forceDisplay);
     }
     messageActions = [...messageActions];
     // if (!isInitial) checkTruncateMessages();
@@ -236,7 +240,6 @@
         response.initialData.forEach((action) => {
           onChatAction(action, true);
         });
-        messageActions = [...messageActions]; //, welcome];
         $selfChannel = response.selfChannel;
         $videoInfo = response.videoInfo;
         break;
@@ -468,25 +471,75 @@
   };
   $: showWelcome = initialized && messageActions.length === 0;
 
-  const messageActionStorage = stores.addSyncStore(`ytcf.messageActions.${paramsContinuation}`, {
-    actions: messageActions.filter(isMessage)
-  });
+  const appendDumpKey = (key: string) => {
+    $storedMessageDumpKeys = [...$storedMessageDumpKeys, {
+      key,
+      continuation: paramsContinuation,
+      info: $videoInfo
+    }];
+  };
   let messageActionStorageInit = false;
-  $: if (messageActionStorageInit) {
-    messageActionStorage.set({
-      actions: messageActions.filter(isMessage)
-    });
-  }
-  messageActionStorage.ready().then(() => {
-    const data = messageActionStorage.getCurrent();
-    if (data.actions.length) {
-      newMessages({
-        type: 'messages',
-        messages: data.actions as Chat.MessageAction[]
-      }, false);
+  let messageActionStorage: SyncStore<{
+    actions: Chat.MessageAction[];
+    key: string;
+  }> | undefined;
+  const saveMessageActions = () => {
+    if ($messageActionStorage) {
+      const key = $messageActionStorage.key;
+      if (!$storedMessageDumpKeys.find(item => item.key === key)) {
+        appendDumpKey(key);
+      }
+      $messageActionStorage = {
+        ...$messageActionStorage,
+        actions: messageActions.filter(isMessage)
+      };
     }
-    messageActionStorageInit = true;
-  });
+  };
+  $: if (messageActionStorageInit && messageActionStorage && messageActions) {
+    saveMessageActions();
+  }
+  const readInActions = () => {
+    if ($messageActionStorage) {
+      messageActions = $messageActionStorage.actions;
+    }
+  };
+  $: if (messageActionStorage && $messageActionStorage) {
+    readInActions();
+  }
+  const initMessageStorage = () => {
+    storedMessageDumpKeys.ready().then(() => {
+      const randomKey = getRandomString();
+      let key = randomKey;
+      $storedMessageDumpKeys.forEach(item => {
+        if (
+          (paramsContinuation && item.continuation === paramsContinuation) ||
+          ($videoInfo && item.info?.video?.videoId === $videoInfo.video.videoId)
+        ) {
+          key = item.key;
+        }
+      });
+      if (key === randomKey) {
+        appendDumpKey(key);
+      }
+      messageActionStorage = stores.addSyncStore(`ytcf.messageActions.${key}`, {
+        actions: [] as Chat.MessageAction[],
+        key
+      });
+      messageActionStorage.ready().then(() => {
+        if (messageActionStorage) {
+          const data = $messageActionStorage;
+          if (data && data.actions.length) {
+            newMessages({
+              type: 'messages',
+              messages: data.actions as Chat.MessageAction[]
+            }, false, true);
+          }
+          messageActionStorageInit = true;
+        }
+      });
+    });
+  };
+  $: if (initialized) initMessageStorage();
   let isPopout = false;
   onMount(() => {
     try {

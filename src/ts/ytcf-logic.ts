@@ -104,3 +104,21 @@ export const stringifyRuns = (msg: Ytc.ParsedRun[]): string => {
     }
   }).join('');
 };
+
+const getV2Storage = async () => {
+  return await new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.get('@@vwe-persistence', (s) =>
+        resolve(s['@@vwe-persistence'] || null)
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+export const migrateV2toV3 = async () => {
+  const v2 = await getV2Storage();
+  if (v2) {
+  }
+};

@@ -137,3 +137,8 @@ export const popoutDims = stores.addSyncStore('ytcf.popoutDims', {
   height: 600
 });
 export const currentEditingPreset = writable(null as any as YtcF.FilterPreset);
+export const storedMessageDumpKeys = stores.addSyncStore('ytcf.storedMessageDumpKeys', [] as Array<{
+  continuation: string | null;
+  info: SimpleVideoInfo | null;
+  key: string;
+}>);

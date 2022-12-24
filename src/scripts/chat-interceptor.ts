@@ -59,8 +59,16 @@ try {
     })
   }));
 } catch (e) {
+  const videoId = new URLSearchParams(window.location.search).get('v');
   window.dispatchEvent(new CustomEvent('videoInfo', {
-    detail: JSON.stringify(null)
+    detail: JSON.stringify(
+      videoId !== null
+        ? {
+            video: {
+              videoId
+            }
+          }
+        : null)
   }));
 }
 
