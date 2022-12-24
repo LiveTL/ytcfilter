@@ -53,11 +53,14 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVide
   for (const trigger of preset.triggers) {
     let compStr = '';
     switch (trigger.property) {
-      case 'authorChannelId':
+      case 'channelId':
         compStr = info.channel.channelId;
         break;
-      case 'authorName':
+      case 'channelName':
         compStr = info.channel.name;
+        break;
+      case 'channelHandle':
+        compStr = info.channel.handle ?? '';
         break;
       case 'videoId':
         compStr = info.video.videoId;
