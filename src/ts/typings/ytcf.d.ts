@@ -36,9 +36,10 @@ declare namespace YtcF {
     triggers: PresetTrigger[];
     activation: 'manual' | 'auto';
   }
-  interface MessageDumpItem {
+  interface MessageDumpInfoItem {
     continuation: string[];
     info: SimpleVideoInfo | null;
     key: string;
   }
+  export type MessageDumpActionsItem = Chat.MessageAction[];
 }

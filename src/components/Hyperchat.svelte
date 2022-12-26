@@ -20,7 +20,7 @@
     chatUserActionsItems,
     isLiveTL
   } from '../ts/chat-constants';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString, getSavedMessageActions, saveMessageActions } from '../ts/chat-utils';
+  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
     theme,
@@ -47,11 +47,10 @@
     dataTheme,
     defaultFilterPresetId,
     overrideFilterPresetId,
-    videoInfo,
-    storedMessageDumpKeys
+    videoInfo
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, stringifyRuns } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, stringifyRuns, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -474,38 +473,33 @@
   };
   $: showWelcome = initialized && messageActions.length === 0;
 
-  const appendDumpKey = (key: string) => {
-    $storedMessageDumpKeys = [...$storedMessageDumpKeys, {
-      key,
-      continuation: paramsContinuation,
-      info: $videoInfo
-    }];
-  };
   const clearMessages = () => {
     messageKeys.clear();
     messageActions = [];
-    saveMessageActions(key, []);
   };
   let key = '';
-  const initMessageStorage = () => {
-    storedMessageDumpKeys.ready().then(async () => {
-      const newkey = $storedMessageDumpKeys.find(item => {
-        return (paramsContinuation && item.continuation.includes(paramsContinuation)) ||
-          ($videoInfo && item.info?.video?.videoId === $videoInfo.video.videoId);
-      })?.key || getRandomString();
-      appendDumpKey(newkey);
-      key = newkey;
+  const initMessageStorage = async () => {
+    let tempKey = await findSavedMessageActionKey(paramsContinuation, $videoInfo);
+    tempKey = tempKey === null ? getRandomString() : tempKey;
+    const newMsgs = await getSavedMessageDumpActions(tempKey);
+    if (newMsgs?.length) {
       newMessages({
         type: 'messages',
-        messages: await getSavedMessageActions(key)
+        messages: newMsgs
       }, false, true);
-    });
+    }
+    key = tempKey;
   };
   $: if (initialized) {
     initMessageStorage();
   }
   $: if (key) {
-    saveMessageActions(key, messageActions.filter(isMessage));
+    saveMessageActions(
+      key,
+      paramsContinuation,
+      $videoInfo,
+      messageActions.filter(isMessage)
+    );
   }
   let isPopout = false;
   onMount(() => {

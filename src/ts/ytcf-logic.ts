@@ -122,3 +122,116 @@ export const migrateV2toV3 = async () => {
   if (v2) {
   }
 };
+
+const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
+
+const keyGen = (key: string, dataType: 'info' | 'actions' = 'info'): string => `${MESSAGE_ACTION_PREFIX}.${dataType}.${key}`;
+const filterMessageDumpInfoKeyNames = (key: string): boolean => key.startsWith(
+  keyGen('', 'info')
+);
+
+export const getSavedMessageDump = async (
+  key: string
+): Promise<YtcF.MessageDumpActionsItem | undefined> => {
+  return await new Promise((resolve) => {
+    const k = keyGen(key, 'actions');
+    chrome.storage.local.get(k, (s) => {
+      resolve((s[k] as YtcF.MessageDumpActionsItem | undefined));
+    });
+  });
+};
+
+export const getSavedMessageDumpInfo = async (
+  key: string
+): Promise<YtcF.MessageDumpInfoItem> => {
+  return await new Promise((resolve) => {
+    const k = keyGen(key, 'info');
+    chrome.storage.local.get(k, (s) => {
+      const r = s[k] as YtcF.MessageDumpInfoItem | undefined;
+      resolve(r === undefined
+        ? {
+            continuation: [],
+            info: null,
+            key
+          }
+        : r);
+    });
+  });
+};
+
+export const getSavedMessageDumpActions = async (
+  key: string
+): Promise<YtcF.MessageDumpActionsItem | undefined> => {
+  return await new Promise((resolve) => {
+    const k = keyGen(key, 'actions');
+    chrome.storage.local.get(k, (s) => {
+      resolve((s[k] as YtcF.MessageDumpActionsItem | undefined));
+    });
+  });
+};
+
+export const saveMessageActions = async (
+  key: string,
+  continuation: string | null,
+  info: SimpleVideoInfo | null,
+  actions: Chat.MessageAction[]
+): Promise<void> => {
+  const lastObj = await getSavedMessageDumpInfo(key);
+  const obj: YtcF.MessageDumpInfoItem = {
+    continuation: (
+      continuation === null ||
+      lastObj.continuation.includes(continuation)
+        ? lastObj.continuation
+        : [...lastObj.continuation, continuation]
+    ),
+    info: {
+      channel: {
+        channelId: info?.channel.channelId ?? lastObj.info?.channel.channelId ?? '',
+        name: info?.channel.name ?? lastObj.info?.channel.name ?? '',
+        handle: info?.channel.handle ?? lastObj.info?.channel.handle ?? ''
+      },
+      video: {
+        videoId: info?.video.videoId ?? lastObj.info?.video.videoId ?? '',
+        title: info?.video.title ?? lastObj.info?.video.title ?? ''
+      }
+    },
+    key
+  };
+  await chrome.storage.local.set({ [keyGen(key, 'info')]: obj });
+  await chrome.storage.local.set({ [keyGen(key, 'actions')]: actions });
+};
+
+export const clearSavedMessageActions = async (key: string): Promise<void> => {
+  return await chrome.storage.local.remove(keyGen(key));
+};
+
+export const getAllSavedMessageActionKeys = async (): Promise<string[]> => {
+  return await new Promise((resolve) => {
+    chrome.storage.local.get(null, (s) => {
+      resolve(
+        Object.keys(s)
+          .filter(filterMessageDumpInfoKeyNames)
+      );
+    });
+  });
+};
+
+export const findSavedMessageActionKey = async (
+  continuation: string | null,
+  info: SimpleVideoInfo | null
+): Promise<string | null> => {
+  return await new Promise((resolve) => {
+    chrome.storage.local.get(null, (s) => {
+      const keys = Object.keys(s).filter(filterMessageDumpInfoKeyNames);
+      for (const key of keys) {
+        const dump = s[key] as YtcF.MessageDumpInfoItem;
+        if ((continuation !== null && dump.continuation.includes(continuation)) ||
+          (info !== null && dump.info?.video?.videoId === info.video.videoId)) {
+          resolve(key);
+          return;
+        }
+      }
+      resolve(null);
+    });
+  });
+};
