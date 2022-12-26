@@ -20,10 +20,9 @@
     chatUserActionsItems,
     isLiveTL
   } from '../ts/chat-constants';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
+  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString, getSavedMessageActions, saveMessageActions } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
-    stores,
     theme,
     showOnlyMemberChat,
     showProfileIcons,
@@ -55,7 +54,6 @@
   import { shouldFilterMessage, stringifyRuns } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
-  import type { SyncStore } from 'svelte-webext-stores';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -97,10 +95,10 @@
     return result;
   };
 
-  const messageBlockers = [memberOnlyBlocker, emojiSpamBlocker, duplicateKeyBlocker];
+  const messageBlockers = [memberOnlyBlocker, emojiSpamBlocker];
 
   const shouldShowMessage = (m: Chat.MessageAction, forceDisplay = false): boolean => (
-    !messageBlockers.some(blocker => blocker(m)) || forceDisplay
+    ((!messageBlockers.some(blocker => blocker(m)) || forceDisplay) && !duplicateKeyBlocker(m))
     // do not flip the order of the conditions above
     // this gives the duplicateKeyBlocker a chance to add the key
   );
@@ -128,9 +126,17 @@
   // };
 
   const applyYtcf = (items: Chat.MessageAction[], forceDisplay = false) => {
+    const newItems = [];
     for (const a of items) {
-      if (isMessage(a) && (forceDisplay || shouldFilterMessage(a, $currentFilterPreset.filters))) messageActions.push(a);
+      if (
+        isMessage(a) &&
+        (forceDisplay || shouldFilterMessage(a, $currentFilterPreset.filters)) &&
+        shouldShowMessage(a, forceDisplay)
+      ) {
+        newItems.push(a);
+      }
     }
+    return newItems;
   };
 
   const newMessages = (
@@ -139,13 +145,12 @@
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
-      applyYtcf(filterTickers(messagesAction.messages).filter(
-        (a) => a.message.timestamp.startsWith('-') && shouldShowMessage(a, forceDisplay)
-      ), forceDisplay);
+      messageActions = [...messageActions, ...applyYtcf(filterTickers(messagesAction.messages).filter(
+        (a) => a.message.timestamp.startsWith('-')
+      ), forceDisplay)];
     } else {
-      applyYtcf(filterTickers(messagesAction.messages).filter(item => shouldShowMessage(item, forceDisplay)), forceDisplay);
+      messageActions = [...messageActions, ...applyYtcf(filterTickers(messagesAction.messages), forceDisplay)];
     }
-    messageActions = [...messageActions];
     // if (!isInitial) checkTruncateMessages();
   };
 
@@ -236,12 +241,12 @@
     }
     switch (response.type) {
       case 'initialData':
-        initialized = true;
         response.initialData.forEach((action) => {
           onChatAction(action, true);
         });
         $selfChannel = response.selfChannel;
         $videoInfo = response.videoInfo;
+        initialized = true;
         break;
       case 'themeUpdate':
         ytDark = response.dark;
@@ -389,8 +394,6 @@
     el.value = 'import';
   };
 
-  $: numMessages = messageActions.filter(isMessage).length;
-
   let screenshotElement: HTMLDivElement | undefined;
   let hiddenElement: HTMLDivElement | undefined;
   const exportScreenshot = async () => {
@@ -478,68 +481,32 @@
       info: $videoInfo
     }];
   };
-  let messageActionStorageInit = false;
-  let messageActionStorage: SyncStore<{
-    actions: Chat.MessageAction[];
-    key: string;
-  }> | undefined;
-  const saveMessageActions = () => {
-    if ($messageActionStorage) {
-      const key = $messageActionStorage.key;
-      if (!$storedMessageDumpKeys.find(item => item.key === key)) {
-        appendDumpKey(key);
-      }
-      $messageActionStorage = {
-        ...$messageActionStorage,
-        actions: messageActions.filter(isMessage)
-      };
-    }
+  const clearMessages = () => {
+    messageKeys.clear();
+    messageActions = [];
+    saveMessageActions(key, []);
   };
-  $: if (messageActionStorageInit && messageActionStorage && messageActions) {
-    saveMessageActions();
-  }
-  const readInActions = () => {
-    if ($messageActionStorage) {
-      messageActions = $messageActionStorage.actions;
-    }
-  };
-  $: if (messageActionStorage && $messageActionStorage) {
-    readInActions();
-  }
+  let key = '';
   const initMessageStorage = () => {
-    storedMessageDumpKeys.ready().then(() => {
-      const randomKey = getRandomString();
-      let key = randomKey;
-      $storedMessageDumpKeys.forEach(item => {
-        if (
-          (paramsContinuation && item.continuation === paramsContinuation) ||
-          ($videoInfo && item.info?.video?.videoId === $videoInfo.video.videoId)
-        ) {
-          key = item.key;
-        }
-      });
-      if (key === randomKey) {
-        appendDumpKey(key);
-      }
-      messageActionStorage = stores.addSyncStore(`ytcf.messageActions.${key}`, {
-        actions: [] as Chat.MessageAction[],
-        key
-      });
-      messageActionStorage.ready().then(() => {
-        if (messageActionStorage) {
-          const data = $messageActionStorage;
-          if (data && data.actions.length) {
-            newMessages({
-              type: 'messages',
-              messages: data.actions as Chat.MessageAction[]
-            }, false, true);
-          }
-          messageActionStorageInit = true;
-        }
-      });
+    storedMessageDumpKeys.ready().then(async () => {
+      const newkey = $storedMessageDumpKeys.find(item => {
+        return (paramsContinuation && item.continuation.includes(paramsContinuation)) ||
+          ($videoInfo && item.info?.video?.videoId === $videoInfo.video.videoId);
+      })?.key || getRandomString();
+      appendDumpKey(newkey);
+      key = newkey;
+      newMessages({
+        type: 'messages',
+        messages: await getSavedMessageActions(key)
+      }, false, true);
     });
   };
-  $: if (initialized) initMessageStorage();
+  $: if (initialized) {
+    initMessageStorage();
+  }
+  $: if (key) {
+    saveMessageActions(key, messageActions.filter(isMessage));
+  }
   let isPopout = false;
   onMount(() => {
     try {
@@ -600,7 +567,7 @@
         <option value="textfile">Text File</option>
         <option value="jsondump">JSON Dump</option>
       </select>
-      <button use:exioButton on:click={() => (messageActions = [])} class="whitespace-nowrap">Clear All</button>
+      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">Clear All</button>
       {#if isPopout}
         <button use:exioButton on:click={openSettings} class="inline-flex gap-1">
           Settings

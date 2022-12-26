@@ -36,4 +36,9 @@ declare namespace YtcF {
     triggers: PresetTrigger[];
     activation: 'manual' | 'auto';
   }
+  interface MessageDumpItem {
+    continuation: string[];
+    info: SimpleVideoInfo | null;
+    key: string;
+  }
 }

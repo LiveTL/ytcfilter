@@ -10,6 +10,30 @@ export const createPopup = (url: string): void => {
   chrome.runtime.sendMessage({ type: 'createPopup', url });
 };
 
+const keyGen = (key: string): string => `ytcf.savedMessageActions.${key}`;
+
+export const saveMessageActions = async (
+  key: string,
+  actions: Chat.MessageAction[]
+): Promise<void> => {
+  return await chrome.storage.local.set({ [keyGen(key)]: actions });
+};
+
+export const clearSavedMessageActions = async (key: string): Promise<void> => {
+  return await chrome.storage.local.remove(keyGen(key));
+};
+
+export const getSavedMessageActions = async (
+  key: string
+): Promise<Chat.MessageAction[]> => {
+  return await new Promise((resolve) => {
+    const k = keyGen(key);
+    chrome.storage.local.get(k, (s) => {
+      resolve(s[k] || []);
+    });
+  });
+};
+
 export function getRandomString(len = 10): string {
   const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   const randomString: string[] = [];
