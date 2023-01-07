@@ -1,3 +1,6 @@
+import { stores } from './storage';
+import { stringifyRuns } from './ytcf-utils';
+
 export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.ChatFilter[]): boolean {
   const msg = action.message;
   for (const filter of filters) {
@@ -93,22 +96,10 @@ export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleVide
   return null;
 }
 
-export const stringifyRuns = (msg: Ytc.ParsedRun[]): string => {
-  return msg.map(m => {
-    if (m.type === 'text') {
-      return m.text;
-    } else if (m.type === 'emoji') {
-      return `:${m.alt}:`;
-    } else {
-      return m.text;
-    }
-  }).join('');
-};
-
-const getV2Storage = async () => {
+const getV2Storage = async (): Promise<void> => {
   return await new Promise((resolve, reject) => {
     try {
-      chrome.storage.local.get('@@vwe-persistence', (s) =>
+      ((window as any).browser ?? window.chrome).storage.local.get('@@vwe-persistence', (s) =>
         resolve(s['@@vwe-persistence'] || null)
       );
     } catch (e) {
@@ -133,41 +124,30 @@ const filterMessageDumpInfoKeyNames = (key: string): boolean => key.startsWith(
 export const getSavedMessageDump = async (
   key: string
 ): Promise<YtcF.MessageDumpActionsItem | undefined> => {
-  return await new Promise((resolve) => {
-    const k = keyGen(key, 'actions');
-    chrome.storage.local.get(k, (s) => {
-      resolve((s[k] as YtcF.MessageDumpActionsItem | undefined));
-    });
-  });
+  const k = keyGen(key, 'actions');
+  const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpActionsItem | undefined, false);
+  return await s.get();
 };
 
 export const getSavedMessageDumpInfo = async (
   key: string
 ): Promise<YtcF.MessageDumpInfoItem> => {
-  return await new Promise((resolve) => {
-    const k = keyGen(key, 'info');
-    chrome.storage.local.get(k, (s) => {
-      const r = s[k] as YtcF.MessageDumpInfoItem | undefined;
-      resolve(r === undefined
-        ? {
-            continuation: [],
-            info: null,
-            key
-          }
-        : r);
-    });
-  });
+  const k = keyGen(key, 'info');
+  const d: YtcF.MessageDumpInfoItem = {
+    continuation: [],
+    info: null,
+    key
+  };
+  const s = stores.addSyncStore(k, d, false);
+  return await s.get();
 };
 
 export const getSavedMessageDumpActions = async (
   key: string
 ): Promise<YtcF.MessageDumpActionsItem | undefined> => {
-  return await new Promise((resolve) => {
-    const k = keyGen(key, 'actions');
-    chrome.storage.local.get(k, (s) => {
-      resolve((s[k] as YtcF.MessageDumpActionsItem | undefined));
-    });
-  });
+  const k = keyGen(key, 'actions');
+  const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpActionsItem | undefined, false);
+  return await s.get();
 };
 
 export const saveMessageActions = async (
@@ -197,41 +177,58 @@ export const saveMessageActions = async (
     },
     key
   };
-  await chrome.storage.local.set({ [keyGen(key, 'info')]: obj });
-  await chrome.storage.local.set({ [keyGen(key, 'actions')]: actions });
+  const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  infoStore.set(obj);
+  const actionsStore = stores.addSyncStore(keyGen(key, 'actions'), actions, false);
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  actionsStore.set(actions);
 };
 
 export const clearSavedMessageActions = async (key: string): Promise<void> => {
-  return await chrome.storage.local.remove(keyGen(key));
+  const s = stores.addSyncStore(keyGen(key, 'actions'), undefined as YtcF.MessageDumpActionsItem | undefined, false);
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  s.set(undefined);
 };
 
 export const getAllSavedMessageActionKeys = async (): Promise<string[]> => {
-  return await new Promise((resolve) => {
-    chrome.storage.local.get(null, (s) => {
-      resolve(
-        Object.keys(s)
-          .filter(filterMessageDumpInfoKeyNames)
-      );
-    });
-  });
+  // return await new Promise((resolve) => {
+  //   chrome.storage.local.get(null, (s) => {
+  //     resolve(
+  //       Object.keys(s)
+  //         .filter(filterMessageDumpInfoKeyNames)
+  //     );
+  //   });
+  // });
+  const data = JSON.parse(await stores.exportJson());
+  return Object.keys(data).filter(filterMessageDumpInfoKeyNames);
 };
 
 export const findSavedMessageActionKey = async (
   continuation: string | null,
   info: SimpleVideoInfo | null
 ): Promise<string | null> => {
-  return await new Promise((resolve) => {
-    chrome.storage.local.get(null, (s) => {
-      const keys = Object.keys(s).filter(filterMessageDumpInfoKeyNames);
-      for (const key of keys) {
-        const dump = s[key] as YtcF.MessageDumpInfoItem;
-        if ((continuation !== null && dump.continuation.includes(continuation)) ||
-          (info !== null && dump.info?.video?.videoId === info.video.videoId)) {
-          resolve(key);
-          return;
-        }
-      }
-      resolve(null);
-    });
-  });
+  // return await new Promise((resolve) => {
+  //   chrome.storage.local.get(null, (s) => {
+  //     const keys = Object.keys(s).filter(filterMessageDumpInfoKeyNames);
+  //     for (const key of keys) {
+  //       const dump = s[key] as YtcF.MessageDumpInfoItem;
+  //       if ((continuation !== null && dump.continuation.includes(continuation)) ||
+  //         (info !== null && dump.info?.video?.videoId === info.video.videoId)) {
+  //         resolve(key);
+  //         return;
+  //       }
+  //     }
+  //     resolve(null);
+  //   });
+  // });
+  const allMessageKeys = await getAllSavedMessageActionKeys();
+  for (const key of allMessageKeys) {
+    const dump = await getSavedMessageDumpInfo(key);
+    if ((continuation !== null && dump.continuation.includes(continuation)) ||
+      (info !== null && dump.info?.video?.videoId === info.video.videoId)) {
+      return key;
+    }
+  }
+  return null;
 };

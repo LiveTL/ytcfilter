@@ -1,4 +1,4 @@
-import { stringifyRuns } from '../ts/ytcf-logic';
+import { stringifyRuns } from '../ts/ytcf-utils';
 import { fixLeaks } from '../ts/ytc-fix-memleaks';
 import { parseMessageRuns } from '../ts/chat-parser';
 

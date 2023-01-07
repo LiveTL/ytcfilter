@@ -482,6 +482,7 @@
     let tempKey = await findSavedMessageActionKey(paramsContinuation, $videoInfo);
     tempKey = tempKey === null ? getRandomString() : tempKey;
     const newMsgs = await getSavedMessageDumpActions(tempKey);
+    console.log(tempKey, newMsgs); // TODO FIGURE OUT WHY THIS ISN'T WORKING
     if (newMsgs?.length) {
       newMessages({
         type: 'messages',
