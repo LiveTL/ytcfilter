@@ -49,7 +49,7 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
         }
         numSatisfied++;
       }
-      if (numSatisfied === filter.conditions.length) {
+      if (numSatisfied > 0 && numSatisfied === filter.conditions.length) {
         return true;
       }
     }
