@@ -4,7 +4,6 @@ import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
 import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
-import { getOverridePreset } from './ytcf-logic';
 
 const INITIAL_PRESET_ID = 'initial-preset-id'; // all other ids will be random
 
@@ -95,21 +94,19 @@ export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [
   triggers: [],
   activation: 'manual'
 }] as YtcF.FilterPreset[], true);
-export const defaultFilterPresetId = stores.addSyncStore('ytcf.defaultFilterPresetId', INITIAL_PRESET_ID);
-export const overrideFilterPresetId = writable(null as null | string);
+export const defaultFilterPresetId = stores.addSyncStore('ytcf.defaultFilterPresetId', INITIAL_PRESET_ID, false);
 export const videoInfo = writable(null as null | SimpleVideoInfo);
+export const overrideFilterPresetId = writable(null as null | string);
 export const currentFilterPreset = derived(
-  [chatFilterPresets, defaultFilterPresetId, videoInfo],
-  ([$chatFilterPresets, $defaultFilterPresetId, $videoInfo]) => {
-    if ($videoInfo !== null) {
-      const result = getOverridePreset($chatFilterPresets, $videoInfo);
-      overrideFilterPresetId.set(result ? result.id : null);
+  [chatFilterPresets, defaultFilterPresetId, overrideFilterPresetId],
+  ([$chatFilterPresets, $defaultFilterPresetId, $overrideFilterPresetId]) => {
+    if ($overrideFilterPresetId != null) {
+      const result = $chatFilterPresets.find(preset => preset.id === $overrideFilterPresetId);
       if (result) {
         return result;
       }
     }
-    if ($defaultFilterPresetId === null) return $chatFilterPresets[0];
-    return $chatFilterPresets.find(preset => preset.id === $defaultFilterPresetId) as YtcF.FilterPreset;
+    return $chatFilterPresets.find(preset => preset.id === $defaultFilterPresetId) ?? $chatFilterPresets[0];
   }
 );
 export const dataTheme = derived(isDark, ($isDark) => isLiveTL || $isDark ? 'dark' : 'light');
@@ -137,3 +134,9 @@ export const popoutDims = stores.addSyncStore('ytcf.popoutDims', {
   height: 600
 });
 export const currentEditingPreset = writable(null as any as YtcF.FilterPreset);
+
+export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | null> => {
+  await chatFilterPresets.ready();
+  const presets = await chatFilterPresets.get();
+  return presets.find(preset => preset.id === id) ?? null;
+};

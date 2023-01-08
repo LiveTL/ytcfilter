@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../../stylesheets/scrollbar.css';
-  import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, confirmDialog, inputDialog, currentEditingPreset } from '../../ts/storage';
+  import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, confirmDialog, inputDialog, currentEditingPreset, getPresetById } from '../../ts/storage';
   import '../../stylesheets/ui.css';
   import '../../stylesheets/line.css';
   import '../../stylesheets/filters.css';
@@ -105,7 +105,7 @@
       item?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }, 100);
   };
-  const commitNewPreset = (name: string) => {
+  const commitNewPreset = async (name: string) => {
     const id = getRandomString();
     $chatFilterPresets = [...$chatFilterPresets, {
       id,
@@ -114,7 +114,7 @@
       triggers: [],
       activation: 'manual'
     }];
-    $currentEditingPreset = $chatFilterPresets.find(x => x.id === id) as YtcF.FilterPreset;
+    $currentEditingPreset = await getPresetById(id) as YtcF.FilterPreset;
     unsavedFilters = $currentEditingPreset.filters;
     presetDropdownValue = id;
   };
@@ -130,12 +130,10 @@
     };
   };
   let presetDropdownValue = '';
-  defaultFilterPresetId.ready().then(() => {
-    presetDropdownValue = $defaultFilterPresetId;
-  });
+  $: presetDropdownValue = presetDropdownValue || $currentFilterPreset.id;
   const changeEditingPreset = async () => {
     await tick();
-    $currentEditingPreset = $chatFilterPresets.find(x => x.id === presetDropdownValue) ?? $currentEditingPreset;
+    $currentEditingPreset = await getPresetById(presetDropdownValue) ?? $currentEditingPreset;
     unsavedFilters = $currentEditingPreset.filters;
   };
   const deletePreset = () => {

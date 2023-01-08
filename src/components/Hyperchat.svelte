@@ -46,11 +46,12 @@
     chatFilterPresets,
     dataTheme,
     defaultFilterPresetId,
-    overrideFilterPresetId,
-    videoInfo
+    videoInfo,
+    overrideFilterPresetId
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, stringifyRuns, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset } from '../ts/ytcf-logic';
+  import { stringifyRuns } from '../ts/ytcf-utils';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -124,12 +125,12 @@
   //   messageActions = messageActions;
   // };
 
-  const applyYtcf = (items: Chat.MessageAction[], forceDisplay = false) => {
+  const applyYtcf = async (items: Chat.MessageAction[], forceDisplay = false) => {
     const newItems = [];
     for (const a of items) {
       if (
         isMessage(a) &&
-        (forceDisplay || shouldFilterMessage(a, $currentFilterPreset.filters)) &&
+        (forceDisplay || await shouldFilterMessage(a)) &&
         shouldShowMessage(a, forceDisplay)
       ) {
         newItems.push(a);
@@ -138,17 +139,17 @@
     return newItems;
   };
 
-  const newMessages = (
+  const newMessages = async (
     messagesAction: Chat.MessagesAction, isInitial: boolean, forceDisplay = false
   ) => {
     if (!isAtBottom) return;
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
-      messageActions = [...messageActions, ...applyYtcf(filterTickers(messagesAction.messages).filter(
+      messageActions = [...messageActions, ...(await applyYtcf(filterTickers(messagesAction.messages).filter(
         (a) => a.message.timestamp.startsWith('-')
-      ), forceDisplay)];
+      ), forceDisplay))];
     } else {
-      messageActions = [...messageActions, ...applyYtcf(filterTickers(messagesAction.messages), forceDisplay)];
+      messageActions = [...messageActions, ...(await applyYtcf(filterTickers(messagesAction.messages), forceDisplay))];
     }
     // if (!isInitial) checkTruncateMessages();
   };
@@ -482,7 +483,6 @@
     let tempKey = await findSavedMessageActionKey(paramsContinuation, $videoInfo);
     tempKey = tempKey === null ? getRandomString() : tempKey;
     const newMsgs = await getSavedMessageDumpActions(tempKey);
-    console.log(tempKey, newMsgs); // TODO FIGURE OUT WHY THIS ISN'T WORKING
     if (newMsgs?.length) {
       newMessages({
         type: 'messages',
@@ -490,6 +490,10 @@
       }, false, true);
     }
     key = tempKey;
+    const cachedPreset = (await getSavedMessageDumpInfo(key))?.presetId;
+    if (!$overrideFilterPresetId && cachedPreset) {
+      $overrideFilterPresetId = cachedPreset;
+    }
   };
   $: if (initialized) {
     initMessageStorage();
@@ -499,7 +503,8 @@
       key,
       paramsContinuation,
       $videoInfo,
-      messageActions.filter(isMessage)
+      messageActions.filter(isMessage),
+      $currentFilterPreset.id
     );
   }
   let isPopout = false;
@@ -514,18 +519,25 @@
   });
   const openSettings = () => createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
 
-  let currentlyActivePresetId = '';
-  defaultFilterPresetId.ready().then(() => {
-    currentlyActivePresetId = $defaultFilterPresetId;
-  });
-  $: if (currentlyActivePresetId) {
-    currentlyActivePresetId = $overrideFilterPresetId || $defaultFilterPresetId;
-  }
-  const presetChanged = (e: Event) => {
+  const presetChangedManually = (e: Event) => {
     const target = e.target as HTMLSelectElement;
     const presetId = target.value;
     $defaultFilterPresetId = presetId;
+    $overrideFilterPresetId = presetId;
   };
+
+  const overwriteOverride = () => {
+    if ($videoInfo) {
+      const result = getAutoActivatedPreset($chatFilterPresets, $videoInfo);
+      if (result) {
+        $overrideFilterPresetId = result.id;
+      }
+    }
+  };
+
+  $: if (initialized && $videoInfo !== null) {
+    overwriteOverride();
+  }
 </script>
 
 <ReportBanDialog />
@@ -544,9 +556,11 @@
       <!-- <span class="tiny-text">
         Preset:
       </span> -->
-      <select use:exioDropdown value={currentlyActivePresetId} on:change={presetChanged} class="preset-selector">
+      <select use:exioDropdown value={
+        $currentFilterPreset?.id
+      } on:change={presetChangedManually} class="preset-selector">
         {#each $chatFilterPresets as preset}
-          <option selected value={preset.id}>{preset.nickname}</option>
+          <option value={preset.id}>{preset.nickname}</option>
         {/each}
       </select>
     </div>

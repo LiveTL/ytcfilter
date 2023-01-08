@@ -61,7 +61,6 @@
   function toggleMouse(toggle: boolean) {
     const elem = document.querySelector('#hyperchat') as HTMLIFrameElement | null;
     if (elem) {
-      console.log(elem, toggle);
       elem.style.pointerEvents = toggle ? 'none' : 'auto';
       elem.style.touchAction = toggle ? 'none' : 'auto';
     }

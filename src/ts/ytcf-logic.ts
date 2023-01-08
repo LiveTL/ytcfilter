@@ -1,7 +1,12 @@
-import { stores } from './storage';
+import { get } from 'svelte/store';
+import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId } from './storage';
 import { stringifyRuns } from './ytcf-utils';
 
-export function shouldFilterMessage(action: Chat.MessageAction, filters: YtcF.ChatFilter[]): boolean {
+const browserObject = (window.chrome ?? (window as any).browser);
+
+export async function shouldFilterMessage(action: Chat.MessageAction): Promise<boolean> {
+  await Promise.all([chatFilterPresets.ready(), defaultFilterPresetId.ready()]);
+  const filters = get(currentFilterPreset).filters;
   const msg = action.message;
   for (const filter of filters) {
     if (filter.enabled) {
@@ -87,7 +92,7 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVide
   return false;
 }
 
-export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleVideoInfo): YtcF.FilterPreset | null {
+export function getAutoActivatedPreset(presets: YtcF.FilterPreset[], info: SimpleVideoInfo): YtcF.FilterPreset | null {
   for (const preset of presets) {
     if (shouldActivatePreset(preset, info)) {
       return preset;
@@ -99,7 +104,7 @@ export function getOverridePreset(presets: YtcF.FilterPreset[], info: SimpleVide
 const getV2Storage = async (): Promise<void> => {
   return await new Promise((resolve, reject) => {
     try {
-      ((window as any).browser ?? window.chrome).storage.local.get('@@vwe-persistence', (s) =>
+      browserObject.storage.local.get('@@vwe-persistence', (s) =>
         resolve(s['@@vwe-persistence'] || null)
       );
     } catch (e) {
@@ -116,7 +121,7 @@ export const migrateV2toV3 = async () => {
 
 const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
 
-const keyGen = (key: string, dataType: 'info' | 'actions' = 'info'): string => `${MESSAGE_ACTION_PREFIX}.${dataType}.${key}`;
+const keyGen = (key: string, dataType: 'info' | 'actions' = 'info'): string => `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
 const filterMessageDumpInfoKeyNames = (key: string): boolean => key.startsWith(
   keyGen('', 'info')
 );
@@ -126,6 +131,7 @@ export const getSavedMessageDump = async (
 ): Promise<YtcF.MessageDumpActionsItem | undefined> => {
   const k = keyGen(key, 'actions');
   const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpActionsItem | undefined, false);
+  await s.ready();
   return await s.get();
 };
 
@@ -136,9 +142,11 @@ export const getSavedMessageDumpInfo = async (
   const d: YtcF.MessageDumpInfoItem = {
     continuation: [],
     info: null,
-    key
+    key,
+    presetId: null
   };
   const s = stores.addSyncStore(k, d, false);
+  await s.ready();
   return await s.get();
 };
 
@@ -147,6 +155,7 @@ export const getSavedMessageDumpActions = async (
 ): Promise<YtcF.MessageDumpActionsItem | undefined> => {
   const k = keyGen(key, 'actions');
   const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpActionsItem | undefined, false);
+  await s.ready();
   return await s.get();
 };
 
@@ -154,7 +163,8 @@ export const saveMessageActions = async (
   key: string,
   continuation: string | null,
   info: SimpleVideoInfo | null,
-  actions: Chat.MessageAction[]
+  actions: Chat.MessageAction[],
+  presetId: string
 ): Promise<void> => {
   const lastObj = await getSavedMessageDumpInfo(key);
   const obj: YtcF.MessageDumpInfoItem = {
@@ -175,33 +185,33 @@ export const saveMessageActions = async (
         title: info?.video.title ?? lastObj.info?.video.title ?? ''
       }
     },
-    key
+    key,
+    presetId
   };
   const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
+  await infoStore.ready();
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   infoStore.set(obj);
   const actionsStore = stores.addSyncStore(keyGen(key, 'actions'), actions, false);
+  await actionsStore.ready();
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   actionsStore.set(actions);
 };
 
-export const clearSavedMessageActions = async (key: string): Promise<void> => {
-  const s = stores.addSyncStore(keyGen(key, 'actions'), undefined as YtcF.MessageDumpActionsItem | undefined, false);
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  s.set(undefined);
+export const deleteSavedMessageActions = async (key: string): Promise<void> => {
+  await browserObject.storage.local.remove([keyGen(key, 'info'), keyGen(key, 'actions')]);
 };
 
 export const getAllSavedMessageActionKeys = async (): Promise<string[]> => {
-  // return await new Promise((resolve) => {
-  //   chrome.storage.local.get(null, (s) => {
-  //     resolve(
-  //       Object.keys(s)
-  //         .filter(filterMessageDumpInfoKeyNames)
-  //     );
-  //   });
-  // });
-  const data = JSON.parse(await stores.exportJson());
-  return Object.keys(data).filter(filterMessageDumpInfoKeyNames);
+  return await new Promise((resolve) => {
+    browserObject.storage.local.get(null, (s: any) => {
+      resolve(
+        Object.keys(s)
+          .filter(filterMessageDumpInfoKeyNames)
+          .map((k) => k.replace(keyGen('', 'info'), ''))
+      );
+    });
+  });
 };
 
 export const findSavedMessageActionKey = async (
@@ -226,7 +236,7 @@ export const findSavedMessageActionKey = async (
   for (const key of allMessageKeys) {
     const dump = await getSavedMessageDumpInfo(key);
     if ((continuation !== null && dump.continuation.includes(continuation)) ||
-      (info !== null && dump.info?.video?.videoId === info.video.videoId)) {
+      (info?.video != null && dump.info?.video?.videoId === info.video.videoId)) {
       return key;
     }
   }

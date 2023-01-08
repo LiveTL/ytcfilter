@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
-    chatFilterPresets,
-    defaultFilterPresetId,
+    currentFilterPreset,
     videoInfo
   } from '../ts/storage';
   const classes = 'p-2 rounded inline-flex flex-col overflow-hidden bg-secondary-50 dark:bg-secondary-600 pointer-events-none touch-none select-none';
@@ -14,10 +13,10 @@
     <br />
     <strong>Preset:</strong>
     <span class="trimmed">
-      {$chatFilterPresets.find(p => p.id === $defaultFilterPresetId)?.nickname}
+      {$currentFilterPreset?.nickname}
     </span>
     <span>
-      ({$chatFilterPresets.find(p => p.id === $defaultFilterPresetId)?.filters.filter(f => f.enabled).length} filters)
+      ({$currentFilterPreset?.filters.filter(f => f.enabled).length} filters)
     </span>
     <br />
     <strong>Video:</strong>
