@@ -161,7 +161,6 @@
       $defaultFilterPresetId = $currentEditingPreset.id;
     }
     unsavedFilters = $currentEditingPreset.filters;
-    presetDropdownValue = $currentEditingPreset.id;
   };
   const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string) => {
