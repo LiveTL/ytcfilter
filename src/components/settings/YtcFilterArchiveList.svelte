@@ -6,7 +6,6 @@
   const updateData = async () => {
     data = await getAllMessageDumps();
   };
-  $: console.log(data);
   updateData();
   export const refreshFunc = updateData;
 </script>

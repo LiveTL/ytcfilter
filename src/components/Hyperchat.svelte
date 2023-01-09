@@ -402,6 +402,18 @@
     clonedNode.id = 'screenshot-element';
     hiddenElement?.appendChild(clonedNode);
     const style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
+    const bottomNode = document.createElement('div');
+    clonedNode.appendChild(bottomNode);
+    bottomNode.id = 'screenshot-bottom';
+    const hrefNode = document.createElement('div');
+    hrefNode.style.textDecoration = 'underline';
+    bottomNode.style.transform = 'skew(-7.5deg)';
+    hrefNode.innerText = 'livetl.app/ytcfilter';
+    const spanNode = document.createElement('span');
+    spanNode.innerHTML = 'Filtered with YtcFilter. ';
+    spanNode.style.whiteSpace = 'pre';
+    bottomNode.appendChild(spanNode);
+    bottomNode.appendChild(hrefNode);
     style.innerHTML = `
       #screenshot-element img {
         transform: translateY(35%);
@@ -415,17 +427,6 @@
       #screenshot-element {
         padding-bottom: 20px;
       }
-      #screenshot-element::after {
-        width: 100vw;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        content: 'Exported from YtcFilter by LiveTL';
-        position: absolute;
-        bottom: 7px;
-        font-weight: bold;
-      }
       #screenshot-element::before {
         background-color: transparent; /* rgba(128, 128, 128, 0.1); */
         width: 100vw;
@@ -433,6 +434,17 @@
         bottom: 0px;
         content: '';
         position: absolute;
+      }
+      #screenshot-bottom {
+        width: 100vw;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        bottom: 7px;
+        font-weight: bold;
+        z-index: 100;
       }
     `;
     html2canvas(clonedNode, {
@@ -565,18 +577,18 @@
       </select>
     </div>
     <div style="display: flex; justify-content: flex-end;">
-      <select use:exioDropdown on:change={executeImport} style="width: 72px;">
-        <option selected disabled value="import">Import</option>
+      <select use:exioDropdown on:change={executeImport} style="width: 64px;">
+        <option selected disabled value="import">Load</option>
         <option value="savedarchive">Archive</option>
         <option value="jsondump">JSON</option>
       </select>
-      <select use:exioDropdown on:change={executeExport} disabled={showWelcome} style="width: 72px;">
-        <option selected disabled value="export">Export</option>
+      <select use:exioDropdown on:change={executeExport} disabled={showWelcome} style="width: 64px;">
+        <option selected disabled value="export">Save</option>
         <option value="screenshot">PNG</option>
         <option value="textfile">TXT</option>
         <option value="jsondump">JSON</option>
       </select>
-      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">Clear All</button>
+      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">Clear</button>
       {#if isPopout}
         <button use:exioButton on:click={openSettings} class="inline-flex gap-1">
           Settings
