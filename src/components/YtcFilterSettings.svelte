@@ -9,6 +9,7 @@
   import YtcFilterGeneral from './settings/YtcFilterGeneral.svelte';
   import YtcFilterFilters from './settings/YtcFilterFilters.svelte';
   import { exioButton, exioComponent } from 'exio/svelte';
+  import YtcFilterArchives from './settings/YtcFilterArchives.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
   const tabs = [{
     name: 'Filters',
@@ -16,6 +17,9 @@
   }, {
     name: 'Appearance',
     component: YtcFilterGeneral
+  }, {
+    name: 'Archives',
+    component: YtcFilterArchives
   }];
   let tabIndex = 0;
 </script>
@@ -29,9 +33,9 @@
 
 <div class="navbar">
   {#each tabs as tab, i}
-    <button class="navbar-item blue-text" use:exioButton on:click={() => {
+    <button class="navbar-item" use:exioButton on:click={() => {
       tabIndex = i;
-    }}>
+    }} class:blue-text={tabIndex === i}>
       {tab.name}
     </button>
   {/each}
@@ -55,13 +59,9 @@
     background-color: black;
   }
   .wrapper {
-    color: black;
     font-size: 1rem;
     height: 100%;
     padding-top: 42px;
-  }
-  .wrapper[data-theme='dark'] {
-    color: white;
   }
   .navbar {
     height: 50px;
@@ -87,12 +87,14 @@
     background-color: transparent;
     color: initial;
     background-color: #ececec;
+    color: black;
   }
   :global([data-theme='dark']) .navbar-item {
+    color: white;
     background-color: #131313;
   }
   :global([data-theme='dark']) .navbar-underline {
-    box-shadow: 2px 2.5px 10px #0080e9;
+    box-shadow: 0px 1px 10px #0080e9;
   }
   .navbar-underline {
     position: absolute;
@@ -101,6 +103,6 @@
     height: 2px;
     z-index: -1;
     transition: transform 0.15s ease-in-out;
-    box-shadow: 2px 2.5px 10px #5dceff;
+    box-shadow: 0px 1px 10px #5dceff;
   }
 </style>

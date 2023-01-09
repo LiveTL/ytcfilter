@@ -565,16 +565,16 @@
       </select>
     </div>
     <div style="display: flex; justify-content: flex-end;">
-      <select use:exioDropdown on:change={executeImport} style="margin-right: 2.5px; width: 83px;">
-        <option selected disabled value="import">Import...</option>
-        <option value="savedarchive">From History</option>
-        <option value="jsondump">JSON Dump</option>
+      <select use:exioDropdown on:change={executeImport} style="width: 72px;">
+        <option selected disabled value="import">Import</option>
+        <option value="savedarchive">Archive</option>
+        <option value="jsondump">JSON</option>
       </select>
-      <select use:exioDropdown on:change={executeExport} disabled={showWelcome} style="width: 80px;">
-        <option selected disabled value="export">Export...</option>
-        <option value="screenshot">Screenshot</option>
-        <option value="textfile">Text File</option>
-        <option value="jsondump">JSON Dump</option>
+      <select use:exioDropdown on:change={executeExport} disabled={showWelcome} style="width: 72px;">
+        <option selected disabled value="export">Export</option>
+        <option value="screenshot">PNG</option>
+        <option value="textfile">TXT</option>
+        <option value="jsondump">JSON</option>
       </select>
       <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">Clear All</button>
       {#if isPopout}

@@ -186,7 +186,8 @@ export const saveMessageActions = async (
       }
     },
     key,
-    presetId
+    presetId,
+    lastEdited: Date.now()
   };
   const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
   await infoStore.ready();
@@ -241,4 +242,11 @@ export const findSavedMessageActionKey = async (
     }
   }
   return null;
+};
+
+export const getAllMessageDumps = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
+  const allMessageKeys = await getAllSavedMessageActionKeys();
+  return (await Promise.all(allMessageKeys.map(async (k) => await getSavedMessageDumpInfo(k)))).sort((a, b) => {
+    return a.lastEdited - b.lastEdited;
+  }).reverse();
 };

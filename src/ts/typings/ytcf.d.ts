@@ -41,6 +41,7 @@ declare namespace YtcF {
     info: SimpleVideoInfo | null;
     key: string;
     presetId: string | null;
+    lastEdited: number;
   }
   export type MessageDumpActionsItem = Chat.MessageAction[];
 }
