@@ -17,7 +17,10 @@
   const newFilter = async () => {
     const id = getRandomString();
     $currentEditingPreset.filters = [...$currentEditingPreset.filters, {
-      nickname: 'Unnamed Filter ' + ($currentEditingPreset.filters.length + 1),
+      nickname: 'Unnamed Filter ' + (($currentEditingPreset.filters.filter(item => {
+        return item.nickname?.startsWith('Unnamed Filter ');
+      }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
+        .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1),
       type: 'basic',
       id,
       conditions: [{
@@ -100,7 +103,6 @@
     saveFilters();
     setTimeout(() => {
       const item = getLastFilterItem(filter.id);
-      console.log(item?.querySelector('input'));
       (Array.from(item?.querySelectorAll('.filter-content-item')).pop() as any)?.select();
       item?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }, 100);
@@ -126,7 +128,10 @@
         text: 'Create',
         callback: commitNewPreset
       },
-      originalValue: 'Preset ' + ($chatFilterPresets.length + 1)
+      originalValue: 'Preset ' + ((($chatFilterPresets.filter(item => {
+        return item.nickname?.startsWith('Preset ');
+      }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
+        .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1))
     };
   };
   let presetDropdownValue = '';

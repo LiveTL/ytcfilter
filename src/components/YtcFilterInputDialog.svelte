@@ -29,8 +29,13 @@
     open = false;
     setTimeout(() => {
       open = toOpen;
+      if (toOpen) {
+        inputItem?.focus();
+        inputItem?.select();
+      }
     }, 0);
   }
+  let inputItem: HTMLInputElement | null = null;
 </script>
 
 <dialog
@@ -62,6 +67,7 @@
           $inputDialog = null;
         }
       }}
+      bind:this={inputItem}
     />
     {#if component}
       <br />
