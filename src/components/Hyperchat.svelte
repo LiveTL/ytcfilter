@@ -451,7 +451,8 @@
       useCORS: true,
       backgroundColor: getComputedStyle(document.body).backgroundColor,
       width: screenshotElement?.clientWidth,
-      scale: 4
+      scale: 2,
+      allowTaint: true
     }).then((canvas: HTMLCanvasElement) => {
       const a = document.createElement('a');
       a.href = canvas.toDataURL('image/png');
