@@ -11,13 +11,16 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
   for (const filter of filters) {
     if (filter.enabled) {
       let numSatisfied = 0;
+      let numValidFilters = filter.conditions.length;
       for (const condition of filter.conditions) {
         if (condition.type === 'boolean') {
           if ((
             condition.property === 'superchat' && Boolean(msg.superChat) === condition.invert
           ) || (
             msg.author.types.includes(condition.property) === condition.invert
-          )) numSatisfied++;
+          )) {
+            numSatisfied++;
+          }
         } else {
           let compStr = '';
           switch (condition.property) {
@@ -36,20 +39,24 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
             const s1 = condition.caseSensitive ? compStr : compStr.toLowerCase();
             const s2 = condition.caseSensitive ? condition.value : condition.value.toLowerCase();
             const result = s1[condition.type](s2);
-            if (result === condition.invert) {
+            if (!s2) {
+              numValidFilters--;
+            } else if (result === condition.invert) {
               break;
             }
           } else {
             const regex = new RegExp(condition.value, condition.caseSensitive ? '' : 'i');
             const result = regex.test(compStr);
-            if (result === condition.invert) {
+            if (!condition.value) {
+              numValidFilters--;
+            } else if (result === condition.invert) {
               break;
             }
           }
         }
         numSatisfied++;
       }
-      if (numSatisfied > 0 && numSatisfied === filter.conditions.length) {
+      if (numSatisfied > 0 && numSatisfied === numValidFilters) {
         return true;
       }
     }
