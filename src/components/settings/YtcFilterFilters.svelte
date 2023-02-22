@@ -107,11 +107,11 @@
       item?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }, 100);
   };
-  const commitNewPreset = async (name: string) => {
+  const commitNewPreset = async (name: string[]) => {
     const id = getRandomString();
     $chatFilterPresets = [...$chatFilterPresets, {
       id,
-      nickname: name || 'Unnamed Preset',
+      nickname: name[0] || 'Unnamed Preset',
       filters: [],
       triggers: [],
       activation: 'manual'
@@ -128,10 +128,13 @@
         text: 'Create',
         callback: commitNewPreset
       },
-      originalValue: 'Preset ' + ((($chatFilterPresets.filter(item => {
-        return item.nickname?.startsWith('Preset ');
-      }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
-        .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1))
+      prompts: [{
+        originalValue: 'Preset ' + ((($chatFilterPresets.filter(item => {
+          return item.nickname?.startsWith('Preset ');
+        }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
+          .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1)),
+        label: 'Preset Name'
+      }]
     };
   };
   let presetDropdownValue = '';
@@ -163,8 +166,8 @@
     unsavedFilters = $currentEditingPreset.filters;
   };
   const renameItemCallback = (item: YtcF.FilterPreset) => {
-    const renameItem = (name: string) => {
-      item.nickname = name || 'Unnamed Preset';
+    const renameItem = (name: string[]) => {
+      item.nickname = name[0] || 'Unnamed Preset';
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
     };
     return renameItem;
@@ -187,7 +190,6 @@
         const beforeEdit = JSON.parse(JSON.stringify($currentEditingPreset));
         $inputDialog = {
           title: `Edit Preset "${$currentEditingPreset.nickname}"`,
-          originalValue: $currentEditingPreset.nickname,
           action: {
             callback: renameItemCallback($currentEditingPreset),
             cancelled: () => {
@@ -197,6 +199,10 @@
             },
             text: 'Save'
           },
+          prompts: [{
+            originalValue: $currentEditingPreset.nickname,
+            label: 'Preset Name'
+          }],
           component
         };
       }} use:exioButton>

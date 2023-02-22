@@ -120,11 +120,15 @@ export const confirmDialog = writable(null as null | {
 });
 export const inputDialog = writable(null as null | {
   title: string;
-  originalValue: string;
   message?: string;
+  prompts: Array<{
+    originalValue: string;
+    label: string;
+    hideLabel?: boolean;
+  }>;
   action: {
     text: string;
-    callback: (value: string) => void;
+    callback: (values: string[]) => void;
     cancelled?: () => void;
   };
   component?: any;

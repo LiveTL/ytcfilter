@@ -7,35 +7,60 @@
   let action = {
     text: '',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    callback: (s: string) => {},
+    callback: (s: string[]) => {},
     cancelled: () => {}
   };
   $: action = {
     ...($inputDialog?.action ?? action),
     cancelled: $inputDialog?.action.cancelled ?? (() => {})
   };
-  let value = '';
-  const setValue = (v?: string) => {
-    if (v) value = v;
+  let values: string[] = [];
+  const setValue = (v?: string[]) => {
+    if (v) values = v;
   };
-  $: setValue($inputDialog?.originalValue);
+  $: setValue($inputDialog?.prompts.map(p => p.originalValue));
+  let prompts: Array<{
+    originalValue: string;
+    label: string;
+    hideLabel?: Boolean;
+  }> = [];
+  $: prompts = $inputDialog?.prompts ?? prompts;
   let message = '';
   $: message = $inputDialog?.component ? '' : ($inputDialog?.message ?? message);
   let component: any = null;
   $: component = $inputDialog?.message ? null : ($inputDialog?.component ?? component);
   let open = false;
+  $: toOpen = Boolean($inputDialog);
   $: {
-    const toOpen = Boolean($inputDialog);
     open = false;
     setTimeout(() => {
       open = toOpen;
       if (toOpen) {
-        inputItem?.focus();
-        inputItem?.select();
+        focusInput();
       }
     }, 0);
   }
+  const focusInput = () => {
+    inputItem?.focus();
+    inputItem?.select();
+  };
   let inputItem: HTMLInputElement | null = null;
+  const zip = (prompts: Array<{ originalValue: string, label: string, hideLabel?: Boolean }>, values: string[]) => {
+    return prompts.map((p, i) => {
+      return {
+        ...p,
+        value: values[i]
+      };
+    });
+  };
+  const editCallback = ((index: number) => {
+    return (e: InputEvent) => {
+      values = values.map((v, i) => {
+        if (i === index) return (e.target as HTMLInputElement).value;
+        return v;
+      });
+    };
+  }) as any;
 </script>
 
 <dialog
@@ -53,22 +78,30 @@
       <span class="select-none">{message}</span>
       <br />
     {/if}
-    <input
-      type="text"
-      bind:value={value}
-      use:exioTextbox
-      style="width: 100%; {message ? 'margin-top: 10px;' : ''}"
-      on:keydown={e => {
-        if (e.key === 'Enter') {
-          action.callback(value);
-          $inputDialog = null;
-        } else if (e.key === 'Escape') {
-          action.cancelled();
-          $inputDialog = null;
-        }
-      }}
-      bind:this={inputItem}
-    />
+    {#each zip(prompts, values) as item, index}
+      {#if item.label && !('hideLabel' in item) && item.hideLabel}
+        <span class="select-none">{item.label}</span>
+        <br />
+      {/if}
+      <input
+        type="text"
+        value={item.originalValue}
+        use:exioTextbox
+        style="width: 100%; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: 10px;"
+        on:keydown={e => {
+          if (e.key === 'Enter') {
+            action.callback(values);
+            $inputDialog = null;
+          } else if (e.key === 'Escape') {
+            action.cancelled();
+            $inputDialog = null;
+          }
+        }}
+        on:input={editCallback(index)}
+        placeholder={item.label}
+        bind:this={inputItem}
+      />
+    {/each}
     {#if component}
       <br />
       <svelte:component this={component} />
@@ -81,13 +114,13 @@
     }} use:exioButton>Cancel</button>
     <button
       on:click={() => {
-        action.callback(value);
+        action.callback(values);
         $inputDialog = null;
       }}
       use:exioButton
       class="blue-bg"
     >{action.text}</button>
-  </div>
+    </div>
 </dialog>
 
 <style>

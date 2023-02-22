@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getAllMessageDumps } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
+  import { inputDialog } from '../../ts/storage';
   // import { exioIcon } from 'exio/svelte';
   let data: YtcF.MessageDumpInfoItem[] = [];
   const updateData = async () => {
@@ -8,6 +9,39 @@
   };
   updateData();
   export const refreshFunc = updateData;
+
+  const editArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
+    return () => {
+      $inputDialog = {
+        title: 'Edit Archive Entry',
+        action: {
+          text: 'Save',
+          callback: async (data: string[]) => {
+            console.log(data);
+          },
+          cancelled: () => {
+            $inputDialog = null;
+          }
+        },
+        prompts: [{
+          originalValue: item.info?.video.title || '',
+          label: 'Video Title'
+        }, {
+          originalValue: item.info?.video.videoId || '',
+          label: 'Video ID'
+        }, {
+          originalValue: item.info?.channel.name || '',
+          label: 'Channel Name'
+        }, {
+          originalValue: item.info?.channel.handle || '',
+          label: 'Channel Handle'
+        }, {
+          originalValue: item.info?.channel.channelId || '',
+          label: 'Channel ID'
+        }]
+      };
+    };
+  };
 </script>
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
@@ -30,7 +64,7 @@
         <div style="font-style: italic;">Last Updated: {new Date(item.lastEdited).toLocaleString()}</div>
       </div>
       <div class="item triple-buttons" style="padding: 0px;">
-        <button use:exioButton>
+        <button use:exioButton on:click={editArchiveEntry(item)}>
           <span use:exioIcon>edit</span>
         </button>
         <button use:exioButton class="blue-bg">

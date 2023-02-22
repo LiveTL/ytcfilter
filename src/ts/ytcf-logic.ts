@@ -150,7 +150,9 @@ export const getSavedMessageDumpInfo = async (
     continuation: [],
     info: null,
     key,
-    presetId: null
+    presetId: null,
+    title: '',
+    lastEdited: new Date().getTime()
   };
   const s = stores.addSyncStore(k, d, false);
   await s.ready();
@@ -194,7 +196,8 @@ export const saveMessageActions = async (
     },
     key,
     presetId,
-    lastEdited: Date.now()
+    lastEdited: Date.now(),
+    title: info?.video.title ?? lastObj.info?.video.title ?? `Unknown Video ${key}`
   };
   const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
   await infoStore.ready();

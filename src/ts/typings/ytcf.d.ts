@@ -37,6 +37,7 @@ declare namespace YtcF {
     activation: 'manual' | 'auto';
   }
   interface MessageDumpInfoItem {
+    title: string;
     continuation: string[];
     info: SimpleVideoInfo | null;
     key: string;
