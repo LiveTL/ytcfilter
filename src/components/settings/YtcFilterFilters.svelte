@@ -139,8 +139,9 @@
   };
   let presetDropdownValue = '';
   $: presetDropdownValue = presetDropdownValue || $currentFilterPreset.id;
-  const changeEditingPreset = async () => {
+  const changeEditingPreset = async (e: InputEvent) => {
     await tick();
+    presetDropdownValue = (e.target as HTMLSelectElement).value;
     $currentEditingPreset = await getPresetById(presetDropdownValue) ?? $currentEditingPreset;
     unsavedFilters = $currentEditingPreset.filters;
   };
@@ -156,14 +157,15 @@
       $currentEditingPreset = $chatFilterPresets[0];
       unsavedFilters = $currentEditingPreset.filters;
       $defaultFilterPresetId = $currentEditingPreset.id;
-      return;
+    } else {
+      $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
+      $currentEditingPreset = $chatFilterPresets[0] ?? $currentEditingPreset;
+      if ($defaultFilterPresetId === presetDropdownValue) {
+        $defaultFilterPresetId = $currentEditingPreset.id;
+      }
+      unsavedFilters = $currentEditingPreset.filters;
     }
-    $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
-    $currentEditingPreset = $chatFilterPresets[$chatFilterPresets.length - 1] ?? $currentEditingPreset;
-    if ($defaultFilterPresetId === presetDropdownValue) {
-      $defaultFilterPresetId = $currentEditingPreset.id;
-    }
-    unsavedFilters = $currentEditingPreset.filters;
+    presetDropdownValue = $currentEditingPreset.id;
   };
   const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string[]) => {
@@ -178,7 +180,7 @@
   <div class="preset-selector">
     <span>Filters</span>
     <div class="buttons">
-      <select use:exioDropdown on:change={changeEditingPreset} bind:value={presetDropdownValue} class="preset-dropdown">
+      <select use:exioDropdown on:change={changeEditingPreset} value={presetDropdownValue} class="preset-dropdown">
         {#each $chatFilterPresets as preset}
           <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
             {preset.nickname}
