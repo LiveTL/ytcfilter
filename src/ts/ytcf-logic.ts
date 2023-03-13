@@ -1,4 +1,5 @@
 import { get } from 'svelte/store';
+import { UNNAMED_ARCHIVE } from './chat-constants';
 import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId } from './storage';
 import { stringifyRuns } from './ytcf-utils';
 
@@ -226,7 +227,8 @@ export const saveMessageActions = async (
     key,
     presetId,
     lastEdited: Date.now(),
-    nickname: info?.video.title ?? lastObj.info?.video.title ?? `Unknown Video ${key}`
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
+    nickname: lastObj.nickname || UNNAMED_ARCHIVE
   };
   const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
   await infoStore.ready();

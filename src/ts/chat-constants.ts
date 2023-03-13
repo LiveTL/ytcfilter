@@ -102,3 +102,5 @@ export const chatUserActionsItems = [
 export const membershipBackground = '0f9d58';
 export const milestoneChatBackground = '107516';
 export const UNDONE_MSG = 'This action cannot be undone.';
+export const UNNAMED_ARCHIVE = 'Unnamed Archive';
+export const UNNAMED_FILTER = 'Unnamed Filter';

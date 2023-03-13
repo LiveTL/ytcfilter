@@ -14,7 +14,7 @@
     setTimeout(() => {
       (Array.from(container?.querySelectorAll('.trigger-content-item')).pop() as any)?.select();
       container?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
-    }, 100);
+    }, 250);
   };
 
   const deleteTrigger = (item: YtcF.PresetTrigger) => {

@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { getAllMessageDumps, getSavedMessageDump, getSavedMessageDumpExportItem, saveMessageDumpInfo } from '../../ts/ytcf-logic';
+  import { deleteSavedMessageActions, getAllMessageDumps, getSavedMessageDumpExportItem, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { inputDialog } from '../../ts/storage';
+  import { inputDialog, confirmDialog } from '../../ts/storage';
   import { download } from '../../ts/ytcf-utils';
+  import { UNNAMED_ARCHIVE, UNDONE_MSG } from '../../ts/chat-constants';
   // import { exioIcon } from 'exio/svelte';
   let data: YtcF.MessageDumpInfoItem[] = [];
   const updateData = async () => {
@@ -21,7 +22,7 @@
             await saveMessageDumpInfo(
               item.key,
               {
-                nickname: data[0],
+                nickname: data[0] || UNNAMED_ARCHIVE,
                 continuation: item.continuation,
                 info: {
                   video: {
@@ -46,7 +47,7 @@
           }
         },
         prompts: [{
-          originalValue: item.nickname || '',
+          originalValue: item.nickname || UNNAMED_ARCHIVE,
           label: 'Archive Name'
         }, {
           originalValue: item.info?.video.title || '',
@@ -76,9 +77,27 @@
       download(JSON.stringify(obj, null, 2), `${title}.json`);
     };
   };
+  const deleteArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
+    return () => {
+      $confirmDialog = {
+        title: `Delete Archive "${item.nickname || UNNAMED_ARCHIVE}"?`,
+        message: UNDONE_MSG,
+        action: {
+          callback: async () => {
+            await deleteSavedMessageActions(item.key);
+            updateData();
+          },
+          text: 'Delete'
+        }
+      };
+    };
+  };
 </script>
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
+  {#if !data.length}
+    <div style="text-align: center; margin: 10px 0px 5px 0px;">No Archives Found</div>
+  {/if}
   {#each data as item, i}
     <div class="item settings-card">
       <div>
@@ -97,7 +116,7 @@
         <button use:exioButton class="blue-bg" on:click={downloadArchiveEntry(item)}>
           <span use:exioIcon>download</span>
         </button>
-        <button use:exioButton class="red-bg">
+        <button use:exioButton class="red-bg" on:click={deleteArchiveEntry(item)}>
           <span use:exioIcon>delete_forever</span>
         </button>
       </div>

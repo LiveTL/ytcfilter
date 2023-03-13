@@ -7,7 +7,7 @@
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
   import { getRandomString } from '../../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
-  import { UNDONE_MSG } from '../../ts/chat-constants';
+  import { UNDONE_MSG, UNNAMED_FILTER } from '../../ts/chat-constants';
 
   const getLastFilterItem = (id: string) => {
     return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
@@ -17,8 +17,8 @@
   const newFilter = async () => {
     const id = getRandomString();
     $currentEditingPreset.filters = [...$currentEditingPreset.filters, {
-      nickname: 'Unnamed Filter ' + (($currentEditingPreset.filters.filter(item => {
-        return item.nickname?.startsWith('Unnamed Filter ');
+      nickname: UNNAMED_FILTER + ' ' +  (($currentEditingPreset.filters.filter(item => {
+        return item.nickname?.startsWith(UNNAMED_FILTER);
       }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
         .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1),
       type: 'basic',
