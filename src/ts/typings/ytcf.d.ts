@@ -37,12 +37,16 @@ declare namespace YtcF {
     activation: 'manual' | 'auto';
   }
   interface MessageDumpInfoItem {
-    title: string;
+    nickname: string;
     continuation: string[];
     info: SimpleVideoInfo | null;
     key: string;
     presetId: string | null;
     lastEdited: number;
+    size?: number;
   }
   export type MessageDumpActionsItem = Chat.MessageAction[];
+  export interface MessageDumpExportItem extends MessageDumpInfoItem {
+    actions: MessageDumpActionsItem;
+  }
 }

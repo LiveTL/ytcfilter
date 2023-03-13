@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { getAllMessageDumps } from '../../ts/ytcf-logic';
+  import { getAllMessageDumps, getSavedMessageDump, getSavedMessageDumpExportItem, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
   import { inputDialog } from '../../ts/storage';
+  import { download } from '../../ts/ytcf-utils';
   // import { exioIcon } from 'exio/svelte';
   let data: YtcF.MessageDumpInfoItem[] = [];
   const updateData = async () => {
@@ -17,13 +18,37 @@
         action: {
           text: 'Save',
           callback: async (data: string[]) => {
-            console.log(data);
+            await saveMessageDumpInfo(
+              item.key,
+              {
+                nickname: data[0],
+                continuation: item.continuation,
+                info: {
+                  video: {
+                    title: data[1],
+                    videoId: data[2]
+                  },
+                  channel: {
+                    name: data[3],
+                    handle: data[4],
+                    channelId: data[5]
+                  }
+                },
+                key: item.key,
+                lastEdited: new Date().getTime(),
+                presetId: item.presetId
+              }
+            );
+            updateData();
           },
           cancelled: () => {
             $inputDialog = null;
           }
         },
         prompts: [{
+          originalValue: item.info?.video.title || '',
+          label: 'Archive Name'
+        }, {
           originalValue: item.info?.video.title || '',
           label: 'Video Title'
         }, {
@@ -42,6 +67,15 @@
       };
     };
   };
+  const downloadArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
+    return async () => {
+      const obj = await getSavedMessageDumpExportItem(item.key);
+      const title = obj?.info?.video?.title || obj?.info?.channel?.name ||
+                    obj?.info?.video?.videoId || obj?.info?.channel?.channelId ||
+                    new Date(obj?.lastEdited ?? '').toISOString();
+      download(JSON.stringify(obj, null, 2), `${title}.json`);
+    };
+  };
 </script>
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
@@ -49,25 +83,18 @@
     <div class="item settings-card">
       <div>
         <div style="font-weight: bold;">
-          {item.info?.video.title || 'Unknown Title'}
-          <!-- {#if item.info?.video.videoId}
-            <a
-              href="https://youtube.com/watch?v={item.info?.video.videoId}"
-              target="_blank"
-              class="blue-text"
-              style="text-decoration: none;"
-              use:exioIcon
-            >open_in_new</a>
-          {/if} -->
+          {item.nickname || 'Unnamed Archive'}
         </div>
+        <div>{item.info?.video.title || 'Unknown Title'}</div>
         <div>{item.info?.channel.name || 'Unknown Channel'}</div>
+        <div style="font-style: italic;">Stored Messages: {item.size ?? 0}</div>
         <div style="font-style: italic;">Last Updated: {new Date(item.lastEdited).toLocaleString()}</div>
       </div>
       <div class="item triple-buttons" style="padding: 0px;">
         <button use:exioButton on:click={editArchiveEntry(item)}>
           <span use:exioIcon>edit</span>
         </button>
-        <button use:exioButton class="blue-bg">
+        <button use:exioButton class="blue-bg" on:click={downloadArchiveEntry(item)}>
           <span use:exioIcon>download</span>
         </button>
         <button use:exioButton class="red-bg">

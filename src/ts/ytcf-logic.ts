@@ -151,12 +151,41 @@ export const getSavedMessageDumpInfo = async (
     info: null,
     key,
     presetId: null,
-    title: '',
+    nickname: '',
     lastEdited: new Date().getTime()
   };
   const s = stores.addSyncStore(k, d, false);
   await s.ready();
   return await s.get();
+};
+
+export const getSavedMessageDumpExportItem = async (
+  key: string
+): Promise<YtcF.MessageDumpExportItem | undefined> => {
+  const k = keyGen(key, 'info');
+  const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpInfoItem | undefined, false);
+  await s.ready();
+  const info = await s.get();
+  if (!info) return;
+  const k2 = keyGen(key, 'actions');
+  const s2 = stores.addSyncStore(k2, undefined as YtcF.MessageDumpActionsItem | undefined, false);
+  await s2.ready();
+  const actions = await s2.get();
+  if (!actions) return;
+  return {
+    ...info,
+    actions
+  };
+};
+
+export const saveMessageDumpInfo = async (
+  key: string,
+  info: YtcF.MessageDumpInfoItem
+): Promise<void> => {
+  const k = keyGen(key, 'info');
+  const s = stores.addSyncStore(k, info, false);
+  await s.ready();
+  await s.set(info);
 };
 
 export const getSavedMessageDumpActions = async (
@@ -197,7 +226,7 @@ export const saveMessageActions = async (
     key,
     presetId,
     lastEdited: Date.now(),
-    title: info?.video.title ?? lastObj.info?.video.title ?? `Unknown Video ${key}`
+    nickname: info?.video.title ?? lastObj.info?.video.title ?? `Unknown Video ${key}`
   };
   const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
   await infoStore.ready();
@@ -256,7 +285,11 @@ export const findSavedMessageActionKey = async (
 
 export const getAllMessageDumps = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
   const allMessageKeys = await getAllSavedMessageActionKeys();
-  return (await Promise.all(allMessageKeys.map(async (k) => await getSavedMessageDumpInfo(k)))).sort((a, b) => {
+  const items = (await Promise.all(allMessageKeys.map(async (k) => await getSavedMessageDumpInfo(k)))).sort((a, b) => {
     return a.lastEdited - b.lastEdited;
   }).reverse();
+  for (const item of items) {
+    item.size = (await getSavedMessageDumpActions(item.key))?.length ?? 0;
+  }
+  return items;
 };

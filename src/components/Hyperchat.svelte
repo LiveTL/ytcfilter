@@ -51,7 +51,7 @@
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset } from '../ts/ytcf-logic';
-  import { stringifyRuns } from '../ts/ytcf-utils';
+  import { download, stringifyRuns } from '../ts/ytcf-utils';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -478,12 +478,12 @@
     a.download = `chat-${new Date().toISOString()}.txt`;
     a.click();
   };
-  const exportJsonDump = () => {
-    const str = JSON.stringify(messageActions.filter(isMessage).map(action => action.message), null, 2);
-    const a = document.createElement('a');
-    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(str)}`;
-    a.download = `chat-${new Date().toISOString()}.json`;
-    a.click();
+  const exportJsonDump = async () => {
+    const messageData: YtcF.MessageDumpExportItem = {
+      actions: messageActions.filter(isMessage),
+      ...(await getSavedMessageDumpInfo(key))
+    };
+    download(JSON.stringify(messageData, null, 2), `chat-${new Date().toISOString()}.json`);
   };
   $: showWelcome = initialized && messageActions.length === 0;
 

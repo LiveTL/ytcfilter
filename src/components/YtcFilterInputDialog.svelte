@@ -31,11 +31,15 @@
   $: component = $inputDialog?.message ? null : ($inputDialog?.component ?? component);
   let open = false;
   $: toOpen = Boolean($inputDialog);
+  let wrapperElem: HTMLDialogElement | null = null;
   $: {
     open = false;
     setTimeout(() => {
       open = toOpen;
       if (toOpen) {
+        if (!$inputDialog?.component) {
+          component = null;
+        }
         focusInput();
       }
     }, 0);
@@ -71,6 +75,7 @@
   {open}
   style="font-size: 1rem;"
   class:reactive-width={Boolean(component)}
+  bind:this={wrapperElem}
 >
   <div class="big-text select-none">{title}</div>
   <p class="select-none">
@@ -79,9 +84,8 @@
       <br />
     {/if}
     {#each zip(prompts, values) as item, index}
-      {#if item.label && !('hideLabel' in item) && item.hideLabel}
-        <span class="select-none">{item.label}</span>
-        <br />
+      {#if item.label && (!('hideLabel' in item) || !item.hideLabel)}
+        <span class="select-none"><strong>{item.label}</strong></span>
       {/if}
       <input
         type="text"
