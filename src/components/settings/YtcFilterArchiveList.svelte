@@ -46,7 +46,7 @@
           }
         },
         prompts: [{
-          originalValue: item.info?.video.title || '',
+          originalValue: item.nickname || '',
           label: 'Archive Name'
         }, {
           originalValue: item.info?.video.title || '',
