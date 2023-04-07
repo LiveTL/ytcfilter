@@ -22,37 +22,37 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
           )) {
             numSatisfied++;
           }
-        } else {
-          let compStr = '';
-          switch (condition.property) {
-            case 'message':
-              compStr = stringifyRuns(msg.message);
-              break;
-            case 'authorName':
-              compStr = msg.author.name;
-              break;
-            case 'authorChannelId':
-              compStr = msg.author.id;
-              break;
+          continue;
+        }
+        let compStr = '';
+        switch (condition.property) {
+          case 'message':
+            compStr = stringifyRuns(msg.message);
+            break;
+          case 'authorName':
+            compStr = msg.author.name;
+            break;
+          case 'authorChannelId':
+            compStr = msg.author.id;
+            break;
+        }
+        if (condition.value === '') continue;
+        if (condition.type !== 'regex') {
+          const s1 = condition.caseSensitive ? compStr : compStr.toLowerCase();
+          const s2 = condition.caseSensitive ? condition.value : condition.value.toLowerCase();
+          const result = s1[condition.type](s2);
+          if (!s2) {
+            numValidFilters--;
+          } else if (result === condition.invert) {
+            break;
           }
-          if (condition.value === '') continue;
-          if (condition.type !== 'regex') {
-            const s1 = condition.caseSensitive ? compStr : compStr.toLowerCase();
-            const s2 = condition.caseSensitive ? condition.value : condition.value.toLowerCase();
-            const result = s1[condition.type](s2);
-            if (!s2) {
-              numValidFilters--;
-            } else if (result === condition.invert) {
-              break;
-            }
-          } else {
-            const regex = new RegExp(condition.value, condition.caseSensitive ? '' : 'i');
-            const result = regex.test(compStr);
-            if (!condition.value) {
-              numValidFilters--;
-            } else if (result === condition.invert) {
-              break;
-            }
+        } else {
+          const regex = new RegExp(condition.value, condition.caseSensitive ? '' : 'i');
+          const result = regex.test(compStr);
+          if (!condition.value) {
+            numValidFilters--;
+          } else if (result === condition.invert) {
+            break;
           }
         }
         numSatisfied++;
