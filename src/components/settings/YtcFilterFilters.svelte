@@ -208,7 +208,7 @@
           component
         };
       }} use:exioButton>
-        <span use:exioIcon style="vertical-align: super;">edit_square</span>
+        <span use:exioIcon style="vertical-align: -1px;">edit_square</span>
       </button>
       <button on:click={() => {
         $confirmDialog = {

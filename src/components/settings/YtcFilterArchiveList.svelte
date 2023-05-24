@@ -111,13 +111,13 @@
       </div>
       <div class="item triple-buttons" style="padding: 0px;">
         <button use:exioButton on:click={editArchiveEntry(item)}>
-          <span use:exioIcon>edit</span>
+          <span use:exioIcon style="vertical-align: -1px;">edit</span>
         </button>
         <button use:exioButton class="blue-bg" on:click={downloadArchiveEntry(item)}>
-          <span use:exioIcon>download</span>
+          <span use:exioIcon style="vertical-align: -2px;">download</span>
         </button>
         <button use:exioButton class="red-bg" on:click={deleteArchiveEntry(item)}>
-          <span use:exioIcon>delete_forever</span>
+          <span use:exioIcon style="vertical-align: -1px;">delete_forever</span>
         </button>
       </div>
     </div>

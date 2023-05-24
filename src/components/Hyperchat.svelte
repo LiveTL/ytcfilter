@@ -591,7 +591,7 @@
       </select>
       <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">Clear</button>
       {#if isPopout}
-        <button use:exioButton on:click={openSettings} class="inline-flex gap-1">
+        <button use:exioButton on:click={openSettings} class="inline-flex gap-1 items-center">
           Settings
           <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
             settings
