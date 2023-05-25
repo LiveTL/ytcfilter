@@ -144,3 +144,4 @@ export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | nul
   const presets = await chatFilterPresets.get();
   return presets.find(preset => preset.id === id) ?? null;
 };
+export const bytesUsed = stores.addSyncStore('hc.bytes.used', 0);

@@ -21,7 +21,7 @@ export function getRandomString(len = 10): string {
 }
 
 export const frameIsReplay = window.location.href.startsWith(
-  'https://www.youtube.com/live_chat_replay'
+  `${(location.protocol + '//' + location.host)}/live_chat_replay`
 );
 
 /*

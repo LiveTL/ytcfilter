@@ -3,7 +3,7 @@
   "name": "YtcFilter",
   "homepage_url": "https://livetl.app/en/ytcfilter/",
   "description": "YouTube Chat Filter",
-  "version": "2.6.8",
+  "version": "3.0.0",
   "permissions": [
     "storage"
   ],
@@ -15,7 +15,9 @@
     {
       "matches": [
         "https://www.youtube.com/live_chat*",
-        "https://www.youtube.com/live_chat_replay*"
+        "https://www.youtube.com/live_chat_replay*",
+        "https://studio.youtube.com/live_chat*",
+        "https://studio.youtube.com/live_chat_replay*"
       ],
       "js": [
         "scripts/chat-injector.ts"
@@ -24,7 +26,10 @@
       "all_frames": true
     }
   ],
-  "background": {
+  "{{firefox}}.background": {
+    "scripts": ["scripts/chat-background.ts"]
+  },
+  "{{chrome}}.background": {
     "service_worker": "scripts/chat-background.ts"
   },
   "action": {
@@ -42,5 +47,12 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true
+  },
+  "{{chrome}}.incognito": "split",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{51076d9a-d4c2-11ed-af84-706655572bfb}",
+      "strict_min_version": "42.0"
+    }
   }
 }
