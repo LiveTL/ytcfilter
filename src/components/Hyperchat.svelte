@@ -245,8 +245,8 @@
       return;
     }
     smelteDark.set(theme === Theme.DARK);
-    if (theme === Theme.LIGHT) document.body.classList.add('bg-gray-50');
-    else document.body.classList.remove('bg-gray-50');
+    if (theme === Theme.LIGHT) document.body.classList.add('bg-ytdark-50');
+    else document.body.classList.remove('bg-ytdark-50');
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -351,7 +351,9 @@
   $: ((..._a: any[]) => scrollToBottom())(
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
   );
-  const containerClass = 'h-full w-screen text-black dark:text-white dark:bg-black flex flex-col justify-between max-w-none overflow-y-hidden';
+
+  const containerClass = 'h-screen w-screen text-black dark:text-white bg-ytbg-light dark:bg-ytbg-dark flex flex-col justify-between max-w-none';
+
   const isSuperchat = (action: Chat.MessageAction) => (action.message.superChat || action.message.superSticker);
   const isMembership = (action: Chat.MessageAction) => (action.message.membership || action.message.membershipGiftPurchase);
   const isMessage = (action: Chat.MessageAction | Welcome): action is Chat.MessageAction =>
