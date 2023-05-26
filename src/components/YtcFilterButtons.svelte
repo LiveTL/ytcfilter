@@ -114,16 +114,17 @@
     user-select: none;
     white-space: nowrap;
   }
-  :global([dark]) .ytcf-resize-bar {
+  .ytcf-resize-bar {
     width: 100%;
     height: 10px;
-    background-color: rgb(128 128 128 / 30%);
     overflow: hidden;
     align-items: center;
     justify-content: center;
     cursor: row-resize;
     user-select: none;
     position: relative;
+    justify-content: center;
+    background-color: rgb(128 128 128 / 30%);
   }
   .static-logo {
     padding: 0.25em 0.5em;

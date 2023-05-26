@@ -239,14 +239,12 @@
     }
   };
 
-  const updateTheme = (theme: Theme, ytDark = false) => {
+  const updateTheme = (theme: Theme, dataTheme: string, ytDark = false) => {
     if (theme === Theme.YOUTUBE) {
       smelteDark.set(ytDark);
       return;
     }
-    smelteDark.set(theme === Theme.DARK);
-    if (theme === Theme.LIGHT) document.body.classList.add('bg-ytdark-50');
-    else document.body.classList.remove('bg-ytdark-50');
+    smelteDark.set(dataTheme === 'dark');
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -346,7 +344,7 @@
     // if (truncateInterval) window.clearInterval(truncateInterval);
   });
 
-  $: updateTheme($theme, ytDark);
+  $: updateTheme($theme, $dataTheme, ytDark);
   // Scroll to bottom when any of these settings change
   $: ((..._a: any[]) => scrollToBottom())(
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
@@ -584,7 +582,7 @@
 
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
-<div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen">
+<div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
     <div style="display: flex; justify-content: flex-start;">
       <!-- <span class="tiny-text">
