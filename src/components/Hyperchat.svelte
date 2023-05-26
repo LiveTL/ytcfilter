@@ -404,11 +404,33 @@
     el.value = 'export';
   };
 
+  const importJsonDump = async () => {
+    const element = document.createElement('input');
+    element.type = 'file';
+    element.accept = '.json';
+    element.addEventListener('change', async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.addEventListener('load', async (e) => {
+          console.log('Importing JSON dump');
+          const data = JSON.parse(e.target?.result as string);
+          console.log('Importing JSON dump', data);
+        });
+        reader.readAsText(file);
+      }
+    });
+    document.body.appendChild(element);
+    element.click();
+  };
+
   const executeImport = (e: any) => {
     const el = (e.target as HTMLSelectElement);
-    // switch (el.value) {
-    //   break;
-    // }
+    switch (el.value) {
+      case 'jsondump':
+        importJsonDump();
+        break;
+    }
     el.value = 'import';
   };
 
@@ -556,6 +578,7 @@
   $: if (initialized && $videoInfo !== null) {
     overwriteOverride();
   }
+  let topBarHeight = 0;
 </script>
 
 <ReportBanDialog />
@@ -569,7 +592,7 @@
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
-  <div data-theme={$dataTheme} class="w-screen top-button-wrapper">
+  <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight}>
     <div style="display: flex; justify-content: flex-start;">
       <!-- <span class="tiny-text">
         Preset:
@@ -606,16 +629,16 @@
     </div>
   </div>
   <div class="line" />
-  <div class="{containerClass} container" style="font-size: 13px;" >
+  <div class="{containerClass} container" style="font-size: 13px;">
     {#if $enableStickySuperchatBar}
       <StickyBar />
     {/if}
-    <div class="min-h-0 flex justify-end flex-col relative h-full">
-      <div bind:this={div} on:scroll={checkAtBottom} class="content h-full overflow-y-scroll">
+    <div class="min-h-0 flex justify-end flex-col relative">
+      <div bind:this={div} on:scroll={checkAtBottom} class="content overflow-y-scroll" style="height: calc(100vh - {topBarHeight}px);">
         <div style="height: {topBarSize}px;" />
         <div bind:this={screenshotElement} class="h-full">
           {#if showWelcome}
-            <div class="w-full h-full flex justify-center items-center">
+            <div class="w-full flex justify-center items-center h-full">
               <WelcomeMessage />
             </div>
           {/if}
@@ -696,7 +719,6 @@
   }
   .top-button-wrapper {
     font-size: 12px;
-    height: fit-content;
     width: 100%;
     display: grid;
     align-content: space-between;
