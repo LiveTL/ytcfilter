@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { deleteSavedMessageActions, getAllMessageDumps, getSavedMessageDumpExportItem, saveMessageDumpInfo } from '../../ts/ytcf-logic';
-  import { exioButton, exioIcon } from 'exio/svelte';
+  import { deleteSavedMessageActions, downloadAsJson, getAllMessageDumps, saveMessageDumpInfo } from '../../ts/ytcf-logic';
+  import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import { inputDialog, confirmDialog } from '../../ts/storage';
-  import { download } from '../../ts/ytcf-utils';
   import { UNNAMED_ARCHIVE, UNDONE_MSG } from '../../ts/chat-constants';
   // import { exioIcon } from 'exio/svelte';
   let data: YtcF.MessageDumpInfoItem[] = [];
@@ -69,12 +68,22 @@
     };
   };
   const downloadArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
-    return async () => {
-      const obj = await getSavedMessageDumpExportItem(item.key);
-      const title = obj?.info?.video?.title || obj?.info?.channel?.name ||
-                    obj?.info?.video?.videoId || obj?.info?.channel?.channelId ||
-                    new Date(obj?.lastEdited ?? '').toISOString();
-      download(JSON.stringify(obj, null, 2), `${title}.json`);
+    return () => {
+      $inputDialog = {
+        action: {
+          callback: async (data: string[]) => {
+            downloadAsJson(item);
+          },
+          text: 'Export',
+          cancelled: () => {
+            $inputDialog = null;
+          }
+        },
+        title: `Export Archive "${item.nickname || UNNAMED_ARCHIVE}"`,
+        message: 'Please select a file format to download.',
+        component: null,
+        prompts: []
+      };
     };
   };
   const deleteArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
@@ -113,8 +122,8 @@
         <button use:exioButton on:click={editArchiveEntry(item)}>
           <span use:exioIcon style="vertical-align: -1px;">edit</span>
         </button>
-        <button use:exioButton class="blue-bg" on:click={downloadArchiveEntry(item)}>
-          <span use:exioIcon style="vertical-align: -2px;">download</span>
+        <button use:exioDropdown class="blue-bg" on:click={downloadArchiveEntry(item)}>
+          <span use:exioIcon style="vertical-align: -2px;" selected disabled>download</span>
         </button>
         <button use:exioButton class="red-bg" on:click={deleteArchiveEntry(item)}>
           <span use:exioIcon style="vertical-align: -1px;">delete_forever</span>

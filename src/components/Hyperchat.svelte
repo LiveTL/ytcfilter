@@ -53,7 +53,7 @@
     ytDark
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt } from '../ts/ytcf-logic';
   import { download, stringifyRuns } from '../ts/ytcf-utils';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
@@ -131,7 +131,6 @@
     const newItems = [];
     for (const a of items) {
       if (
-        isMessage(a) &&
         (forceDisplay || await shouldFilterMessage(a)) &&
         shouldShowMessage(a, forceDisplay)
       ) {
@@ -485,24 +484,11 @@
       clonedNode.remove();
     });
   };
-  const exportTextFile = () => {
-    const str = messageActions.filter(isMessage).map(action => {
-      const msg = action.message;
-      const author = msg.author.name;
-      const message = stringifyRuns(msg.message);
-      return `[${msg.timestamp}] ${author}: ${message}`;
-    }).join('\n');
-    const a = document.createElement('a');
-    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(str)}`;
-    a.download = `chat-${new Date().toISOString()}.txt`;
-    a.click();
+  const exportTextFile = async () => {
+    downloadAsTxt(await getSavedMessageDumpInfo(key));
   };
   const exportJsonDump = async () => {
-    const messageData: YtcF.MessageDumpExportItem = {
-      actions: messageActions.filter(isMessage),
-      ...(await getSavedMessageDumpInfo(key))
-    };
-    download(JSON.stringify(messageData, null, 2), `chat-${new Date().toISOString()}.json`);
+    downloadAsJson(await getSavedMessageDumpInfo(key));
   };
   $: showWelcome = initialized && messageActions.length === 0;
 
@@ -535,7 +521,7 @@
       key,
       paramsContinuation,
       $videoInfo,
-      messageActions.filter(isMessage),
+      messageActions,
       $currentFilterPreset.id
     );
   }

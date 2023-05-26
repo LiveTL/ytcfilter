@@ -1,7 +1,7 @@
 import { get } from 'svelte/store';
 import { UNNAMED_ARCHIVE } from './chat-constants';
 import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId } from './storage';
-import { stringifyRuns } from './ytcf-utils';
+import { stringifyRuns, download } from './ytcf-utils';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
@@ -123,7 +123,9 @@ const getV2Storage = async (): Promise<void> => {
 
 export const migrateV2toV3 = async () => {
   const v2 = await getV2Storage();
+  browserObject.storage.local.remove('@@vwe-persistence');
   if (v2) {
+    // TODO
   }
 };
 
@@ -294,4 +296,33 @@ export const getAllMessageDumps = async (): Promise<YtcF.MessageDumpInfoItem[]> 
     item.size = (await getSavedMessageDumpActions(item.key))?.length ?? 0;
   }
   return items;
+};
+
+const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  return ((obj?.info?.video?.title) ?? '') || obj?.info?.channel?.name ||
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    obj?.info?.video?.videoId || obj?.info?.channel?.channelId ||
+    new Date(obj?.lastEdited ?? '').toISOString();
+};
+
+export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
+  const obj = await getSavedMessageDumpExportItem(item.key);
+  const title = getTitle(obj);
+  download(JSON.stringify(obj, null, 2), `${title}.json`);
+};
+
+export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
+  const obj = await getSavedMessageDumpExportItem(item.key);
+  const title = getTitle(obj);
+  const str = obj?.actions.map(action => {
+    const msg = action.message;
+    const author = msg.author.name;
+    const message = stringifyRuns(msg.message);
+    return `[${msg.timestamp}] ${author}: ${message}`;
+  }).join('\n') ?? '';
+  const a = document.createElement('a');
+  a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(str)}`;
+  a.download = `${title}.txt`;
+  a.click();
 };
