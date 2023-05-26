@@ -17,7 +17,7 @@
   const newFilter = async () => {
     const id = getRandomString();
     $currentEditingPreset.filters = [...$currentEditingPreset.filters, {
-      nickname: UNNAMED_FILTER + ' ' +  (($currentEditingPreset.filters.filter(item => {
+      nickname: UNNAMED_FILTER + ' ' + (($currentEditingPreset.filters.filter(item => {
         return item.nickname?.startsWith(UNNAMED_FILTER);
       }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
         .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1),
@@ -179,6 +179,10 @@
 <div class="settings-title big-text filters-title">
   <div class="preset-selector">
     <span>Filters</span>
+  </div>
+</div>
+<div class="settings-content" style="padding-top: 0px;">
+  <div style="display: flex; justify-content: center; margin-top: 10px;">
     <div class="buttons">
       <select use:exioDropdown on:change={changeEditingPreset} value={presetDropdownValue} class="preset-dropdown">
         {#each $chatFilterPresets as preset}
@@ -227,8 +231,6 @@
       </button>
     </div>
   </div>
-</div>
-<div class="settings-content" style="padding-top: 0px;">
   {#each unsavedFilters as filter (filter.id)}
     <div class="filter filter-item-{filter.id}">
       <!-- <select bind:value={filter.type} use:exioDropdown>

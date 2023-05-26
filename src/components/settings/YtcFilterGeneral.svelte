@@ -7,7 +7,7 @@
 
 <div class="settings-title big-text">Appearance</div>
 <div class="settings-content">
-  <div class="setting-item" style="margin-top: 0px;">
+  <div class="setting-item" style="margin: 5px;">
     <span>Theme: </span>
     <select use:exioDropdown bind:value={$theme}>
       <option value={Theme.YOUTUBE}>Auto</option>
@@ -27,7 +27,7 @@
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$showUsernames} id="show-usernames" />
     <label for="show-usernames">Show Usernames</label>
   </div>
-  <div class="setting-item">
+  <div class="setting-item" style="margin-bottom: 5px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$showUserBadges} id="show-user-badges" />
     <label for="show-user-badges">Show User Badges</label>
   </div>
@@ -41,6 +41,6 @@
   .check {
     display: inline-block;
     vertical-align: bottom;
-    margin: 0px 5px;
+    margin: 0px 10px;
   }
 </style>

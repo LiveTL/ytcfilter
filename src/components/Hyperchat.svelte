@@ -143,7 +143,7 @@
 
   let piledMessages: Chat.MessagesAction[] = [];
 
-  const newMessages = (
+  const newMessages = async (
     messagesAction: Chat.MessagesAction, isInitial: boolean, forceDisplay = false
   ) => {
     if (!isAtBottom) {
