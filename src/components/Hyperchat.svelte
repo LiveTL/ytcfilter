@@ -699,14 +699,14 @@
     background-color: #bfb2408f;
   }
   :global(.mode-dark) .container {
-    background-color: #181818 !important;
+    background-color: #0f0f0f !important;
   }
   .top-button-wrapper button, .top-button-wrapper select {
     cursor: default;
     padding: 2px 5px;
   }
   :global(.mode-dark) .top-button-wrapper button, :global(.mode-dark) .top-button-wrapper select {
-    background-color: #181818;
+    background-color: #0f0f0f;
   }
   .top-button-wrapper {
     font-size: 12px;
@@ -718,7 +718,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
   :global(.mode-dark) .top-button-wrapper {
-    background-color: #181818;
+    background-color: #0f0f0f;
   }
   .tiny-text {
     display: flex;

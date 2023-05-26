@@ -72,18 +72,24 @@ export const alertDialog = writable(null as null | {
   color: string;
 });
 export const stickySuperchats = writable([] as Ytc.ParsedTicker[]);
-export const isDark = derived(theme, ($theme) => {
+export const ytDark = writable(false);
+export const isDark = derived([theme, ytDark], ([$theme, $ytDark]) => {
   return $theme === Theme.DARK || (
     $theme === Theme.YOUTUBE && (
       window.location.search.includes('dark') ||
       (
         !window.location.hostname.includes('youtube') &&
-        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        (
+          (
+            !(window as any).useYtTheme &&
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+          ) || $ytDark
+        )
       )
     )
   );
 });
-export const ytDark = writable(false);
 export const currentProgress = writable(null as null | number);
 export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySuperchatBar', false);
 export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', false);
