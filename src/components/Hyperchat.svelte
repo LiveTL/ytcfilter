@@ -49,7 +49,8 @@
     dataTheme,
     defaultFilterPresetId,
     videoInfo,
-    overrideFilterPresetId
+    overrideFilterPresetId,
+    ytDark
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset } from '../ts/ytcf-logic';
@@ -75,7 +76,6 @@
   let isAtBottom = true;
   // let truncateInterval: number;
   const isReplay = paramsIsReplay;
-  let ytDark = false;
   const smelteDark = dark();
   let initialized = false;
 
@@ -262,7 +262,7 @@
         initialized = true;
         break;
       case 'themeUpdate':
-        ytDark = response.dark;
+        $ytDark = response.dark;
         break;
       case 'chatUserActionResponse':
         $alertDialog = {
@@ -344,7 +344,7 @@
     // if (truncateInterval) window.clearInterval(truncateInterval);
   });
 
-  $: updateTheme($theme, $dataTheme, ytDark);
+  $: updateTheme($theme, $dataTheme, $ytDark);
   // Scroll to bottom when any of these settings change
   $: ((..._a: any[]) => scrollToBottom())(
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
