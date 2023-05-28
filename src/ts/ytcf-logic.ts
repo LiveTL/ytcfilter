@@ -303,7 +303,7 @@ const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
   return ((obj?.info?.video?.title) ?? '') || obj?.info?.channel?.name ||
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     obj?.info?.video?.videoId || obj?.info?.channel?.channelId ||
-    new Date(obj?.lastEdited ?? '').toISOString();
+    (obj?.lastEdited !== undefined ? new Date(obj?.lastEdited) : new Date()).toISOString();
 };
 
 export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
