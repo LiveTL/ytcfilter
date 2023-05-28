@@ -60,6 +60,6 @@
     "vite-plugin-web-extension": "^1.4.0"
   },
   "dependencies": {
-    "exio": "^0.6.20"
+    "exio": "^0.6.21"
   }
 }
