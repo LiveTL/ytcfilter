@@ -164,21 +164,21 @@ export const getSavedMessageDumpInfo = async (
 
 export const getSavedMessageDumpExportItem = async (
   key: string
-): Promise<YtcF.MessageDumpExportItem | undefined> => {
+): Promise<YtcF.MessageDumpExportItem[]> => {
   const k = keyGen(key, 'info');
   const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpInfoItem | undefined, false);
   await s.ready();
   const info = await s.get();
-  if (!info) return;
+  if (!info) return [];
   const k2 = keyGen(key, 'actions');
   const s2 = stores.addSyncStore(k2, undefined as YtcF.MessageDumpActionsItem | undefined, false);
   await s2.ready();
   const actions = await s2.get();
-  if (!actions) return;
-  return {
+  if (!actions) return [];
+  return [{
     ...info,
     actions
-  };
+  }];
 };
 
 export const saveMessageDumpInfo = async (
@@ -307,13 +307,13 @@ const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
 };
 
 export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
-  const obj = await getSavedMessageDumpExportItem(item.key);
-  const title = getTitle(obj);
+  const obj = (await getSavedMessageDumpExportItem(item.key));
+  const title = getTitle(obj[0]);
   download(JSON.stringify(obj, null, 2), `${title}.json`);
 };
 
 export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
-  const obj = await getSavedMessageDumpExportItem(item.key);
+  const obj = (await getSavedMessageDumpExportItem(item.key))[0];
   const title = getTitle(obj);
   const str = obj?.actions.map(action => {
     const msg = action.message;

@@ -40,14 +40,17 @@
         if (!$inputDialog?.component) {
           component = null;
         }
-        focusInput();
+      } else {
+        setTimeout(() => {
+          component = null;
+        }, 400);
       }
     }, 0);
   }
-  const focusInput = () => {
-    inputItem?.focus();
-    inputItem?.select();
-  };
+  // const focusInput = () => {
+  //   inputItem?.focus();
+  //   inputItem?.select();
+  // };
   let inputItem: HTMLInputElement | null = null;
   const zip = (prompts: Array<{ originalValue: string, label: string, hideLabel?: Boolean }>, values: string[]) => {
     return prompts.map((p, i) => {
@@ -107,7 +110,6 @@
       />
     {/each}
     {#if component}
-      <br />
       <svelte:component this={component} />
     {/if}
   </p>

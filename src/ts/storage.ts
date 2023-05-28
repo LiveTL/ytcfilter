@@ -145,6 +145,7 @@ export const popoutDims = stores.addSyncStore('ytcf.popoutDims', {
   height: 600
 });
 export const currentEditingPreset = writable(null as any as YtcF.FilterPreset);
+export const exportMode = writable(null as null | string);
 
 export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | null> => {
   await chatFilterPresets.ready();

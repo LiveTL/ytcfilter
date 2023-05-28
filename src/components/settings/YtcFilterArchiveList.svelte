@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { deleteSavedMessageActions, downloadAsJson, getAllMessageDumps, saveMessageDumpInfo } from '../../ts/ytcf-logic';
+  import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumps, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { inputDialog, confirmDialog } from '../../ts/storage';
+  import { inputDialog, confirmDialog, exportMode } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG } from '../../ts/chat-constants';
+  import ExportSelector from './YtcFilterDownloadSelect.svelte';
   // import { exioIcon } from 'exio/svelte';
   let data: YtcF.MessageDumpInfoItem[] = [];
   const updateData = async () => {
@@ -71,8 +72,12 @@
     return () => {
       $inputDialog = {
         action: {
-          callback: async (data: string[]) => {
-            downloadAsJson(item);
+          callback: async () => {
+            if ($exportMode === 'json') {
+              downloadAsJson(item);
+            } else if ($exportMode === 'txt') {
+              downloadAsTxt(item);
+            }
           },
           text: 'Export',
           cancelled: () => {
@@ -80,8 +85,7 @@
           }
         },
         title: `Export Archive "${item.nickname || UNNAMED_ARCHIVE}"`,
-        message: 'Please select a file format to download.',
-        component: null,
+        component: ExportSelector,
         prompts: []
       };
     };
