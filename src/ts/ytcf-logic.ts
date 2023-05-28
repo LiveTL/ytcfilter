@@ -326,3 +326,25 @@ export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<voi
   a.download = `${title}.txt`;
   a.click();
 };
+
+export const importFromJson = async (): Promise<string> => {
+  return await new Promise((resolve) => {
+    const element = document.createElement('input');
+    element.type = 'file';
+    element.accept = '.json';
+    element.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.addEventListener('load', (e) => {
+          console.log('Importing JSON dump');
+          const data = JSON.parse(e.target?.result as string);
+          resolve(data.key);
+        });
+        reader.readAsText(file);
+      }
+    });
+    document.body.appendChild(element);
+    element.click();
+  });
+};

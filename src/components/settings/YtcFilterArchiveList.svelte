@@ -1,6 +1,6 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, getAllMessageDumps, saveMessageDumpInfo } from '../../ts/ytcf-logic';
-  import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
+  import { exioButton, exioIcon } from 'exio/svelte';
   import { inputDialog, confirmDialog } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG } from '../../ts/chat-constants';
   // import { exioIcon } from 'exio/svelte';
@@ -122,8 +122,8 @@
         <button use:exioButton on:click={editArchiveEntry(item)}>
           <span use:exioIcon style="vertical-align: -1px;">edit</span>
         </button>
-        <button use:exioDropdown class="blue-bg" on:click={downloadArchiveEntry(item)}>
-          <span use:exioIcon style="vertical-align: -2px;" selected disabled>download</span>
+        <button use:exioButton class="blue-bg" on:click={downloadArchiveEntry(item)}>
+          <span use:exioIcon style="vertical-align: -2px;">download</span>
         </button>
         <button use:exioButton class="red-bg" on:click={deleteArchiveEntry(item)}>
           <span use:exioIcon style="vertical-align: -1px;">delete_forever</span>

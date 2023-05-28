@@ -53,8 +53,7 @@
     ytDark
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt } from '../ts/ytcf-logic';
-  import { download, stringifyRuns } from '../ts/ytcf-utils';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, importFromJson } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -405,23 +404,10 @@
   };
 
   const importJsonDump = async () => {
-    const element = document.createElement('input');
-    element.type = 'file';
-    element.accept = '.json';
-    element.addEventListener('change', async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.addEventListener('load', async (e) => {
-          console.log('Importing JSON dump');
-          const data = JSON.parse(e.target?.result as string);
-          console.log('Importing JSON dump', data);
-        });
-        reader.readAsText(file);
-      }
-    });
-    document.body.appendChild(element);
-    element.click();
+    const key = await importFromJson();
+    if (key) {
+      console.log(key);
+    }
   };
 
   const executeImport = (e: any) => {
@@ -543,7 +529,7 @@
       key,
       paramsContinuation,
       $videoInfo,
-      messageActions,
+      messageActions.filter(item => !isWelcome(item)) as Chat.MessageAction[],
       $currentFilterPreset.id
     );
   }

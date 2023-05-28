@@ -118,7 +118,6 @@
     }];
     $currentEditingPreset = await getPresetById(id) as YtcF.FilterPreset;
     unsavedFilters = $currentEditingPreset.filters;
-    presetDropdownValue = id;
   };
   const newPreset = () => {
     $inputDialog = {
@@ -137,14 +136,11 @@
       }]
     };
   };
-  let presetDropdownValue = '';
-  $: presetDropdownValue = presetDropdownValue || $currentFilterPreset.id;
-  const changeEditingPreset = async (e: InputEvent) => {
+  const changeEditingPreset = (async (e: InputEvent) => {
     await tick();
-    presetDropdownValue = (e.target as HTMLSelectElement).value;
-    $currentEditingPreset = await getPresetById(presetDropdownValue) ?? $currentEditingPreset;
+    $currentEditingPreset = await getPresetById((e.target as HTMLSelectElement).value) ?? $currentEditingPreset;
     unsavedFilters = $currentEditingPreset.filters;
-  };
+  }) as any;
   const deletePreset = () => {
     if ($chatFilterPresets.length === 1) {
       $chatFilterPresets = [{
@@ -158,14 +154,13 @@
       unsavedFilters = $currentEditingPreset.filters;
       $defaultFilterPresetId = $currentEditingPreset.id;
     } else {
-      $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== presetDropdownValue);
+      $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== $currentEditingPreset.id);
       $currentEditingPreset = $chatFilterPresets[0] ?? $currentEditingPreset;
-      if ($defaultFilterPresetId === presetDropdownValue) {
+      if ($defaultFilterPresetId === $currentEditingPreset.id) {
         $defaultFilterPresetId = $currentEditingPreset.id;
       }
       unsavedFilters = $currentEditingPreset.filters;
     }
-    presetDropdownValue = $currentEditingPreset.id;
   };
   const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string[]) => {
@@ -184,7 +179,7 @@
 <div class="settings-content" style="padding-top: 0px;">
   <div style="display: flex; justify-content: center; margin-top: 10px;">
     <div class="buttons">
-      <select use:exioDropdown on:change={changeEditingPreset} value={presetDropdownValue} class="preset-dropdown">
+      <select use:exioDropdown on:change={changeEditingPreset} class="preset-dropdown">
         {#each $chatFilterPresets as preset}
           <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
             {preset.nickname}
