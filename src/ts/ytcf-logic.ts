@@ -16,9 +16,9 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
       for (const condition of filter.conditions) {
         if (condition.type === 'boolean') {
           if ((
-            condition.property === 'superchat' && Boolean(msg.superChat) === condition.invert
+            condition.property === 'superchat' && Boolean(msg.superChat) !== condition.invert
           ) || (
-            msg.author.types.includes(condition.property) === condition.invert
+            msg.author.types.includes(condition.property) !== condition.invert
           )) {
             numSatisfied++;
           }
