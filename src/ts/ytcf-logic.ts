@@ -2,6 +2,8 @@ import { get } from 'svelte/store';
 import { UNNAMED_ARCHIVE } from './chat-constants';
 import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
+import type YtcFilterArchiveList from 'components/settings/YtcFilterArchiveList.svelte';
+import { getRandomString } from './chat-utils';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
@@ -109,7 +111,7 @@ export function getAutoActivatedPreset(presets: YtcF.FilterPreset[], info: Simpl
   return null;
 }
 
-const getV2Storage = async (): Promise<void> => {
+const getV2Storage = async (): Promise<any> => {
   return await new Promise((resolve, reject) => {
     try {
       browserObject.storage.local.get('@@vwe-persistence', (s) =>
@@ -121,12 +123,150 @@ const getV2Storage = async (): Promise<void> => {
   });
 };
 
-export const migrateV2toV3 = async () => {
+export const getV2PresetsAndArchives = async (): Promise<{
+  presets: YtcF.FilterPreset[];
+  archives: YtcF.MessageDumpExportItem[];
+}> => {
   const v2 = await getV2Storage();
-  browserObject.storage.local.remove('@@vwe-persistence');
+  const presets: YtcF.FilterPreset[] = [];
   if (v2) {
-    // TODO
+    const data = v2['@@vwe-persistence'];
+    const profiles = data.global.profiles;
+    for (const key of Object.keys(profiles)) {
+      const profile = profiles[key];
+      presets.push({
+        id: key,
+        activation: 'manual',
+        nickname: profile.name,
+        triggers: [],
+        filters: profile.filters.map((f: any, i: number) => {
+          switch (f.type) {
+            case 'msgIncludes': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  caseSensitive: true,
+                  invert: false,
+                  property: 'message',
+                  type: 'includes',
+                  value: f.value
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            case 'author': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  caseSensitive: false,
+                  invert: false,
+                  property: 'authorName',
+                  type: 'includes',
+                  value: f.value
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            case 'isMember': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  type: 'boolean',
+                  property: 'member',
+                  invert: false
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            case 'isModerator': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  type: 'boolean',
+                  property: 'moderator',
+                  invert: false
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            case 'isOwner': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  type: 'boolean',
+                  property: 'owner',
+                  invert: false
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            case 'isVerified': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  type: 'boolean',
+                  property: 'verified',
+                  invert: false
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            case 'isSuperchat': {
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  type: 'boolean',
+                  property: 'superchat',
+                  invert: false
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+            default: { // case 'regex'
+              return {
+                type: 'basic',
+                nickname: `Unnamed Filter ${i + 1}`,
+                conditions: [{
+                  type: 'regex',
+                  property: 'message',
+                  invert: false,
+                  value: f.value,
+                  caseSensitive: true
+                }],
+                id: getRandomString(),
+                enabled: true
+              };
+            }
+          }
+        })
+      });
+    }
   }
+  return {
+    presets,
+    archives: [] // TODO
+  };
+};
+
+export const migrateV2toV3 = async (): Promise<void> => {
+};
+
+export const clearV2Storage = async (): Promise<void> => {
+  return await browserObject.storage.local.remove('@@vwe-persistence');
 };
 
 const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
@@ -164,21 +304,32 @@ export const getSavedMessageDumpInfo = async (
 
 export const getSavedMessageDumpExportItem = async (
   key: string
-): Promise<YtcF.MessageDumpExportItem[]> => {
+): Promise<YtcF.MessageDump> => {
   const k = keyGen(key, 'info');
   const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpInfoItem | undefined, false);
   await s.ready();
   const info = await s.get();
-  if (!info) return [];
+  const emptyItem = {
+    version: '3',
+    dumps: []
+  };
+  if (!info) {
+    return emptyItem;
+  }
   const k2 = keyGen(key, 'actions');
   const s2 = stores.addSyncStore(k2, undefined as YtcF.MessageDumpActionsItem | undefined, false);
   await s2.ready();
   const actions = await s2.get();
-  if (!actions) return [];
-  return [{
-    ...info,
-    actions
-  }];
+  if (!actions) {
+    return emptyItem;
+  }
+  return {
+    ...emptyItem,
+    dumps: [{
+      ...info,
+      actions
+    }]
+  };
 };
 
 export const saveMessageDumpInfo = async (
@@ -307,13 +458,13 @@ const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
 };
 
 export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
-  const obj = (await getSavedMessageDumpExportItem(item.key));
+  const obj = (await getSavedMessageDumpExportItem(item.key)).dumps;
   const title = getTitle(obj[0]);
   download(JSON.stringify(obj, null, 2), `${title}.json`);
 };
 
 export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
-  const obj = (await getSavedMessageDumpExportItem(item.key))[0];
+  const obj = (await getSavedMessageDumpExportItem(item.key)).dumps[0];
   const title = getTitle(obj);
   const str = obj?.actions.map(action => {
     const msg = action.message;

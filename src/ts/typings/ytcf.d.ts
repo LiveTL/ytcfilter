@@ -49,4 +49,8 @@ declare namespace YtcF {
   export interface MessageDumpExportItem extends MessageDumpInfoItem {
     actions: MessageDumpActionsItem;
   }
+  export interface MessageDump {
+    version: string;
+    dumps: MessageDumpExportItem[];
+  }
 }
