@@ -10,6 +10,8 @@
   import YtcFilterFilters from './settings/YtcFilterFilters.svelte';
   import { exioButton, exioComponent } from 'exio/svelte';
   import YtcFilterArchives from './settings/YtcFilterArchives.svelte';
+  import { redirectIfInitialSetup } from '../ts/ytcf-logic';
+  import { onMount } from 'svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
   const tabs = [{
     name: 'Filters',
@@ -22,6 +24,9 @@
     component: YtcFilterArchives
   }];
   let tabIndex = 0;
+  onMount(async () => {
+    await redirectIfInitialSetup();
+  });
 </script>
 
 <svelte:head>

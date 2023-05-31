@@ -2,12 +2,21 @@
   import { isLiveTL } from '../ts/chat-constants';
   import { exioButton, exioIcon } from 'exio/svelte';
   import { onDestroy, onMount } from 'svelte';
+  import { embedHeight } from '../ts/storage';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
   let resizing = false;
   let touchOrigin: { x: number, y: number } | null = null;
-  onMount(() => {
+  let windowHeight = window.innerHeight;
+  let height = 0.4 * windowHeight;
+  let loaded = false;
+  // TODO FIX RESIZE SAVING
+  onMount(async () => {
+    await embedHeight.ready();
+    if ($embedHeight !== null) {
+      height = $embedHeight * windowHeight;
+    }
     attrObserver = new MutationObserver((_) => {
       dark = document.documentElement.hasAttribute('dark');
     });
@@ -40,24 +49,30 @@
     window.addEventListener('resize', () => {
       windowHeight = window.innerHeight;
     });
+    loaded = true;
   });
   onDestroy(() => {
     attrObserver.disconnect();
   });
   let resizeBar: HTMLDivElement;
-  let height = 250;
   // eslint-disable-next-line prefer-const
-  let windowHeight = window.innerHeight;
   let buttons: HTMLDivElement;
   let ytcfIframe: HTMLDivElement;
-  $: pxHeight = Math.min(
-    windowHeight - 10 -
-    (buttons ? buttons.getBoundingClientRect().top : 0) -
-    (buttons ? buttons.clientHeight : 0),
-    Math.max(height, 0)
-  );
-  $: calcHeight = resizing ? `${pxHeight}px` : `${100 * pxHeight / windowHeight}vh`;
-  $: toggleMouse(resizing);
+  let pxHeight = 0;
+  $: if (loaded) {
+    pxHeight = Math.min(
+      windowHeight - 10 -
+        (buttons ? buttons.getBoundingClientRect().top : 0) -
+        (buttons ? buttons.clientHeight : 0),
+      Math.max(height, 0)
+    );
+  }
+  let calcHeight = '';
+  $: if (loaded && !resizing) $embedHeight = Math.max(0, Math.min(1, pxHeight / windowHeight));
+  $: if (loaded) {
+    calcHeight = resizing ? `${pxHeight}px` : `${100 * ($embedHeight || 0)}vh`;
+  }
+  $: if (loaded) toggleMouse(resizing);
   function toggleMouse(toggle: boolean) {
     const elem = document.querySelector('#hyperchat') as HTMLIFrameElement | null;
     if (elem) {
@@ -66,8 +81,6 @@
     }
   }
 </script>
-
-<svelte:body bind:clientHeight={windowHeight} />
 
 <div data-theme={dark ? 'dark' : 'light'} class="ytcf-wrapper">
   <div class="ytcf-button-wrapper" bind:this={buttons}>

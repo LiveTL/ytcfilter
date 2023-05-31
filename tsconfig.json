@@ -8,10 +8,11 @@
     "checkJs": false,
     "strict": true,
     "lib": [
-      "DOM"
+      "DOM",
+      "es2020.string"
     ],
     "target": "ES2017",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "include": [
     "src/**/*",

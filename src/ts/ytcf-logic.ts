@@ -1,8 +1,7 @@
 import { get } from 'svelte/store';
 import { UNNAMED_ARCHIVE } from './chat-constants';
-import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId } from './storage';
+import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
-import type YtcFilterArchiveList from 'components/settings/YtcFilterArchiveList.svelte';
 import { getRandomString } from './chat-utils';
 
 const browserObject = (window.chrome ?? (window as any).browser);
@@ -111,7 +110,7 @@ export function getAutoActivatedPreset(presets: YtcF.FilterPreset[], info: Simpl
   return null;
 }
 
-const getV2Storage = async (): Promise<any> => {
+export const getV2Storage = async (): Promise<any> => {
   return await new Promise((resolve, reject) => {
     try {
       browserObject.storage.local.get('@@vwe-persistence', (s) =>
@@ -123,155 +122,258 @@ const getV2Storage = async (): Promise<any> => {
   });
 };
 
-export const getV2PresetsAndArchives = async (): Promise<{
+const parseHtmlString = (html: string): Ytc.ParsedRun[] => {
+  const elem = document.createElement('div');
+  elem.innerHTML = html;
+  const runs: Ytc.ParsedRun[] = Array.from(elem.childNodes).map((child) => {
+    return (child as HTMLElement).tagName === 'img'
+      ? {
+          type: 'emoji',
+          src: (child as HTMLImageElement).src,
+          alt: (child as HTMLImageElement).alt
+        }
+      : (
+          child as HTMLElement).tagName === 'a'
+          ? {
+              type: 'link',
+              url: (child as HTMLAnchorElement).href,
+              text: (child as HTMLAnchorElement).innerText
+            }
+          : {
+              type: 'text',
+              text: child.textContent ?? ''
+            };
+  });
+  elem.remove();
+  return runs;
+};
+
+export const getParsedV2Data = async (importedData: object | null = null): Promise<{
   presets: YtcF.FilterPreset[];
   archives: YtcF.MessageDumpExportItem[];
+  defaultPreset: string | null;
 }> => {
-  const v2 = await getV2Storage();
+  const data = importedData ?? (await getV2Storage());
   const presets: YtcF.FilterPreset[] = [];
-  if (v2) {
-    const data = v2['@@vwe-persistence'];
-    const profiles = data.global.profiles;
-    for (const key of Object.keys(profiles)) {
-      const profile = profiles[key];
-      presets.push({
-        id: key,
-        activation: 'manual',
-        nickname: profile.name,
-        triggers: [],
-        filters: profile.filters.map((f: any, i: number) => {
-          switch (f.type) {
-            case 'msgIncludes': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  caseSensitive: true,
-                  invert: false,
-                  property: 'message',
-                  type: 'includes',
-                  value: f.value
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            case 'author': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  caseSensitive: false,
-                  invert: false,
-                  property: 'authorName',
-                  type: 'includes',
-                  value: f.value
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            case 'isMember': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  type: 'boolean',
-                  property: 'member',
-                  invert: false
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            case 'isModerator': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  type: 'boolean',
-                  property: 'moderator',
-                  invert: false
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            case 'isOwner': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  type: 'boolean',
-                  property: 'owner',
-                  invert: false
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            case 'isVerified': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  type: 'boolean',
-                  property: 'verified',
-                  invert: false
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            case 'isSuperchat': {
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  type: 'boolean',
-                  property: 'superchat',
-                  invert: false
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
-            default: { // case 'regex'
-              return {
-                type: 'basic',
-                nickname: `Unnamed Filter ${i + 1}`,
-                conditions: [{
-                  type: 'regex',
-                  property: 'message',
-                  invert: false,
-                  value: f.value,
-                  caseSensitive: true
-                }],
-                id: getRandomString(),
-                enabled: true
-              };
-            }
+  const archives: YtcF.MessageDumpExportItem[] = [];
+  if (!data) {
+    return {
+      presets,
+      archives,
+      defaultPreset: null
+    };
+  }
+  const profiles = data.global.profiles;
+  for (const key of Object.keys(profiles)) {
+    const profile = profiles[key];
+    presets.push({
+      id: key,
+      activation: 'manual',
+      nickname: profile.name,
+      triggers: [],
+      filters: profile.filters.map((f: any, i: number) => {
+        switch (f.type) {
+          case 'msgIncludes': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                caseSensitive: true,
+                invert: false,
+                property: 'message',
+                type: 'includes',
+                value: f.value
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
           }
-        })
+          case 'author': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                caseSensitive: false,
+                invert: false,
+                property: 'authorName',
+                type: 'includes',
+                value: f.value
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+          case 'isMember': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                type: 'boolean',
+                property: 'member',
+                invert: false
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+          case 'isModerator': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                type: 'boolean',
+                property: 'moderator',
+                invert: false
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+          case 'isOwner': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                type: 'boolean',
+                property: 'owner',
+                invert: false
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+          case 'isVerified': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                type: 'boolean',
+                property: 'verified',
+                invert: false
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+          case 'isSuperchat': {
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                type: 'boolean',
+                property: 'superchat',
+                invert: false
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+          default: { // case 'regex'
+            return {
+              type: 'basic',
+              nickname: `Unnamed Filter ${i + 1}`,
+              conditions: [{
+                type: 'regex',
+                property: 'message',
+                invert: false,
+                value: f.value,
+                caseSensitive: true
+              }],
+              id: getRandomString(),
+              enabled: true
+            };
+          }
+        }
+      })
+    });
+  }
+  const archiveKeys = Object.keys(data.videoSettings);
+  for (const key of archiveKeys) {
+    const messageList = data.videoSettings[key].feeds.default.messages;
+    const parsedMessageActions: Chat.MessageAction[] = [];
+    for (const message of messageList) {
+      const parsedRuns: Ytc.ParsedRun[] = parseHtmlString(message.html);
+      parsedMessageActions.push({
+        message: {
+          author: {
+            id: getRandomString(),
+            name: message.author,
+            profileIcon: {
+              alt: message.author,
+              src: 'https://www.youtube.com/s/desktop/339bae71/img/favicon_48x48.png'
+            },
+            types: ['moderator', 'owner', 'verified', 'member'].filter(item => message[item]),
+            customBadge: {
+              alt: message.author,
+              src: message.badgeUrl
+            }
+          },
+          message: parsedRuns,
+          messageId: message.id,
+          showtime: 0,
+          timestamp: message.timestamp
+        }
+      });
+      archives.push({
+        continuation: [''],
+        info: {
+          channel: {
+            channelId: data.videoSettings[key].channelId,
+            name: data.videoSettings[key].channelName,
+            handle: data.videoSettings[key].channelId
+          },
+          video: {
+            videoId: data.videoSettings[key].id,
+            title: data.videoSettings[key].name
+          }
+        },
+        key: getRandomString(),
+        lastEdited: new Date().getTime(),
+        nickname: 'Unnamed Archive',
+        presetId: '',
+        size: messageList.length,
+        actions: parsedMessageActions
       });
     }
   }
   return {
     presets,
-    archives: [] // TODO
+    archives,
+    defaultPreset: data.global.globalDefault
   };
 };
 
-export const migrateV2toV3 = async (): Promise<void> => {
-};
+const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
+const keyGen = (key: string, dataType: 'info' | 'actions' = 'info'): string => `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
 
 export const clearV2Storage = async (): Promise<void> => {
   return await browserObject.storage.local.remove('@@vwe-persistence');
 };
 
-const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
+export const migrateV2toV3 = async (): Promise<void> => {
+  const { presets, archives, defaultPreset } = await getParsedV2Data();
+  await chatFilterPresets.ready();
+  await clearV2Storage();
+  chatFilterPresets.set([
+    ...get(chatFilterPresets),
+    ...presets
+  ]);
+  for (const archive of archives) {
+    const infoStore = stores.addSyncStore(keyGen(archive.key, 'info'), archive, false);
+    await infoStore.ready();
+    const actions = archive.actions;
+    archive.actions = [];
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    infoStore.set(archive);
+    const actionsStore = stores.addSyncStore(keyGen(archive.key, 'actions'), actions, false);
+    await actionsStore.ready();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    actionsStore.set(actions);
+  }
+  defaultFilterPresetId.set(defaultPreset ?? '');
+  currentStorageVersion.set('v3');
+};
 
-const keyGen = (key: string, dataType: 'info' | 'actions' = 'info'): string => `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
 const filterMessageDumpInfoKeyNames = (key: string): boolean => key.startsWith(
   keyGen('', 'info')
 );
@@ -498,4 +600,16 @@ export const importFromJson = async (): Promise<string> => {
     document.body.appendChild(element);
     element.click();
   });
+};
+
+export const redirectIfInitialSetup = async (): Promise<void> => {
+  if (!get(initialSetupDone)) {
+    currentStorageVersion.set('v2');
+    const query = window.location.search;
+    const params = new URLSearchParams(query);
+    params.set('referrer', window.location.href);
+    window.location.href = `/setup.html?${params.toString()}`;
+  } else {
+    currentStorageVersion.set('v3');
+  }
 };

@@ -53,7 +53,7 @@
     ytDark
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, importFromJson } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, importFromJson, redirectIfInitialSetup } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -534,7 +534,8 @@
     );
   }
   let isPopout = false;
-  onMount(() => {
+  onMount(async () => {
+    await redirectIfInitialSetup();
     try {
       if (window.parent === window) {
         import('../ts/resize-tracker');
