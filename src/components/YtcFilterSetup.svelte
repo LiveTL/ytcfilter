@@ -1,51 +1,106 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
-  import { dataTheme, ytDark, port, currentStorageVersion } from '../ts/storage';
+  import { dataTheme, ytDark, port, currentStorageVersion, inputDialog, initialSetupDone, errorDialog } from '../ts/storage';
   import '../stylesheets/ui.css';
   import '../stylesheets/line.css';
-  import { exioButton, exioCheckbox, exioComponent, exioIcon, exioZoomInAnimation } from 'exio/svelte';
+  import { exioButton, exioComponent, exioIcon, exioZoomInAnimation } from 'exio/svelte';
   import { getBrowser, Browser } from '../ts/chat-constants';
   import { onMount } from 'svelte';
   import ExioRadios from './common/ExioRadios.svelte';
+  import { downloadV2Data, getV2Storage, migrateV2toV3 } from '../ts/ytcf-logic';
+  import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';
+  import YtcFilterErrorDialog from './YtcFilterErrorDialog.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
   let loaded = false;
+  let hasV2Data = false;
   const params = new URLSearchParams(window.location.search);
   const paramsTabId = params.get('tabid');
   const paramsFrameId = params.get('frameid');
   const referrer = params.get('referrer');
+  let value = 'migrate-filters-and-archives';
   onMount(async () => {
-    if (paramsTabId == null || paramsFrameId == null || paramsTabId.length < 1 || paramsFrameId.length < 1) {
-      return;
-    }
-    if (getBrowser() === Browser.FIREFOX) {
-      const frameInfo = {
-        tabId: parseInt(paramsTabId),
-        frameId: parseInt(paramsFrameId)
-      };
+    if (paramsTabId != null && paramsFrameId != null && paramsTabId.length >= 1 && paramsFrameId.length >= 1) {
+      if (getBrowser() === Browser.FIREFOX) {
+        const frameInfo = {
+          tabId: parseInt(paramsTabId),
+          frameId: parseInt(paramsFrameId)
+        };
 
-      $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
-    } else {
-      $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
-    }
-    const onPortMessage = (response: Chat.BackgroundResponse) => {
-      switch (response.type) {
-        case 'themeUpdate':
-          $ytDark = response.dark;
-          break;
+        $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
+      } else {
+        $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
       }
-    };
-    $port?.onMessage.addListener(onPortMessage);
-    $port?.postMessage({
-      type: 'getTheme'
-    });
+      const onPortMessage = (response: Chat.BackgroundResponse) => {
+        switch (response.type) {
+          case 'themeUpdate':
+            $ytDark = response.dark;
+            break;
+        }
+      };
+      $port?.onMessage.addListener(onPortMessage);
+      $port?.postMessage({
+        type: 'getTheme'
+      });
+    }
     await currentStorageVersion.ready();
+    hasV2Data = Boolean(await getV2Storage());
+    value = hasV2Data ? 'migrate-filters-and-archives' : 'scratch';
     loaded = true;
   });
   let currentPanel: 'welcome' | 'migrate' | 'done' = 'welcome';
   const startSetup = () => (currentPanel = 'migrate');
-  let value = 'filters-and-archives';
-  const completeSetup = () => {};
+  const cancelled = (reason: Error | null) => {
+    $inputDialog = null;
+    if (reason === null) return;
+    $errorDialog = {
+      title: 'Error Importing Data',
+      message: reason.message,
+      action: {
+        text: 'OK',
+        callback: () => ($errorDialog = null)
+      }
+    };
+  };
+  const startImport = async () => {
+    if (value === 'scratch') {
+      $currentStorageVersion = 'v3';
+      $initialSetupDone = true;
+    } else if (value.startsWith('migrate')) {
+      await migrateV2toV3({ presetsAndFilters: value.includes('filters'), archives: value.includes('archives') });
+      $initialSetupDone = true;
+    } else if (value === 'from-json') {
+      $inputDialog = {
+        title: 'Import v2 JSON data',
+        prompts: [{
+          label: 'Paste JSON data here',
+          originalValue: '',
+          hideLabel: true,
+          large: true
+        }],
+        // message: 'Paste your v2 JSON data below.',
+        action: {
+          async callback(values) {
+            try {
+              const json = JSON.parse(values[0]);
+              await migrateV2toV3({ presetsAndFilters: true, archives: true }, json);
+              $initialSetupDone = true;
+            } catch (e) {
+              console.error(e);
+              cancelled(e as any);
+            }
+          },
+          text: 'Import',
+          cancelled: () => cancelled(null)
+        }
+      };
+    }
+  };
+  $: if ($initialSetupDone) currentPanel = 'done';
+  const returnToYtcF = () => (window.location.href = referrer || window.location.href);
 </script>
+
+<YtcFilterInputDialog />
+<YtcFilterErrorDialog />
 
 <div
   class="wrapper"
@@ -65,23 +120,39 @@
     {:else if currentPanel === 'migrate'}
       <div style="text-align: center;" use:exioZoomInAnimation>
         <div style="font-size: 1.5rem; color: #3ba7ff;">Import Data from v2</div>
-        <div style="margin-top: 1rem; font-size: 1rem;">
-          Back up your v2 data:
-          <a href="#" style="color: #3ba7ff; text-decoration: none;">
-            ytcf-v2-data.json
-            <span use:exioIcon style="color: inherit; transform: translate(-0.2em, 0.2em);">download</span>
-          </a>
-        </div>
+        {#if hasV2Data}
+          <div style="margin-top: 1rem; font-size: 1rem;">
+            Back up your v2 data:
+            <a href="/" style="color: #3ba7ff; text-decoration: none;" on:click={e => {
+              e.preventDefault();
+              downloadV2Data();
+            }}>
+              ytcf-v2-data.json
+              <span use:exioIcon style="color: inherit; transform: translate(-0.2em, 0.2em);">download</span>
+            </a>
+          </div>
+        {/if}
         <div style="font-size: 1rem; margin-top: 1rem;">
-          <ExioRadios options={[{
-            label: 'Import filters, presets, and archives',
-            value: 'filters-and-archives'
-          }, {
-            label: 'Import filters and presets only',
-            value: 'filters-only'
-          }, {
-            label: 'Import archives only',
-            value: 'archives-only'
+          <ExioRadios options={[
+            ...(
+              hasV2Data
+              ? [
+                {
+                  label: 'Import filters, presets, and archives',
+                  value: 'migrate-filters-and-archives'
+                }, {
+                  label: 'Import filters and presets only',
+                  value: 'migrate-filters-only'
+                }, {
+                  label: 'Import archives only',
+                  value: 'migrate-archives-only'
+                }
+              ]
+              : []
+            ),
+          {
+            label: 'Import custom v2 storage JSON',
+            value: 'from-json'
           }, {
             label: 'Start from scratch',
             value: 'scratch'
@@ -90,20 +161,27 @@
             <input type="checkbox" bind:checked={alsoExport} id="also-export" use:exioCheckbox class="also-export" />
             <label for="also-export">Also back up v2 data as .json</label>
           </div> -->
-          <button use:exioButton style="font-size: 1rem; margin-top: 1rem;" on:click={completeSetup}>
-            Complete Setup
+          <button use:exioButton style="font-size: 1rem; margin-top: 1rem;" on:click={startImport}>
+            Start Import
           </button>
         </div>
+      </div>
+    {:else if currentPanel === 'done'}
+      <div style="text-align: center;" use:exioZoomInAnimation>
+        <div style="font-size: 1.5rem; color: #3ba7ff;">You're all set!</div>
+        <button use:exioButton style="font-size: 1rem; margin-top: 1rem;" on:click={returnToYtcF}>
+          Let's Go!
+        </button>
       </div>
     {/if}
   </div>
 </div>
 
 <style>
-  .also-export {
+  /* .also-export {
     display: inline-flex;
     margin-top: 2px;
-  }
+  } */
   .ytcf-text {
     background: linear-gradient(135deg, #2b6eff 0%, #2099f2 50%, #2bbdd0 100%);
     background-clip: text;

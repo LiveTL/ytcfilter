@@ -19,11 +19,13 @@
     if (v) values = v;
   };
   $: setValue($inputDialog?.prompts.map(p => p.originalValue));
-  let prompts: Array<{
+  type PromptType = {
     originalValue: string;
     label: string;
     hideLabel?: Boolean;
-  }> = [];
+    large?: Boolean;
+  };
+  let prompts: Array<PromptType> = [];
   $: prompts = $inputDialog?.prompts ?? prompts;
   let message = '';
   $: message = $inputDialog?.component ? '' : ($inputDialog?.message ?? message);
@@ -51,8 +53,8 @@
   //   inputItem?.focus();
   //   inputItem?.select();
   // };
-  let inputItem: HTMLInputElement | null = null;
-  const zip = (prompts: Array<{ originalValue: string, label: string, hideLabel?: Boolean }>, values: string[]) => {
+  let inputItem: HTMLInputElement | HTMLTextAreaElement | null = null;
+  const zip = (prompts: Array<PromptType>, values: string[]) => {
     return prompts.map((p, i) => {
       return {
         ...p,
@@ -90,24 +92,43 @@
       {#if item.label && (!('hideLabel' in item) || !item.hideLabel)}
         <span class="select-none"><strong>{item.label}</strong></span>
       {/if}
-      <input
-        type="text"
-        value={item.originalValue}
-        use:exioTextbox
-        style="width: 100%; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: 10px;"
-        on:keydown={e => {
-          if (e.key === 'Enter') {
-            action.callback(values);
-            $inputDialog = null;
-          } else if (e.key === 'Escape') {
-            action.cancelled();
-            $inputDialog = null;
-          }
-        }}
-        on:input={editCallback(index)}
-        placeholder={item.label}
-        bind:this={inputItem}
-      />
+      {#if item.large}
+        <div>
+          <textarea
+            value={item.originalValue}
+            use:exioTextbox
+            style="overflow: auto; width: min(calc(100vw - 2rem), 400px); height: 4em; box-sizing: border-box; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: 10px;"
+            on:keydown={e => {
+              if (e.key === 'Escape') {
+                action.cancelled();
+                $inputDialog = null;
+              }
+            }}
+            on:input={editCallback(index)}
+            placeholder={item.label}
+            bind:this={inputItem}
+        />
+      </div>
+      {:else}
+        <input
+          type="text"
+          value={item.originalValue}
+          use:exioTextbox
+          style="width: 100%; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: 10px;"
+          on:keydown={e => {
+            if (e.key === 'Enter') {
+              action.callback(values);
+              $inputDialog = null;
+            } else if (e.key === 'Escape') {
+              action.cancelled();
+              $inputDialog = null;
+            }
+          }}
+          on:input={editCallback(index)}
+          placeholder={item.label}
+          bind:this={inputItem}
+        />
+      {/if}
     {/each}
     {#if component}
       <svelte:component this={component} />
@@ -132,6 +153,12 @@
 <style>
   [data-theme='light'] input {
     background-color: rgb(230, 230, 230);
+  }
+  [data-theme='light'] textarea {
+    background-color: rgb(230, 230, 230);
+  }
+  textarea {
+    background-color: #191919;;
   }
   .reactive-width {
     width: min(450px, calc(100% - 40px));

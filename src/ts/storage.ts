@@ -125,6 +125,14 @@ export const confirmDialog = writable(null as null | {
     callback: () => void;
   };
 });
+export const errorDialog = writable(null as null | {
+  title: string;
+  message: string;
+  action: {
+    text: string;
+    callback: () => void;
+  };
+});
 export const inputDialog = writable(null as null | {
   title: string;
   message?: string;
@@ -132,6 +140,7 @@ export const inputDialog = writable(null as null | {
     originalValue: string;
     label: string;
     hideLabel?: boolean;
+    large?: boolean;
   }>;
   action: {
     text: string;

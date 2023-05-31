@@ -350,27 +350,31 @@ export const clearV2Storage = async (): Promise<void> => {
   return await browserObject.storage.local.remove('@@vwe-persistence');
 };
 
-export const migrateV2toV3 = async (): Promise<void> => {
-  const { presets, archives, defaultPreset } = await getParsedV2Data();
-  await chatFilterPresets.ready();
+export const migrateV2toV3 = async (
+  what: { presetsAndFilters: boolean, archives: boolean },
+  importedData: object | null = null
+): Promise<void> => {
+  const { presets, archives, defaultPreset } = await getParsedV2Data(importedData);
   await clearV2Storage();
-  chatFilterPresets.set([
-    ...get(chatFilterPresets),
-    ...presets
-  ]);
-  for (const archive of archives) {
-    const infoStore = stores.addSyncStore(keyGen(archive.key, 'info'), archive, false);
-    await infoStore.ready();
-    const actions = archive.actions;
-    archive.actions = [];
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    infoStore.set(archive);
-    const actionsStore = stores.addSyncStore(keyGen(archive.key, 'actions'), actions, false);
-    await actionsStore.ready();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    actionsStore.set(actions);
+  if (what.presetsAndFilters) {
+    await chatFilterPresets.ready();
+    chatFilterPresets.set(presets);
+    defaultFilterPresetId.set(defaultPreset ?? '');
   }
-  defaultFilterPresetId.set(defaultPreset ?? '');
+  if (what.archives) {
+    for (const archive of archives) {
+      const infoStore = stores.addSyncStore(keyGen(archive.key, 'info'), archive, false);
+      await infoStore.ready();
+      const actions = archive.actions;
+      archive.actions = [];
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      infoStore.set(archive);
+      const actionsStore = stores.addSyncStore(keyGen(archive.key, 'actions'), actions, false);
+      await actionsStore.ready();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      actionsStore.set(actions);
+    }
+  }
   currentStorageVersion.set('v3');
 };
 
@@ -565,6 +569,11 @@ export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<vo
   download(JSON.stringify(obj, null, 2), `${title}.json`);
 };
 
+export const downloadV2Data = async (): Promise<void> => {
+  const data = await getV2Storage();
+  download(JSON.stringify(data, null, 2), 'ytcf-v2-data.json');
+};
+
 export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
   const obj = (await getSavedMessageDumpExportItem(item.key)).dumps[0];
   const title = getTitle(obj);
@@ -603,6 +612,7 @@ export const importFromJson = async (): Promise<string> => {
 };
 
 export const redirectIfInitialSetup = async (): Promise<void> => {
+  await initialSetupDone.ready();
   if (!get(initialSetupDone)) {
     currentStorageVersion.set('v2');
     const query = window.location.search;
