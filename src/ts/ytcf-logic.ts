@@ -3,6 +3,7 @@ import { UNNAMED_ARCHIVE } from './chat-constants';
 import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
+import parseRegex from 'regex-parser';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
@@ -48,7 +49,7 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
             break;
           }
         } else {
-          const regex = new RegExp(condition.value, condition.caseSensitive ? '' : 'i');
+          const regex = parseRegex(condition.value);
           const result = regex.test(compStr);
           if (!condition.value) {
             numValidFilters--;
@@ -93,7 +94,7 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVide
       const result = s1[trigger.type](s2);
       if (result) return true;
     } else {
-      const regex = new RegExp(trigger.value, trigger.caseSensitive ? '' : 'i');
+      const regex = parseRegex(trigger.value);
       const result = regex.test(compStr);
       if (result) return true;
     }
