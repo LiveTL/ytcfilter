@@ -35,7 +35,6 @@ const chatLoaded = async (): Promise<void> => {
     });
     document.body.appendChild(metagetter);
   });
-  console.log(ytcfg);
 
   // Init and inject interceptor
   initInterceptor('ytc', ytcfg, frameIsReplay);

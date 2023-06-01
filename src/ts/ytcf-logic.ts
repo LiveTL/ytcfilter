@@ -167,11 +167,39 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
   const profiles = data.global.profiles;
   for (const key of Object.keys(profiles)) {
     const profile = profiles[key];
+    let autoActivate: {
+      channelId: string;
+      channelName: string;
+      profileKey: string;
+    } | null = null;
+    for (const channelId of Object.keys(data.global.defaultPerChannel)) {
+      if (data.global.defaultPerChannel[channelId].profileKey === key) {
+        autoActivate = data.global.defaultPerChannel[channelId];
+        break;
+      }
+    }
     presets.push({
       id: key,
-      activation: 'manual',
+      activation: autoActivate ? 'auto' : 'manual',
       nickname: profile.name,
-      triggers: [],
+      triggers: autoActivate
+        ? [{
+            caseSensitive: false,
+            property: 'channelId',
+            type: 'includes',
+            value: autoActivate.channelId
+          }, {
+            caseSensitive: false,
+            property: 'channelName',
+            type: 'includes',
+            value: autoActivate.channelName
+          }, {
+            caseSensitive: false,
+            property: 'channelHandle',
+            type: 'includes',
+            value: autoActivate.channelId
+          }]
+        : [],
       filters: profile.filters.map((f: any, i: number) => {
         switch (f.type) {
           case 'msgIncludes': {
@@ -590,7 +618,7 @@ export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<voi
   a.click();
 };
 
-export const importFromJson = async (): Promise<string> => {
+export const readFromJson = async (): Promise<YtcF.MessageDumpExportItem> => {
   return await new Promise((resolve) => {
     const element = document.createElement('input');
     element.type = 'file';
@@ -600,9 +628,8 @@ export const importFromJson = async (): Promise<string> => {
       if (file) {
         const reader = new FileReader();
         reader.addEventListener('load', (e) => {
-          console.log('Importing JSON dump');
           const data = JSON.parse(e.target?.result as string);
-          resolve(data.key);
+          resolve(data);
         });
         reader.readAsText(file);
       }

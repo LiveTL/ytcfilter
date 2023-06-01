@@ -50,10 +50,11 @@
     defaultFilterPresetId,
     videoInfo,
     overrideFilterPresetId,
-    ytDark
+    ytDark,
+    inputDialog
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, importFromJson, redirectIfInitialSetup } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, readFromJson, redirectIfInitialSetup } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
 
@@ -139,13 +140,17 @@
     return newItems;
   };
 
-  let piledMessages: Chat.MessagesAction[] = [];
+  let piledMessages: {
+    messagesAction: Chat.MessagesAction;
+    isInitial: boolean;
+    forceDisplay: boolean;
+  }[] = [];
 
   const newMessages = async (
     messagesAction: Chat.MessagesAction, isInitial: boolean, forceDisplay = false
   ) => {
     if (!isAtBottom) {
-      piledMessages = [...piledMessages, messagesAction];
+      piledMessages = [...piledMessages, { messagesAction, isInitial, forceDisplay }];
       return;
     }
     // On replays' initial data, only show messages with negative timestamp
@@ -160,8 +165,8 @@
   };
 
   $: if (isAtBottom && piledMessages.length > 0) {
-    for (const messagesAction of piledMessages) {
-      newMessages(messagesAction, false);
+    for (const item of piledMessages) {
+      newMessages(item.messagesAction, item.isInitial, item.forceDisplay);
     }
     piledMessages = [];
   }
@@ -404,9 +409,12 @@
   };
 
   const importJsonDump = async () => {
-    const key = await importFromJson();
-    if (key) {
-      console.log(key);
+    const obj = await readFromJson();
+    if (obj) {
+      newMessages({
+        type: 'messages',
+        messages: obj.actions
+      }, false, true);
     }
   };
 
@@ -416,6 +424,19 @@
       case 'jsondump':
         importJsonDump();
         break;
+      case 'savedarchive': {
+        $inputDialog = {
+          title: 'Load Archive',
+          action: {
+            callback: () => {},
+            text: 'Load',
+            cancelled: () => {}
+          },
+          component: '',
+          prompts: []
+        };
+        break;
+      }
     }
     el.value = 'import';
   };

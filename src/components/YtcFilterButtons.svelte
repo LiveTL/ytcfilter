@@ -68,7 +68,9 @@
     );
   }
   let calcHeight = '';
-  $: if (loaded && !resizing) $embedHeight = Math.max(0, Math.min(1, pxHeight / windowHeight));
+  $: if (loaded && !resizing) {
+    $embedHeight = Math.max(0, Math.min(1, pxHeight / windowHeight));
+  }
   $: if (loaded) {
     calcHeight = resizing ? `${pxHeight}px` : `${100 * ($embedHeight || 0)}vh`;
   }

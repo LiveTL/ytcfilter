@@ -46,11 +46,12 @@ try {
   const channel = (window as any).parent.yt.config_.SBOX_SETTINGS.SEARCHBOX_COMPONENT.__dataHost
     .parentComponent.__data.data.response.contents.twoColumnWatchNextResults.results.results
     .contents[1].videoSecondaryInfoRenderer.owner.videoOwnerRenderer;
+  const params = new URLSearchParams(window.parent.location.search);
   window.dispatchEvent(new CustomEvent('videoInfo', {
     detail: JSON.stringify({
       video: {
         title: stringifyRuns(parseMessageRuns(video.title.runs)),
-        videoId: video.updatedMetadataEndpoint.updatedMetadataEndpoint.videoId
+        videoId: video.updatedMetadataEndpoint?.updatedMetadataEndpoint?.videoId || params.get('v')
       },
       channel: {
         channelId: channel.navigationEndpoint.browseEndpoint.browseId,
