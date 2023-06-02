@@ -68,11 +68,15 @@
     );
   }
   let calcHeight = '';
+  $: tickEmbedHeight = $embedHeight;
   $: if (loaded && !resizing) {
-    $embedHeight = Math.max(0, Math.min(1, pxHeight / windowHeight));
+    tickEmbedHeight = Math.max(0, Math.min(1, pxHeight / windowHeight));
+    setTimeout(() => {
+      $embedHeight = tickEmbedHeight;
+    }, 100);
   }
   $: if (loaded) {
-    calcHeight = resizing ? `${pxHeight}px` : `${100 * ($embedHeight || 0)}vh`;
+    calcHeight = resizing ? `${pxHeight}px` : `${100 * (tickEmbedHeight || 0)}vh`;
   }
   $: if (loaded) toggleMouse(resizing);
   function toggleMouse(toggle: boolean) {
