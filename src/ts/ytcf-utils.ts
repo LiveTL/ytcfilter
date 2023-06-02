@@ -15,4 +15,5 @@ export const download = (data: string, filename: string): void => {
   a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`;
   a.download = filename.replace(/[/\\?%*:|"<>]/g, '-');
   a.click();
+  a.remove();
 };

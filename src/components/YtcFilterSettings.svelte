@@ -19,16 +19,16 @@
     name: 'Filters',
     component: YtcFilterFilters
   }, {
-    name: 'Appearance',
-    component: YtcFilterGeneral
-  }, {
     name: 'Archives',
     component: YtcFilterArchives as any,
     props: {
       isArchiveLoadSelection
     }
+  }, {
+    name: 'Other',
+    component: YtcFilterGeneral
   }];
-  let tabIndex = isArchiveLoadSelection ? 2 : 0;
+  let tabIndex = isArchiveLoadSelection ? 1 : 0;
   onMount(async () => {
     await redirectIfInitialSetup();
   });

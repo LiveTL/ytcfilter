@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 import { UNNAMED_ARCHIVE } from './chat-constants';
-import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone } from './storage';
+import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
@@ -618,11 +618,12 @@ export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<voi
   a.click();
 };
 
-export const readFromJson = async (): Promise<YtcF.MessageDumpExportItem> => {
+export const readFromJson = async (): Promise<any> => {
   return await new Promise((resolve) => {
     const element = document.createElement('input');
     element.type = 'file';
     element.accept = '.json';
+    element.style.display = 'none';
     element.addEventListener('change', (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
@@ -651,4 +652,18 @@ export const redirectIfInitialSetup = async (): Promise<void> => {
   } else {
     currentStorageVersion.set('v3');
   }
+};
+
+export const detectForceReload = async (): Promise<void> => {
+  await forceReload.ready();
+  forceReload.subscribe((v) => {
+    if (v) {
+      forceReload.set(false);
+      window.location.reload();
+    }
+  });
+};
+
+export const forceReloadAll = async (): Promise<void> => {
+  forceReload.set(true);
 };

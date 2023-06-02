@@ -1,4 +1,5 @@
 import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, createPopup } from '../ts/chat-utils';
+import { detectForceReload } from '../ts/ytcf-logic';
 import { isLiveTL, isAndroid } from '../ts/chat-constants';
 import {
   // hcEnabled,
@@ -25,6 +26,8 @@ import YtcFilterButtons from '../components/YtcFilterButtons.svelte';
 //   'problems such as chat messages not loading.';
 
 const chatLoaded = async (): Promise<void> => {
+  detectForceReload();
+
   // if (!isLiveTL && checkInjected(hcWarning)) return;
 
   const metagetter = document.createElement('script');

@@ -1,4 +1,4 @@
-import { webExtStores } from '@livetl/svelte-webext-stores';
+import { storageLegacy, webExtStores } from '@livetl/svelte-webext-stores';
 import { derived, readable, writable } from 'svelte/store';
 import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
@@ -158,6 +158,7 @@ export const exportMode = writable(null as null | string);
 export const embedHeight = stores.addSyncStore('ytcf.embedHeight', null as null | number, false);
 export const currentStorageVersion = stores.addSyncStore('ytcf.currentStorageVersion', 'v3' as 'v2' | 'v3', false);
 export const initialSetupDone = stores.addSyncStore('ytcf.initialSetupDone', false);
+export const forceReload = stores.addSyncStore('ytcf.forceReload', false);
 
 export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | null> => {
   await chatFilterPresets.ready();
