@@ -633,6 +633,7 @@ export const readFromJson = async (): Promise<YtcF.MessageDumpExportItem> => {
         });
         reader.readAsText(file);
       }
+      element.remove();
     });
     document.body.appendChild(element);
     element.click();

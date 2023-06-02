@@ -3,6 +3,7 @@
   import YtcFilterArchiveList from './YtcFilterArchiveList.svelte';
   import { exioButton, exioIcon } from 'exio/svelte';
   let refreshFunc: any;
+  export let isArchiveLoadSelection = false;
 </script>
 
 <div
@@ -14,7 +15,7 @@
     <span use:exioIcon>refresh</span>
   </button>
 </div>
-<YtcFilterArchiveList bind:refreshFunc />
+<YtcFilterArchiveList bind:refreshFunc {isArchiveLoadSelection} />
 
 <style>
   .refresh {

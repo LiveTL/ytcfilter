@@ -11,7 +11,6 @@
   import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';
   import YtcFilterErrorDialog from './YtcFilterErrorDialog.svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
-  let loaded = false;
   let hasV2Data = false;
   const params = new URLSearchParams(window.location.search);
   const paramsTabId = params.get('tabid');
@@ -45,7 +44,6 @@
     await currentStorageVersion.ready();
     hasV2Data = Boolean(await getV2Storage());
     value = hasV2Data ? 'migrate-filters-and-archives' : 'scratch';
-    loaded = true;
   });
   let currentPanel: 'welcome' | 'migrate' | 'done' = 'welcome';
   const startSetup = () => (currentPanel = 'migrate');

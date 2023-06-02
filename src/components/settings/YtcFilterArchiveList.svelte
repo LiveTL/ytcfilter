@@ -1,10 +1,11 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumps, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { inputDialog, confirmDialog, exportMode } from '../../ts/storage';
-  import { UNNAMED_ARCHIVE, UNDONE_MSG } from '../../ts/chat-constants';
+  import { inputDialog, confirmDialog, exportMode, port } from '../../ts/storage';
+  import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';
   // import { exioIcon } from 'exio/svelte';
+  export let isArchiveLoadSelection = false;
   let data: YtcF.MessageDumpInfoItem[] = [];
   const updateData = async () => {
     data = await getAllMessageDumps();
@@ -105,6 +106,28 @@
       };
     };
   };
+  const loadArchiveEntry = (entry: YtcF.MessageDumpInfoItem) => async () => {
+    const params = new URLSearchParams(window.location.search);
+    const paramsTabId = params.get('tabid');
+    const paramsFrameId = params.get('frameid');
+    if (paramsTabId != null && paramsFrameId != null && paramsTabId.length >= 1 && paramsFrameId.length >= 1) {
+      if (getBrowser() === Browser.FIREFOX) {
+        const frameInfo = {
+          tabId: parseInt(paramsTabId),
+          frameId: parseInt(paramsFrameId)
+        };
+
+        $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
+      } else {
+        $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
+      }
+      $port?.postMessage({
+        type: 'loadArchiveRequest',
+        key: entry.key
+      });
+      window.close();
+    }
+  };
 </script>
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
@@ -123,6 +146,12 @@
         <div style="font-style: italic;">Last Updated: {new Date(item.lastEdited).toLocaleString()}</div>
       </div>
       <div class="item triple-buttons" style="padding: 0px;">
+        {#if isArchiveLoadSelection}
+        <button use:exioButton on:click={loadArchiveEntry(item)} style="white-space: nowrap;">
+          Load
+          <span use:exioIcon style="vertical-align: -1px;">open_in_browser</span>
+        </button>
+        {:else}
         <button use:exioButton on:click={editArchiveEntry(item)}>
           <span use:exioIcon style="vertical-align: -1px;">edit</span>
         </button>
@@ -132,6 +161,7 @@
         <button use:exioButton class="red-bg" on:click={deleteArchiveEntry(item)}>
           <span use:exioIcon style="vertical-align: -1px;">delete_forever</span>
         </button>
+        {/if}
       </div>
     </div>
   {/each}

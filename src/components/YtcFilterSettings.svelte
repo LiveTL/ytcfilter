@@ -13,6 +13,8 @@
   import { redirectIfInitialSetup } from '../ts/ytcf-logic';
   import { onMount } from 'svelte';
   $: document.documentElement.setAttribute('data-theme', $dataTheme);
+  const params = new URLSearchParams(window.location.search);
+  const isArchiveLoadSelection = params.get('isArchiveLoadSelection') === 'true';
   const tabs = [{
     name: 'Filters',
     component: YtcFilterFilters
@@ -21,9 +23,12 @@
     component: YtcFilterGeneral
   }, {
     name: 'Archives',
-    component: YtcFilterArchives
+    component: YtcFilterArchives as any,
+    props: {
+      isArchiveLoadSelection
+    }
   }];
-  let tabIndex = 0;
+  let tabIndex = isArchiveLoadSelection ? 2 : 0;
   onMount(async () => {
     await redirectIfInitialSetup();
   });
@@ -36,23 +41,25 @@
 <YtcFilterConfirmation />
 <YtcFilterInputDialog />
 
-<div class="navbar">
-  {#each tabs as tab, i}
-    <button class="navbar-item" use:exioButton on:click={() => {
-      tabIndex = i;
-    }} class:blue-text={tabIndex === i}>
-      {tab.name}
-    </button>
-  {/each}
-  <div class="navbar-underline blue-bg" style={`width: ${100 / tabs.length}%; transform: translateX(${tabIndex * 100}%)`} />
-</div>
+{#if !isArchiveLoadSelection}
+  <div class="navbar">
+    {#each tabs as tab, i}
+      <button class="navbar-item" use:exioButton on:click={() => {
+        tabIndex = i;
+      }} class:blue-text={tabIndex === i}>
+        {tab.name}
+      </button>
+    {/each}
+    <div class="navbar-underline blue-bg" style={`width: ${100 / tabs.length}%; transform: translateX(${tabIndex * 100}%)`} />
+  </div>
+{/if}
 <div
   class="wrapper"
-  style="scrollbar-width: thin; scrollbar-color: #888 transparent; user-select: none;"
+  style="scrollbar-width: thin; scrollbar-color: #888 transparent; user-select: none; {isArchiveLoadSelection ? '' : 'padding-top: 42px;'}"
   data-theme={$dataTheme}
 >
   <div class="settings-card" use:exioComponent>
-    <svelte:component this={tabs[tabIndex].component} />
+    <svelte:component this={tabs[tabIndex].component} {...(tabs[tabIndex].props || {})} />
   </div>
 </div>
 
@@ -66,7 +73,6 @@
   .wrapper {
     font-size: 1rem;
     height: 100%;
-    padding-top: 42px;
   }
   .navbar {
     height: 50px;

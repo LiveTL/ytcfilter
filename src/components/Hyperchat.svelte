@@ -50,8 +50,7 @@
     defaultFilterPresetId,
     videoInfo,
     overrideFilterPresetId,
-    ytDark,
-    inputDialog
+    ytDark
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, readFromJson, redirectIfInitialSetup } from '../ts/ytcf-logic';
@@ -250,6 +249,15 @@
     smelteDark.set(dataTheme === 'dark');
   };
 
+  const loadArchive = async (key: string) => {
+    const data = await getSavedMessageDumpActions(key);
+    if (!data) return;
+    newMessages({
+      type: 'messages',
+      messages: data
+    }, false, true);
+  };
+
   const onPortMessage = (response: Chat.BackgroundResponse) => {
     if (responseIsAction(response)) {
       onChatAction(response);
@@ -266,6 +274,9 @@
         break;
       case 'themeUpdate':
         $ytDark = response.dark;
+        break;
+      case 'loadArchiveRequest':
+        loadArchive(response.key);
         break;
       case 'chatUserActionResponse':
         $alertDialog = {
@@ -425,16 +436,11 @@
         importJsonDump();
         break;
       case 'savedarchive': {
-        $inputDialog = {
-          title: 'Load Archive',
-          action: {
-            callback: () => {},
-            text: 'Load',
-            cancelled: () => {}
-          },
-          component: '',
-          prompts: []
-        };
+        const paramsClone = new URLSearchParams(params.toString());
+        paramsClone.set('isArchiveLoadSelection', 'true');
+        createPopup(chrome.runtime.getURL(
+          (isLiveTL ? 'hyperchat/options.html' : 'options.html') + '?' + paramsClone.toString()
+        ));
         break;
       }
     }

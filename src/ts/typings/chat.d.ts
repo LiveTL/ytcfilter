@@ -79,7 +79,7 @@ declare namespace Chat {
 
   type BackgroundResponse =
     Actions | InitialData | ThemeUpdate | LtlMessageResponse |
-    registerClientResponse | executeChatActionMsg | chatUserActionResponse;
+    registerClientResponse | executeChatActionMsg | chatUserActionResponse | loadArchiveRequest;
 
   type InterceptorSource = 'ytc' | 'ltlMessage';
 
@@ -138,6 +138,11 @@ declare namespace Chat {
     message: Ytc.ParsedMessage;
     action: ChatUserActions;
     reportOption?: import('../chat-constants').ChatReportUserOptions;
+  }
+
+  interface loadArchiveRequest {
+    type: 'loadArchiveRequest';
+    key: string;
   }
 
   type BackgroundMessage =

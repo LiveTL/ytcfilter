@@ -182,6 +182,12 @@ const sendLtlMessage = (message: Chat.LtlMessage): void => {
   );
 };
 
+const sendLoadArchiveRequest = (request: Chat.loadArchiveRequest): void => {
+  interceptor.clients.forEach(
+    (clientPort) => clientPort.postMessage(request)
+  );
+};
+
 const executeChatAction = async (
   message: Ytc.ParsedMessage,
   ytcfg: YtCfg,
@@ -334,6 +340,9 @@ export const initInterceptor = (
           break;
         case 'sendLtlMessage':
           sendLtlMessage(message.message);
+          break;
+        case 'loadArchiveRequest':
+          sendLoadArchiveRequest(message);
           break;
         case 'executeChatAction':
           executeChatAction(message.message, ytcfg, message.action, message.reportOption).catch(console.error);
