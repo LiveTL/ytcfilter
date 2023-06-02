@@ -8,6 +8,7 @@
   import { getRandomString } from '../../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
   import { UNDONE_MSG, UNNAMED_FILTER } from '../../ts/chat-constants';
+  import { languagesInfo, languageCodeArray } from '../../ts/tl-tag-detect';
 
   const getLastFilterItem = (id: string) => {
     return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
@@ -68,8 +69,22 @@
         for (const condition of filter.conditions) {
           if (!isTextFilter(condition)) {
             condition.type = 'boolean';
-          } else if (condition.type as string === 'boolean') {
+            delete (condition as any).value;
+          } else if (
+            (condition.type as string === 'boolean') ||
+            (condition.type === 'tltag' && condition.property !== 'message')
+          ) {
             condition.type = 'includes';
+          }
+          if (condition.needsClear && !isBooleanFilter(condition) && condition.type !== 'tltag') {
+            condition.value = '';
+            condition.needsClear = false;
+          }
+          if (condition.type === 'tltag') {
+            condition.needsClear = true;
+            if (!languageCodeArray.includes(condition.value)) {
+              condition.value = 'en';
+            }
           }
         }
       }
@@ -87,6 +102,14 @@
 
   const isTextFilter = (filter: YtcF.FilterCondition): filter is YtcF.StringCondition =>
     ['message', 'authorName', 'authorChannelId'].includes(filter.property);
+  const isBooleanFilter = (filter: YtcF.FilterCondition): filter is YtcF.BooleanCondition =>
+    [
+      'moderator',
+      'member',
+      'owner',
+      'verified',
+      'superchat'
+    ].includes(filter.property);
 
   const deleteCondition = (filter: YtcF.ChatFilter, index: number) => {
     filter.conditions.splice(index, 1);
@@ -168,6 +191,9 @@
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === item.id ? item : x);
     };
     return renameItem;
+  };
+  const onInputRender = (func: any) => {
+    return func;
   };
 </script>
 
@@ -299,18 +325,33 @@
                 on:change={saveFilters}
               >
                 <option value="includes">Contains</option>
+                {#if condition.property === 'message'}
+                  <option value="tltag">Has TL Tag</option>
+                {/if}
                 <option value="startsWith">Starts With</option>
                 <option value="endsWith">Ends With</option>
                 <option value="equals">Equals</option>
                 <option value="regex">Regex</option>
               </select>
-              <input
-                class="filter-content filter-content-item"
-                bind:value={condition.value}
-                use:exioTextbox
-                on:input={saveFilters}
-                placeholder="Filter Content"
-              />
+              {#if condition.type === 'tltag'}
+                <select
+                  bind:value={condition.value}
+                  use:exioDropdown
+                  on:change={saveFilters}
+                >
+                  {#each languagesInfo as lang}
+                    <option value={lang.code}>{lang.selectionName}</option>
+                  {/each}
+                </select>
+              {:else}
+                <input
+                  class="filter-content filter-content-item"
+                  bind:value={condition.value}
+                  use:exioTextbox
+                  on:input={saveFilters}
+                  placeholder="Filter Content"
+                />
+              {/if}
             {/if}
           </div>
           <div class="condition-options">
@@ -326,7 +367,7 @@
                 />
                 <label for="invert-{filter.id}-{i}">Invert Condition</label>
               </div>
-              {#if isTextFilter(condition) && condition.type !== 'regex'}
+              {#if isTextFilter(condition) && condition.type !== 'regex' && condition.type !== 'tltag'}
                 <div class="condition-no-break">
                   <input
                     id="case-{filter.id}-{i}"

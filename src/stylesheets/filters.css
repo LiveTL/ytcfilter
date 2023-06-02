@@ -84,7 +84,7 @@
 
 /* duplicate css but whatever */
 
-@media (max-width: 750px) {
+@media (max-width: 850px) {
     .filter-items-wrapper>.items {
         display: flex;
         flex-direction: column;

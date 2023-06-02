@@ -16,7 +16,12 @@
   };
   let values: string[] = [];
   const setValue = (v?: string[]) => {
-    if (v) values = v;
+    if (v) {
+      values = v;
+      document.querySelectorAll('.prompt-input').forEach((e, i) => {
+        (e as HTMLInputElement).value = values[i];
+      });
+    }
   };
   $: setValue($inputDialog?.prompts.map(p => p.originalValue));
   type PromptType = {
@@ -107,6 +112,7 @@
             on:input={editCallback(index)}
             placeholder={item.label}
             bind:this={inputItem}
+            class="prompt-input"
         />
       </div>
       {:else}
@@ -127,6 +133,7 @@
           on:input={editCallback(index)}
           placeholder={item.label}
           bind:this={inputItem}
+          class="prompt-input"
         />
       {/if}
     {/each}

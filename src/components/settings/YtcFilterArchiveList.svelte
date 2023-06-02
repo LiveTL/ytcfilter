@@ -178,7 +178,7 @@
     padding: 10px;
     gap: 10px;
   }
-  @media (max-width: 750px) {
+  @media (max-width: 850px) {
     .triple-buttons {
       flex-direction: column;
     }

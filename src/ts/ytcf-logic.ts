@@ -4,6 +4,7 @@ import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, 
 import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
+import { isLangMatch, parseTranslation } from './tl-tag-detect';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
@@ -39,7 +40,14 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
             break;
         }
         if (condition.value === '') continue;
-        if (condition.type !== 'regex') {
+        if (condition.type === 'tltag') {
+          const parsed = parseTranslation(stringifyRuns(msg.message));
+          if (!parsed) break;
+          const result = isLangMatch(parsed.lang, condition.value);
+          if (result === condition.invert) {
+            break;
+          }
+        } else if (condition.type !== 'regex') {
           const s1 = condition.caseSensitive ? compStr : compStr.toLowerCase();
           const s2 = condition.caseSensitive ? condition.value : condition.value.toLowerCase();
           const result = s1[condition.type](s2);
