@@ -502,7 +502,7 @@
     `;
     html2canvas(clonedNode, {
       useCORS: true,
-      backgroundColor: getComputedStyle(document.body).backgroundColor,
+      backgroundColor: $dataTheme === 'dark' ? '#0f0f0f' : 'white',
       width: screenshotElement?.clientWidth,
       scale: 2,
       allowTaint: true
