@@ -19,7 +19,6 @@
       open = toOpen;
     }, 0);
   }
-  $: console.log(open);
 </script>
 
 <dialog
