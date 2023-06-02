@@ -78,7 +78,7 @@
           }
           if (condition.needsClear && !isBooleanFilter(condition) && condition.type !== 'tltag') {
             condition.value = '';
-            condition.needsClear = false;
+            delete condition.needsClear;
           }
           if (condition.type === 'tltag') {
             condition.needsClear = true;
