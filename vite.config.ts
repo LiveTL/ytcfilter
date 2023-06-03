@@ -17,7 +17,7 @@ export default defineConfig({
       manifest: () => {
         const newManifest = {
           ...manifest,
-          version: (process.env.VERSION ?? '') || manifest.version
+          version: (process.env.VERSION ?? '').split('-')[0] || manifest.version
         };
         return newManifest;
       },
