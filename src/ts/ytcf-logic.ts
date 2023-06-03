@@ -351,27 +351,27 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           timestamp: message.timestamp
         }
       });
-      archives.push({
-        continuation: [''],
-        info: {
-          channel: {
-            channelId: data.videoSettings[key].channelId,
-            name: data.videoSettings[key].channelName,
-            handle: data.videoSettings[key].channelId
-          },
-          video: {
-            videoId: data.videoSettings[key].id,
-            title: data.videoSettings[key].name
-          }
-        },
-        key: getRandomString(),
-        lastEdited: new Date().getTime(),
-        nickname: 'Unnamed Archive',
-        presetId: '',
-        size: messageList.length,
-        actions: parsedMessageActions
-      });
     }
+    archives.push({
+      continuation: [''],
+      info: {
+        channel: {
+          channelId: data.videoSettings[key].channelId,
+          name: data.videoSettings[key].channelName,
+          handle: data.videoSettings[key].channelId
+        },
+        video: {
+          videoId: data.videoSettings[key].id,
+          title: data.videoSettings[key].name
+        }
+      },
+      key: getRandomString(),
+      lastEdited: new Date().getTime(),
+      nickname: 'Unnamed Archive',
+      presetId: '',
+      size: messageList.length,
+      actions: parsedMessageActions
+    });
   }
   return {
     presets,
@@ -410,6 +410,7 @@ export const migrateV2toV3 = async (
       await actionsStore.ready();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       actionsStore.set(actions);
+      console.log(archive.key, actions);
     }
   }
   currentStorageVersion.set('v3');
