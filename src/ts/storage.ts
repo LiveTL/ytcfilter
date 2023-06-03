@@ -165,4 +165,8 @@ export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | nul
   const presets = await chatFilterPresets.get();
   return presets.find(preset => preset.id === id) ?? null;
 };
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+export const messageDumpInfos = stores.addSyncStore('ytcf.messageDumpInfos', {} as {
+  [key: string]: YtcF.MessageDumpInfoItem;
+});
 export const bytesUsed = stores.addSyncStore('hc.bytes.used', 0);

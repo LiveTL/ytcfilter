@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 import { UNNAMED_ARCHIVE } from './chat-constants';
-import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload } from './storage';
+import { stores, currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload, messageDumpInfos } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
@@ -132,7 +132,8 @@ export const getV2Storage = async (): Promise<any> => {
 };
 
 const parseHtmlString = (html: string): Ytc.ParsedRun[] => {
-  const elem = document.createElement('div');
+  const doc = document.implementation.createHTMLDocument('');
+  const elem = doc.createElement('div');
   elem.innerHTML = html;
   const runs: Ytc.ParsedRun[] = Array.from(elem.childNodes).map((child) => {
     return (child as HTMLElement).tagName === 'img'
@@ -381,7 +382,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
 };
 
 const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
-const keyGen = (key: string, dataType: 'info' | 'actions' = 'info'): string => `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
+const keyGen = (key: string, dataType: 'actions' = 'actions'): string => `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
 
 export const clearV2Storage = async (): Promise<void> => {
   return await browserObject.storage.local.remove('@@vwe-persistence');
@@ -395,30 +396,30 @@ export const migrateV2toV3 = async (
   await clearV2Storage();
   if (what.presetsAndFilters) {
     await chatFilterPresets.ready();
-    chatFilterPresets.set(presets);
-    defaultFilterPresetId.set(defaultPreset ?? '');
+    await chatFilterPresets.set(presets);
+    await defaultFilterPresetId.set(defaultPreset ?? '');
   }
   if (what.archives) {
-    for (const archive of archives) {
-      const infoStore = stores.addSyncStore(keyGen(archive.key, 'info'), archive, false);
-      await infoStore.ready();
+    await messageDumpInfos.ready();
+    const messageDumpInfosData: { [key: string]: YtcF.MessageDumpInfoItem } = {};
+    await Promise.all(archives.map(async archive => {
       const actions = archive.actions;
       archive.actions = [];
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      infoStore.set(archive);
+      messageDumpInfosData[archive.key] = archive;
       const actionsStore = stores.addSyncStore(keyGen(archive.key, 'actions'), actions, false);
       await actionsStore.ready();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      actionsStore.set(actions);
-      console.log(archive.key, actions);
-    }
+      await actionsStore.set(actions);
+    }));
+    await messageDumpInfos.set({
+      ...await messageDumpInfos.get(),
+      ...messageDumpInfosData
+    });
   }
-  currentStorageVersion.set('v3');
+  await currentStorageVersion.set('v3');
+  await initialSetupDone.set(true);
 };
-
-const filterMessageDumpInfoKeyNames = (key: string): boolean => key.startsWith(
-  keyGen('', 'info')
-);
 
 export const getSavedMessageDump = async (
   key: string
@@ -432,32 +433,20 @@ export const getSavedMessageDump = async (
 export const getSavedMessageDumpInfo = async (
   key: string
 ): Promise<YtcF.MessageDumpInfoItem> => {
-  const k = keyGen(key, 'info');
-  const d: YtcF.MessageDumpInfoItem = {
-    continuation: [],
-    info: null,
-    key,
-    presetId: null,
-    nickname: '',
-    lastEdited: new Date().getTime()
-  };
-  const s = stores.addSyncStore(k, d, false);
-  await s.ready();
-  return await s.get();
+  await messageDumpInfos.ready();
+  return (await messageDumpInfos.get())[key];
 };
 
 export const getSavedMessageDumpExportItem = async (
   key: string
 ): Promise<YtcF.MessageDump> => {
-  const k = keyGen(key, 'info');
-  const s = stores.addSyncStore(k, undefined as YtcF.MessageDumpInfoItem | undefined, false);
-  await s.ready();
-  const info = await s.get();
+  await messageDumpInfos.ready();
+  const info = (await messageDumpInfos.get())[key];
   const emptyItem = {
     version: '3',
     dumps: []
   };
-  if (!info) {
+  if (!(info as any)) {
     return emptyItem;
   }
   const k2 = keyGen(key, 'actions');
@@ -480,10 +469,10 @@ export const saveMessageDumpInfo = async (
   key: string,
   info: YtcF.MessageDumpInfoItem
 ): Promise<void> => {
-  const k = keyGen(key, 'info');
-  const s = stores.addSyncStore(k, info, false);
-  await s.ready();
-  await s.set(info);
+  await messageDumpInfos.ready();
+  const obj = await messageDumpInfos.get();
+  obj[key] = info;
+  await messageDumpInfos.set(obj);
 };
 
 export const getSavedMessageDumpActions = async (
@@ -525,32 +514,22 @@ export const saveMessageActions = async (
     presetId,
     lastEdited: Date.now(),
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
-    nickname: lastObj.nickname || UNNAMED_ARCHIVE
+    nickname: lastObj.nickname || UNNAMED_ARCHIVE,
+    size: actions.length
   };
-  const infoStore = stores.addSyncStore(keyGen(key, 'info'), obj, false);
-  await infoStore.ready();
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  infoStore.set(obj);
+  await saveMessageDumpInfo(key, obj);
   const actionsStore = stores.addSyncStore(keyGen(key, 'actions'), actions, false);
   await actionsStore.ready();
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  actionsStore.set(actions);
+  await actionsStore.set(actions);
 };
 
 export const deleteSavedMessageActions = async (key: string): Promise<void> => {
-  await browserObject.storage.local.remove([keyGen(key, 'info'), keyGen(key, 'actions')]);
-};
-
-export const getAllSavedMessageActionKeys = async (): Promise<string[]> => {
-  return await new Promise((resolve) => {
-    browserObject.storage.local.get(null, (s: any) => {
-      resolve(
-        Object.keys(s)
-          .filter(filterMessageDumpInfoKeyNames)
-          .map((k) => k.replace(keyGen('', 'info'), ''))
-      );
-    });
-  });
+  await messageDumpInfos.ready();
+  const obj = await messageDumpInfos.get();
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete obj[key];
+  await messageDumpInfos.set(obj);
 };
 
 export const findSavedMessageActionKey = async (
@@ -571,26 +550,24 @@ export const findSavedMessageActionKey = async (
   //     resolve(null);
   //   });
   // });
-  const allMessageKeys = await getAllSavedMessageActionKeys();
-  for (const key of allMessageKeys) {
-    const dump = await getSavedMessageDumpInfo(key);
+  await messageDumpInfos.ready();
+  const allInfoDumps = get(messageDumpInfos);
+  for (const key of Object.keys(allInfoDumps)) {
+    const dump = allInfoDumps[key];
     if ((continuation !== null && dump.continuation.includes(continuation)) ||
       (info?.video != null && dump.info?.video?.videoId === info.video.videoId)) {
-      return key;
+      return dump.key;
     }
   }
   return null;
 };
 
-export const getAllMessageDumps = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
-  const allMessageKeys = await getAllSavedMessageActionKeys();
-  const items = (await Promise.all(allMessageKeys.map(async (k) => await getSavedMessageDumpInfo(k)))).sort((a, b) => {
+export const getAllMessageDumpInfoItems = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
+  await messageDumpInfos.ready();
+  const data = get(messageDumpInfos);
+  return Object.keys(data).map((key) => data[key]).sort((a, b) => {
     return a.lastEdited - b.lastEdited;
   }).reverse();
-  for (const item of items) {
-    item.size = (await getSavedMessageDumpActions(item.key))?.length ?? 0;
-  }
-  return items;
 };
 
 const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
@@ -652,27 +629,30 @@ export const readFromJson = async (): Promise<any> => {
 
 export const redirectIfInitialSetup = async (): Promise<void> => {
   await initialSetupDone.ready();
+  await currentStorageVersion.ready();
   if (!get(initialSetupDone)) {
-    currentStorageVersion.set('v2');
+    await currentStorageVersion.set('v2');
     const query = window.location.search;
     const params = new URLSearchParams(query);
     params.set('referrer', window.location.href);
     window.location.href = `/setup.html?${params.toString()}`;
   } else {
-    currentStorageVersion.set('v3');
+    await currentStorageVersion.set('v3');
   }
 };
 
 export const detectForceReload = async (): Promise<void> => {
   await forceReload.ready();
-  forceReload.subscribe((v) => {
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  forceReload.subscribe(async (v) => {
     if (v) {
-      forceReload.set(false);
+      await forceReload.set(false);
       window.location.reload();
     }
   });
 };
 
 export const forceReloadAll = async (): Promise<void> => {
-  forceReload.set(true);
+  await forceReload.ready();
+  await forceReload.set(true);
 };

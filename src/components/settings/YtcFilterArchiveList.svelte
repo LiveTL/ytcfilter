@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumps, saveMessageDumpInfo } from '../../ts/ytcf-logic';
+  import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
   import { inputDialog, confirmDialog, exportMode, port } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
@@ -8,7 +8,7 @@
   export let isArchiveLoadSelection = false;
   let data: YtcF.MessageDumpInfoItem[] = [];
   const updateData = async () => {
-    data = await getAllMessageDumps();
+    data = await getAllMessageDumpInfoItems();
   };
   updateData();
   export const refreshFunc = updateData;

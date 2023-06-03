@@ -65,7 +65,6 @@
       $initialSetupDone = true;
     } else if (value.startsWith('migrate')) {
       await migrateV2toV3({ presetsAndFilters: value.includes('filters'), archives: value.includes('archives') });
-      $initialSetupDone = true;
     } else if (value === 'from-json') {
       $inputDialog = {
         title: 'Import v2 JSON data',
@@ -81,7 +80,6 @@
             try {
               const json = JSON.parse(values[0]);
               await migrateV2toV3({ presetsAndFilters: true, archives: true }, json);
-              $initialSetupDone = true;
             } catch (e) {
               console.error(e);
               cancelled(e as any);
