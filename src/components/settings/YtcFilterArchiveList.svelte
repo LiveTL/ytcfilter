@@ -1,14 +1,18 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { inputDialog, confirmDialog, exportMode, port } from '../../ts/storage';
+  import { inputDialog, confirmDialog, exportMode, port, videoInfo } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
+  import '../../stylesheets/line.css';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';
   // import { exioIcon } from 'exio/svelte';
   export let isArchiveLoadSelection = false;
   let data: YtcF.MessageDumpInfoItem[] = [];
+  let loading = false;
   const updateData = async () => {
+    loading = true;
     data = await getAllMessageDumpInfoItems();
+    loading = false;
   };
   updateData();
   export const refreshFunc = updateData;
@@ -23,7 +27,7 @@
             await saveMessageDumpInfo(
               item.key,
               {
-                nickname: data[0] || UNNAMED_ARCHIVE,
+                nickname: data[0] || '',
                 continuation: item.continuation,
                 info: {
                   video: {
@@ -48,7 +52,7 @@
           }
         },
         prompts: [{
-          originalValue: item.nickname || UNNAMED_ARCHIVE,
+          originalValue: item.nickname || '',
           label: 'Archive Name'
         }, {
           originalValue: item.info?.video.title || '',
@@ -131,21 +135,57 @@
 </script>
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
-  {#if !data.length}
+  {#if loading}
+    <div style="text-align: center; margin: 10px 0px 5px 0px;">Loading...</div>
+  {:else if data.length === 0}
     <div style="text-align: center; margin: 10px 0px 5px 0px;">No Archives Found</div>
   {/if}
-  {#each data as item, i}
-    <div class="item settings-card">
-      <div>
-        <div style="font-weight: bold;">
-          {item.nickname || 'Unnamed Archive'}
-        </div>
-        <div>{item.info?.video.title || 'Unknown Title'}</div>
-        <div>{item.info?.channel.name || 'Unknown Channel'}</div>
-        <div style="font-style: italic;">Stored Messages: {item.size ?? 0}</div>
-        <div style="font-style: italic;">Last Updated: {new Date(item.lastEdited).toLocaleString()}</div>
-      </div>
-      <div class="item triple-buttons" style="padding: 0px;">
+  {#if !loading && data.length > 0}
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>Video ID</th>
+          <th>Name/Title</th>
+          <th>Size</th>
+          <th>Last Edited</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tr>
+        <td colspan="5" style="padding: 0px !important;">
+          <div class="line" />
+        </td>
+      </tr>
+      {#each data as item, i}
+        <tr class="hover-highlight" style="padding: 0x 5px;">
+          <td>{item.info?.video.videoId}</td>
+          <td style="max-width: 50vw;">
+            {item.nickname || (
+              item.info?.video.title ? `${item.info?.video.title}${item.info?.channel.name ? ` (${item.info?.channel.name})` : ''}` : ''
+            ) || UNNAMED_ARCHIVE}
+          </td>
+          <td style="font-style: italic;">{item.size ?? 0}</td>
+          <td style="font-style: italic;">{new Date(item.lastEdited).toLocaleString()}</td>
+          <td style="font-style: italic; text-align: center;">
+            <span style="white-space: nowrap;">
+              <span class="material-icons link-button" on:click={editArchiveEntry(item)}>edit</span>
+              <span class="material-icons link-button">visibility</span>
+            </span>
+            <span style="white-space: nowrap;">
+              <span class="material-icons link-button" on:click={downloadArchiveEntry(item)}>download</span>
+              <span class="material-icons link-button red" on:click={deleteArchiveEntry(item)}>delete</span>
+            </span>
+          </td>
+        </tr>
+        {#if i !== data.length - 1}
+          <tr>
+            <td colspan="5" style="padding: 0px !important;">
+              <div class="line" />
+            </td>
+          </tr>
+        {/if}
+      {/each}
+      <!-- <div class="item triple-buttons" style="padding: 0px;">
         {#if isArchiveLoadSelection}
         <button use:exioButton on:click={loadArchiveEntry(item)} style="white-space: nowrap;">
           Load
@@ -162,12 +202,44 @@
           <span use:exioIcon style="vertical-align: -1px;">delete_forever</span>
         </button>
         {/if}
-      </div>
     </div>
-  {/each}
+      </div> -->
+    </table>
+  {/if}
 </div>
 
 <style>
+  .link-button {
+    cursor: default;
+    visibility: hidden;
+  }
+  .hover-highlight:hover .link-button {
+    visibility: visible;
+  }
+  .link-button:hover {
+    color: #0064d1 !important;
+  }
+  :global([data-theme=dark]) .link-button:hover {
+    color: #3ba7ff !important;
+  }
+  .link-button.red:hover {
+    color: #ff5656 !important;
+  }
+  :global([data-theme=dark]) .link-button.red:hover {
+    color: #c80000 !important;
+  }
+  .hover-highlight:hover {
+    background-color: #80808040;
+  }
+  td, th {
+    padding: 5px 5px;
+  }
+  td {
+    user-select: text !important;
+  }
+  th {
+    text-align: left;
+  }
   button {
     font-size: 1rem;
   }
