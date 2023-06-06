@@ -2,6 +2,7 @@
   import { confirmDialog, isDark } from '../ts/storage';
   import { exioDialog, exioButton } from 'exio/svelte';
   import '../stylesheets/ui.css';
+  import { onDestroy } from 'svelte';
   let title = '';
   $: title = $confirmDialog?.title ?? title;
   let message = '';
@@ -19,6 +20,9 @@
       open = toOpen;
     }, 0);
   }
+  onDestroy(() => {
+    $confirmDialog = null;
+  });
 </script>
 
 <dialog

@@ -6,7 +6,6 @@
   import '../../stylesheets/ui.css';
   import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
-  import YtcFilterConfirmation from '../YtcFilterConfirmation.svelte';
   import LoadingBar from '../common/LoadingBar.svelte';
   let loading = false;
   const importData = async () => {
@@ -68,7 +67,6 @@
 </script>
 
 <YtcFilterErrorDialog />
-<YtcFilterConfirmation />
 
 <div class="settings-title big-text">Appearance</div>
 <div class="settings-content">

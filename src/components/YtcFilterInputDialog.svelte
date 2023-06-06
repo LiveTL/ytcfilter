@@ -2,6 +2,7 @@
   import { dataTheme, inputDialog, isDark } from '../ts/storage';
   import { exioDialog, exioButton, exioTextbox } from 'exio/svelte';
   import '../stylesheets/ui.css';
+  import { onDestroy } from 'svelte';
   let title = '';
   $: title = $inputDialog?.title ?? title;
   let action = {
@@ -75,6 +76,9 @@
       });
     };
   }) as any;
+  onDestroy(() => {
+    $inputDialog = null;
+  });
 </script>
 
 <dialog
