@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload } from './storage';
+import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload, showProfileIcons, showTimestamps } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
@@ -418,6 +418,8 @@ export const migrateV2toV3 = async (
       [YTCF_MESSAGEDUMPINFOS_KEY]: messageDumpInfosData
     });
   }
+  await showProfileIcons.set(false);
+  await showTimestamps.set(true);
   await currentStorageVersion.set('v3');
   await initialSetupDone.set(true);
 };
