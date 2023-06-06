@@ -146,6 +146,7 @@ export const inputDialog = writable(null as null | {
     text: string;
     callback: (values: string[]) => void;
     cancelled?: () => void;
+    noAction?: boolean;
   };
   component?: any;
 });

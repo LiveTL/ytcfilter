@@ -9,7 +9,7 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     callback: (s: string[]) => {},
     cancelled: () => {}
-  };
+  } as any;
   $: action = {
     ...($inputDialog?.action ?? action),
     cancelled: $inputDialog?.action.cancelled ?? (() => {})
@@ -141,20 +141,22 @@
       <svelte:component this={component} />
     {/if}
   </p>
-  <div style="display: flex; justify-content: flex-end; gap: 10px;">
-    <button on:click={() => {
-      $inputDialog = null;
-      action.cancelled();
-    }} use:exioButton>Cancel</button>
-    <button
-      on:click={() => {
-        action.callback(values);
+  {#if !('noAction' in action && action.noAction)}
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button on:click={() => {
         $inputDialog = null;
-      }}
-      use:exioButton
-      class="blue-bg"
-    >{action.text}</button>
+        action.cancelled();
+      }} use:exioButton>Cancel</button>
+      <button
+        on:click={() => {
+          action.callback(values);
+          $inputDialog = null;
+        }}
+        use:exioButton
+        class="blue-bg"
+      >{action.text}</button>
     </div>
+  {/if}
 </dialog>
 
 <style>

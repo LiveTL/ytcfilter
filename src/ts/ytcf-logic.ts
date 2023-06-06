@@ -366,7 +366,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
         }
       },
       key: getRandomString(),
-      lastEdited: data.videoSettings[key].lastViewed,
+      lastEdited: new Date(data.videoSettings[key].lastViewed).getTime(),
       nickname: '',
       presetId: '',
       size: messageList.length,
@@ -631,7 +631,7 @@ export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<voi
   a.click();
 };
 
-export const readFromJson = async (): Promise<any> => {
+export const readFromJson = async (): Promise<object> => {
   return await new Promise((resolve) => {
     const element = document.createElement('input');
     element.type = 'file';
@@ -682,4 +682,13 @@ export const detectForceReload = async (): Promise<void> => {
 export const forceReloadAll = async (): Promise<void> => {
   await forceReload.ready();
   await forceReload.set(true);
+};
+
+export const exportSettingsAsJson = async (): Promise<void> => {
+  const data = await browserObject.storage.local.get(null);
+  download(JSON.stringify(data, null, 2), 'ytcf-data.json');
+};
+
+export const importSettingsFromJson = async (data: any): Promise<void> => {
+  await browserObject.storage.local.set(data);
 };

@@ -158,7 +158,8 @@
         (a) => a.message.timestamp.startsWith('-')
       ), forceDisplay))];
     } else {
-      messageActions = [...messageActions, ...(await applyYtcf(filterTickers(messagesAction.messages), forceDisplay))];
+      const applied = (await applyYtcf(filterTickers(messagesAction.messages), forceDisplay));
+      messageActions = [...messageActions, ...applied];
     }
     // if (!isInitial) checkTruncateMessages();
   };
@@ -573,6 +574,11 @@
       if (window.parent === window) {
         import('../ts/resize-tracker');
         isPopout = true;
+      } else {
+        isAtBottom = window.innerHeight === 0;
+        window.addEventListener('resize', () => {
+          if (window.innerHeight === 0) isAtBottom = true;
+        });
       }
     } catch (e) {
     }
@@ -593,6 +599,11 @@
         $overrideFilterPresetId = result.id;
       }
     }
+  };
+
+  const deleteMessageClientSide = (obj: CustomEvent) => {
+    messageActions = messageActions.filter(item => isWelcome(item) || item.message.messageId !== obj.detail);
+    messageKeys.delete(obj.detail);
   };
 
   $: if (initialized && $videoInfo !== null) {
@@ -683,6 +694,7 @@
                 <Message
                   message={action.message}
                   deleted={action.deleted}
+                  on:clientSideDelete={deleteMessageClientSide}
                 />
               {/if}
             </div>

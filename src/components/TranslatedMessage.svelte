@@ -58,5 +58,5 @@
 <style>
   .shifted-icon  :global(.material-icons) {
     transform: translateY(1px);
-  }  
+  }
 </style>

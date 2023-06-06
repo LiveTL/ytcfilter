@@ -12,9 +12,8 @@
   class={classes}
   on:click
   class:block
-  class:text-base={small}
   class:text-xs={xs}
-  style={$$props.style ?? ''}
+  style="{small ? 'font-size: 1rem;' : ''}{$$props.style ?? ''}"
 >
   <slot />
 </i>

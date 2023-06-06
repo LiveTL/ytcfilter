@@ -1,19 +1,28 @@
 <script lang="ts">
   import { Theme } from '../../ts/chat-constants';
-  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, stores, errorDialog, confirmDialog } from '../../ts/storage';
-  import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
-  import { forceReloadAll } from '../../ts/ytcf-logic';
+  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, stores, errorDialog, confirmDialog, dataTheme, inputDialog } from '../../ts/storage';
+  import { exioButton, exioCheckbox, exioDropdown, exioIcon, exioLoadingBarAnimation } from 'exio/svelte';
+  import { forceReloadAll, migrateV2toV3 } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
-  import { download } from '../../ts/ytcf-utils';
-  import { readFromJson } from '../../ts/ytcf-logic';
+  import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
   import YtcFilterConfirmation from '../YtcFilterConfirmation.svelte';
+  import LoadingBar from '../common/LoadingBar.svelte';
+  let loading = false;
   const importData = async () => {
     const data = await readFromJson();
     try {
-      if (!('ytcf.currentStorageVersion' in data)) throw new Error('Invalid storage JSON dump.');
-      await stores.importJson(JSON.stringify(data));
+      loading = true;
+      if (!('ytcf.currentStorageVersion' in data)) {
+        if (!('global' in data)) {
+          throw new Error('Invalid storage JSON dump.');
+        }
+        await migrateV2toV3({ archives: true, presetsAndFilters: true }, data);
+      }
+      await importSettingsFromJson(data);
+      loading = false;
     } catch (e) {
+      loading = false;
       $errorDialog = {
         action: {
           text: 'Close',
@@ -33,13 +42,29 @@
       action: {
         text: 'Reset',
         callback: async () => {
-          await stores._clear();
+          await chrome.storage.local.clear();
           $confirmDialog = null;
           forceReloadAll();
         }
       }
     };
   };
+
+  $: if (loading) {
+    $inputDialog = {
+      title: 'Importing Data...',
+      component: LoadingBar,
+      prompts: [],
+      action: {
+        text: 'Cancel',
+        callback: () => {
+        },
+        noAction: true
+      }
+    };
+  } else {
+    $inputDialog = null;
+  }
 </script>
 
 <YtcFilterErrorDialog />
@@ -76,7 +101,7 @@
 <div class="settings-content">
   <span>Storage Data: </span>
   <button use:exioButton on:click={async () => {
-    download(JSON.stringify(JSON.parse(await stores.exportJson()), null, 2), 'ytcf-data.json');
+    exportSettingsAsJson();
   }}>
     Export
     <span use:exioIcon style="vertical-align: -2px;">download</span>

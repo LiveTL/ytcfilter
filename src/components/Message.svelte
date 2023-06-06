@@ -14,6 +14,8 @@
   import { chatUserActionsItems, Theme } from '../ts/chat-constants';
   import { useBanHammer } from '../ts/chat-actions';
   import { mdiGift } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   export let message: Ytc.ParsedMessage;
   export let deleted: Chat.MessageDeletedObj | null = null;
@@ -63,12 +65,22 @@
   
   export let forceTLColor: Theme = Theme.YOUTUBE;
 
-  const menuItems = chatUserActionsItems.map((d) => ({
-    icon: d.icon,
-    text: d.text,
-    value: d.value.toString(),
-    onClick: () => useBanHammer(message, d.value, $port)
-  }));
+  const menuItems = [
+    ...chatUserActionsItems.map((d) => ({
+      icon: d.icon,
+      text: d.text,
+      value: d.value.toString(),
+      onClick: () => useBanHammer(message, d.value, $port)
+    })),
+    {
+      icon: 'delete',
+      text: 'Delete',
+      value: 'delete',
+      onClick: () => {
+        dispatch('clientSideDelete', message.messageId);
+      }
+    }
+  ];
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
