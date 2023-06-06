@@ -1,9 +1,10 @@
 import { get } from 'svelte/store';
-import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload, messageDumpInfos } from './storage';
+import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload } from './storage';
 import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
+import { YTCF_MESSAGEDUMPINFOS_KEY } from './chat-constants';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
@@ -381,7 +382,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
 };
 
 const MESSAGE_ACTION_PREFIX = 'ytcf.savedMessageActions.';
-const keyGen = (key: string, dataType: 'actions' = 'actions'): string => `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
+const keyGen = (key: string, dataType: 'actions' | 'info' = 'actions'): string => dataType === 'info' ? `${YTCF_MESSAGEDUMPINFOS_KEY}.${key}` : `${MESSAGE_ACTION_PREFIX}${dataType}.${key}`;
 
 export const clearV2Storage = async (): Promise<void> => {
   return await browserObject.storage.local.remove('@@vwe-persistence');
@@ -399,7 +400,6 @@ export const migrateV2toV3 = async (
     await defaultFilterPresetId.set(defaultPreset ?? '');
   }
   if (what.archives) {
-    await messageDumpInfos.ready();
     const messageDumpInfosData: { [key: string]: YtcF.MessageDumpInfoItem } = {};
     await Promise.all(archives.map(async archive => {
       const actions = archive.actions;
@@ -414,9 +414,8 @@ export const migrateV2toV3 = async (
         [keyGen(archive.key, 'actions')]: actions
       });
     }));
-    await messageDumpInfos.set({
-      ...await messageDumpInfos.get(),
-      ...messageDumpInfosData
+    browserObject.storage.local.set({
+      [YTCF_MESSAGEDUMPINFOS_KEY]: messageDumpInfosData
     });
   }
   await currentStorageVersion.set('v3');
@@ -436,8 +435,9 @@ export const getSavedMessageDump = async (
 export const getSavedMessageDumpInfo = async (
   key: string
 ): Promise<YtcF.MessageDumpInfoItem> => {
-  await messageDumpInfos.ready();
-  return ((await messageDumpInfos.get())[key] as any) || {
+  const storageKey = keyGen(key, 'info');
+  const data = (await browserObject.storage.local.get(storageKey))[storageKey];
+  return data || {
     continuation: [],
     info: {
       channel: {
@@ -461,8 +461,7 @@ export const getSavedMessageDumpInfo = async (
 export const getSavedMessageDumpExportItem = async (
   key: string
 ): Promise<YtcF.MessageDump> => {
-  await messageDumpInfos.ready();
-  const info = (await messageDumpInfos.get())[key];
+  const info = await getSavedMessageDumpInfo(key);
   const emptyItem = {
     version: '3',
     dumps: []
@@ -491,13 +490,10 @@ export const saveMessageDumpInfo = async (
   key: string,
   info: YtcF.MessageDumpInfoItem
 ): Promise<void> => {
-  await messageDumpInfos.ready();
-  let obj = await messageDumpInfos.get();
-  obj = {
-    ...obj,
-    [key]: info
-  };
-  await messageDumpInfos.set(obj);
+  const storageKey = keyGen(key, 'info');
+  await browserObject.storage.local.set({
+    [storageKey]: info
+  });
 };
 
 export const getSavedMessageDumpActions = async (
@@ -554,11 +550,7 @@ export const saveMessageActions = async (
 };
 
 export const deleteSavedMessageActions = async (key: string): Promise<void> => {
-  await messageDumpInfos.ready();
-  const obj = await messageDumpInfos.get();
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  delete obj[key];
-  await messageDumpInfos.set(obj);
+  await browserObject.storage.local.remove(keyGen(key, 'info'));
 };
 
 export const findSavedMessageActionKey = async (
@@ -579,10 +571,8 @@ export const findSavedMessageActionKey = async (
   //     resolve(null);
   //   });
   // });
-  await messageDumpInfos.ready();
-  const allInfoDumps = get(messageDumpInfos);
-  for (const key of Object.keys(allInfoDumps)) {
-    const dump = allInfoDumps[key];
+  const allInfoDumps = await getAllMessageDumpInfoItems();
+  for (const dump of allInfoDumps) {
     if ((continuation != null && continuation && dump.continuation.includes(continuation)) ||
       (info?.video != null && dump.info?.video?.videoId === info.video.videoId && info.video.videoId)) {
       return dump.key;
@@ -592,8 +582,7 @@ export const findSavedMessageActionKey = async (
 };
 
 export const getAllMessageDumpInfoItems = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
-  await messageDumpInfos.ready();
-  const data = get(messageDumpInfos);
+  const data = (await browserObject.storage.local.get(YTCF_MESSAGEDUMPINFOS_KEY))[YTCF_MESSAGEDUMPINFOS_KEY];
   return Object.keys(data).map((key) => data[key]);
 };
 

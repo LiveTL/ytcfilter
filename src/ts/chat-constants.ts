@@ -110,3 +110,4 @@ export const milestoneChatBackground = '107516';
 export const UNDONE_MSG = 'This action cannot be undone.';
 export const UNNAMED_ARCHIVE = 'Unnamed Archive';
 export const UNNAMED_FILTER = 'Unnamed Filter';
+export const YTCF_MESSAGEDUMPINFOS_KEY = 'ytcf.messageDumpInfos';

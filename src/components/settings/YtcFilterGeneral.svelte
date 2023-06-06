@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Theme } from '../../ts/chat-constants';
-  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, stores, errorDialog, confirmDialog, dataTheme, inputDialog } from '../../ts/storage';
-  import { exioButton, exioCheckbox, exioDropdown, exioIcon, exioLoadingBarAnimation } from 'exio/svelte';
+  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog } from '../../ts/storage';
+  import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
   import { forceReloadAll, migrateV2toV3 } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
   import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
