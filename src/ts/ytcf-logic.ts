@@ -366,7 +366,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
         }
       },
       key: getRandomString(),
-      lastEdited: new Date().getTime(),
+      lastEdited: data.videoSettings[key].lastViewed,
       nickname: '',
       presetId: '',
       size: messageList.length,
@@ -591,9 +591,7 @@ export const findSavedMessageActionKey = async (
 export const getAllMessageDumpInfoItems = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
   await messageDumpInfos.ready();
   const data = get(messageDumpInfos);
-  return Object.keys(data).map((key) => data[key]).sort((a, b) => {
-    return a.lastEdited - b.lastEdited;
-  }).reverse();
+  return Object.keys(data).map((key) => data[key]);
 };
 
 const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {

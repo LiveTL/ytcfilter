@@ -1,9 +1,10 @@
 <script lang="ts">
   import '../../stylesheets/ui.css';
   import YtcFilterArchiveList from './YtcFilterArchiveList.svelte';
-  import { exioButton, exioIcon } from 'exio/svelte';
+  import { exioButton, exioIcon, exioTextbox } from 'exio/svelte';
   let refreshFunc: any;
   export let isArchiveLoadSelection = false;
+  let searchQuery = '';
 </script>
 
 <div
@@ -11,11 +12,20 @@
   style="display: flex; justify-content: space-between; padding-right: 5px;"
 >
   <span>Archives</span>
-  <button use:exioButton class="refresh" on:click={refreshFunc}>
-    <span use:exioIcon>refresh</span>
-  </button>
+  <span style="margin-left: 5px; display: inline-flex;">
+    <input
+      type="text"
+      placeholder="Search"
+      style="width: 200px; height: 32px; margin-right: 5px; font-size: 1rem;"
+      use:exioTextbox
+      bind:value={searchQuery}
+    />
+    <button use:exioButton class="refresh" on:click={refreshFunc}>
+      <span use:exioIcon>refresh</span>
+    </button>
+  </span>
 </div>
-<YtcFilterArchiveList bind:refreshFunc {isArchiveLoadSelection} />
+<YtcFilterArchiveList bind:refreshFunc {isArchiveLoadSelection} {searchQuery} />
 
 <style>
   .refresh {

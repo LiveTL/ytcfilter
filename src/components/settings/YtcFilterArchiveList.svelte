@@ -1,6 +1,6 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
-  import { exioButton, exioIcon } from 'exio/svelte';
+  import { exioButton, exioDropdown, exioIcon, exioTextbox } from 'exio/svelte';
   import { inputDialog, confirmDialog, exportMode, port, videoInfo } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
   import '../../stylesheets/line.css';
@@ -9,13 +9,33 @@
   export let isArchiveLoadSelection = false;
   let data: YtcF.MessageDumpInfoItem[] = [];
   let loading = false;
+  let sortBy = {
+    key: 'lastEdited' as keyof YtcF.MessageDumpInfoItem,
+    ascending: false
+  };
+  const sorter = (a: YtcF.MessageDumpInfoItem, b: YtcF.MessageDumpInfoItem) => {
+    return sortBy.ascending ? (a[sortBy.key] as any) - (b[sortBy.key] as any) : (b[sortBy.key] as any) - (a[sortBy.key] as any);
+  };
+  export let searchQuery = '';
   const updateData = async () => {
     loading = true;
-    data = await getAllMessageDumpInfoItems();
+    data = (await getAllMessageDumpInfoItems()).filter((item) => {
+      const name = computeName(item);
+      const videoId = item.info?.video.videoId || '';
+      const channelId = item.info?.channel.channelId || '';
+      const date = dateConvert(item.lastEdited);
+      return (
+        name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        videoId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        channelId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        date.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }).sort(sorter);
+    startIndex = 0;
     loading = false;
   };
-  updateData();
   export const refreshFunc = updateData;
+  $: searchQuery, updateData();
 
   const editArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
     return () => {
@@ -132,6 +152,27 @@
       window.close();
     }
   };
+
+  let startIndex = 0;
+
+  const dateConvert = (dateNum: number) => {
+    const date = new Date(dateNum);
+    const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hour = hours % 12 === 0 ? 12 : hours % 12;
+    const minute = minutes < 10 ? `0${minutes}` : minutes;
+    return `${month} ${day} ${year}, ${hour}:${minute} ${ampm}`;
+  };
+  const computeName = (item: YtcF.MessageDumpInfoItem) => {
+    return item.nickname || (
+      item.info?.video.title ? `${item.info?.video.title}${item.info?.channel.name ? ` (${item.info?.channel.name})` : ''}` : ''
+    ) || UNNAMED_ARCHIVE;
+  };
 </script>
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
@@ -141,43 +182,82 @@
     <div style="text-align: center; margin: 10px 0px 5px 0px;">No Archives Found</div>
   {/if}
   {#if !loading && data.length > 0}
+    <!-- <div class="full-flex" style="justify-content: flex-end;">
+      <button
+        use:exioButton
+        style="white-space: nowrap;"
+      >
+        Search
+        <span use:exioIcon style="vertical-align: -2px;">search</span>
+      </button>
+    </div> -->
+    <div class="full-flex spaced">
+      <button
+        use:exioButton
+        style="white-space: nowrap;"
+        on:click={() => (startIndex = Math.max(startIndex - 10, 0))}
+        disabled={startIndex === 0}
+      >
+        <span use:exioIcon style="vertical-align: -1px;">chevron_left</span>
+      </button>
+      <div>
+        {startIndex + 1}-{Math.min(startIndex + 10, data.length)} of {data.length}
+      </div>
+      <button
+        use:exioButton
+        style="white-space: nowrap;"
+        on:click={() => (startIndex = Math.min(startIndex + 10, data.length - 1))}
+        disabled={startIndex >= data.length - 10}
+      >
+        <span use:exioIcon style="vertical-align: -1px;">chevron_right</span>
+      </button>
+    </div>
     <table style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr>
           <th>Video ID</th>
           <th>Name/Title</th>
           <th>Size</th>
-          <th>Last Edited</th>
-          <th></th>
+          <th class="hover-highlight" on:click={() => {
+            sortBy = { key: 'lastEdited', ascending: !sortBy.ascending };
+            updateData();
+          }}>
+            <span class:underline={sortBy.key === 'lastEdited'}>Last Edited</span>
+            <span use:exioIcon style="vertical-align: -1px;">
+              {sortBy.ascending ? 'arrow_downward' : 'arrow_upward'}
+            </span>
+          </th>
+          <th style="display: {isArchiveLoadSelection ? 'none' : 'unset'};"></th>
         </tr>
       </thead>
       <tr>
         <td colspan="5" style="padding: 0px !important;">
-          <div class="line" />
+          <div class="line"  />
+          <div class="line"  />
         </td>
       </tr>
-      {#each data as item, i (item.key)}
-        <tr class="hover-highlight" style="padding: 0x 5px;">
+      {#each data.slice(startIndex, startIndex + 10) as item, i (item.key)}
+        <tr class="hover-highlight" style="padding: 0x 5px;" on:click={isArchiveLoadSelection ? loadArchiveEntry(item) : undefined}>
           <td>{item.info?.video.videoId}</td>
           <td style="max-width: 50vw;">
-            {item.nickname || (
-              item.info?.video.title ? `${item.info?.video.title}${item.info?.channel.name ? ` (${item.info?.channel.name})` : ''}` : ''
-            ) || UNNAMED_ARCHIVE}
+            {computeName(item)}
           </td>
           <td style="font-style: italic;">{item.size ?? 0}</td>
-          <td style="font-style: italic;">{new Date(item.lastEdited).toLocaleString()}</td>
-          <td style="font-style: italic; text-align: center;">
-            <span style="white-space: nowrap;">
-              <span class="material-icons link-button" on:click={editArchiveEntry(item)}>edit</span>
-              <span class="material-icons link-button">visibility</span>
-            </span>
-            <span style="white-space: nowrap;">
-              <span class="material-icons link-button" on:click={downloadArchiveEntry(item)}>download</span>
-              <span class="material-icons link-button red" on:click={deleteArchiveEntry(item)}>delete</span>
-            </span>
-          </td>
+          <td style="font-style: italic;">{dateConvert(item.lastEdited)}</td>
+          {#if !isArchiveLoadSelection}
+            <td style="font-style: italic; text-align: center;">
+              <span style="white-space: nowrap;">
+                <span class="material-icons link-button" on:click={editArchiveEntry(item)}>edit</span>
+                <span class="material-icons link-button">visibility</span>
+              </span>
+                <span style="white-space: nowrap;">
+                  <span class="material-icons link-button" on:click={downloadArchiveEntry(item)}>download</span>
+                  <span class="material-icons link-button red" on:click={deleteArchiveEntry(item)}>delete</span>
+                </span>
+            </td>
+          {/if}
         </tr>
-        {#if i !== data.length - 1}
+        {#if i < data.slice(startIndex, startIndex + 10).length - 1}
           <tr>
             <td colspan="5" style="padding: 0px !important;">
               <div class="line" />
@@ -209,6 +289,9 @@
 </div>
 
 <style>
+  .underline {
+    text-decoration: underline;
+  }
   .link-button {
     cursor: default;
     visibility: hidden;
@@ -239,6 +322,7 @@
   }
   th {
     text-align: left;
+    white-space: nowrap;
   }
   button {
     font-size: 1rem;
@@ -254,5 +338,14 @@
     .triple-buttons {
       flex-direction: column;
     }
+  }
+  .full-flex {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin: 5px 0px;
+  }
+  .spaced {
+    justify-content: space-between;
   }
 </style>
