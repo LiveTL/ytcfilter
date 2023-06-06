@@ -492,8 +492,11 @@ export const saveMessageDumpInfo = async (
   info: YtcF.MessageDumpInfoItem
 ): Promise<void> => {
   await messageDumpInfos.ready();
-  const obj = await messageDumpInfos.get();
-  obj[key] = info;
+  let obj = await messageDumpInfos.get();
+  obj = {
+    ...obj,
+    [key]: info
+  };
   await messageDumpInfos.set(obj);
 };
 
@@ -524,9 +527,9 @@ export const saveMessageActions = async (
     ),
     info: {
       channel: {
-        channelId: info?.channel.channelId ?? lastObj.info?.channel.channelId ?? '',
-        name: info?.channel.name ?? lastObj.info?.channel.name ?? '',
-        handle: info?.channel.handle ?? lastObj.info?.channel.handle ?? ''
+        channelId: info?.channel?.channelId ?? lastObj.info?.channel?.channelId ?? '',
+        name: info?.channel?.name ?? lastObj.info?.channel?.name ?? '',
+        handle: info?.channel?.handle ?? lastObj.info?.channel?.handle ?? ''
       },
       video: {
         videoId: info?.video.videoId ?? lastObj.info?.video.videoId ?? '',
