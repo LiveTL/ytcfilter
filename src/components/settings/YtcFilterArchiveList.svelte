@@ -156,7 +156,7 @@
           <div class="line" />
         </td>
       </tr>
-      {#each data as item, i}
+      {#each data as item, i (item.key)}
         <tr class="hover-highlight" style="padding: 0x 5px;">
           <td>{item.info?.video.videoId}</td>
           <td style="max-width: 50vw;">

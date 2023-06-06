@@ -353,7 +353,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
       });
     }
     archives.push({
-      continuation: [''],
+      continuation: [],
       info: {
         channel: {
           channelId: data.videoSettings[key].channelId,
@@ -580,7 +580,7 @@ export const findSavedMessageActionKey = async (
   const allInfoDumps = get(messageDumpInfos);
   for (const key of Object.keys(allInfoDumps)) {
     const dump = allInfoDumps[key];
-    if ((continuation !== null && dump.continuation.includes(continuation)) ||
+    if ((continuation != null && continuation && dump.continuation.includes(continuation)) ||
       (info?.video != null && dump.info?.video?.videoId === info.video.videoId && info.video.videoId)) {
       return dump.key;
     }

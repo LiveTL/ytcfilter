@@ -223,6 +223,12 @@
         break;
       case 'pin':
         pinned = action;
+        newMessages({
+          type: 'messages',
+          messages: [{
+            message: action.item.contents
+          }]
+        }, false, true);
         break;
       case 'unpin':
         pinned = null;
