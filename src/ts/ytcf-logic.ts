@@ -214,7 +214,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'msgIncludes': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 caseSensitive: true,
                 invert: false,
@@ -229,7 +229,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'author': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 caseSensitive: false,
                 invert: false,
@@ -244,7 +244,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'isMember': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 type: 'boolean',
                 property: 'member',
@@ -257,7 +257,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'isModerator': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 type: 'boolean',
                 property: 'moderator',
@@ -270,7 +270,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'isOwner': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 type: 'boolean',
                 property: 'owner',
@@ -283,7 +283,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'isVerified': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 type: 'boolean',
                 property: 'verified',
@@ -296,7 +296,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           case 'isSuperchat': {
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 type: 'boolean',
                 property: 'superchat',
@@ -309,7 +309,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
           default: { // case 'regex'
             return {
               type: 'basic',
-              nickname: `Unnamed Filter ${i + 1}`,
+              // nickname: `${UNNAMED_FILTER} ${i + 1}`,
               conditions: [{
                 type: 'regex',
                 property: 'message',

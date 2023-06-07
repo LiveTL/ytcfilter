@@ -4,11 +4,12 @@
   import '../../stylesheets/ui.css';
   import '../../stylesheets/line.css';
   import '../../stylesheets/filters.css';
-  import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
+  import { exioButton, exioIcon, exioDropdown } from 'exio/svelte';
   import { getRandomString } from '../../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
-  import { UNDONE_MSG, UNNAMED_FILTER } from '../../ts/chat-constants';
-  import { languagesInfo, languageCodeArray } from '../../ts/tl-tag-detect';
+  import { UNDONE_MSG } from '../../ts/chat-constants';
+  import { languageCodeArray } from '../../ts/tl-tag-detect';
+  import YtcFilterFilter from './YtcFilterFilter.svelte';
 
   const getLastFilterItem = (id: string) => {
     return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
@@ -17,11 +18,11 @@
   $currentEditingPreset = $currentFilterPreset;
   const newFilter = async () => {
     const id = getRandomString();
-    $currentEditingPreset.filters = [...$currentEditingPreset.filters, {
-      nickname: UNNAMED_FILTER + ' ' + (($currentEditingPreset.filters.filter(item => {
-        return item.nickname?.startsWith(UNNAMED_FILTER);
-      }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
-        .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1),
+    const newItem: YtcF.ChatFilter = {
+      // nickname: UNNAMED_FILTER + ' ' + (($currentEditingPreset.filters.filter(item => {
+      //   return item.nickname?.startsWith(UNNAMED_FILTER);
+      // }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
+      //   .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1),
       type: 'basic',
       id,
       conditions: [{
@@ -32,21 +33,23 @@
         caseSensitive: false
       }],
       enabled: true
-    }];
-    unsavedFilters = $currentEditingPreset.filters;
-    $chatFilterPresets = [...$chatFilterPresets];
+    };
+    $currentEditingPreset.filters = [...JSON.parse(JSON.stringify($currentEditingPreset.filters)), JSON.parse(JSON.stringify(newItem))];
+    unsavedFilters = [...unsavedFilters, newItem];
+    $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? JSON.parse(JSON.stringify($currentEditingPreset)) : x);
     await tick();
     const lastFilterItem = getLastFilterItem(id);
     if (lastFilterItem) {
-      lastFilterItem.querySelector('input')?.select();
+      (lastFilterItem.querySelector('.filter-edit-button') as HTMLButtonElement).click();
+      await tick();
+      lastFilterItem.querySelectorAll('input')[2]?.select();
       lastFilterItem.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
     }
-    saveFilters();
   };
 
   const deleteFilter = (item: YtcF.ChatFilter) => {
     $currentEditingPreset.filters = $currentEditingPreset.filters.filter(x => x.id !== item.id);
-    unsavedFilters = $currentEditingPreset.filters;
+    unsavedFilters = unsavedFilters.filter(x => x.id !== item.id);
     $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
   };
 
@@ -55,12 +58,12 @@
   defaultFilterPresetId.ready().then(async () => {
     await tick();
     $currentEditingPreset = $currentFilterPreset;
-    unsavedFilters = $currentEditingPreset.filters;
+    unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
   });
 
   let saveTimeout: any = null;
 
-  const saveFilters = async () => {
+  const saveFilters = async (filter?: YtcF.ChatFilter) => {
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
@@ -88,8 +91,7 @@
           }
         }
       }
-      unsavedFilters = [...unsavedFilters];
-      $currentEditingPreset.filters = unsavedFilters;
+      $currentEditingPreset.filters = $currentEditingPreset.filters.map(x => x.id === filter?.id ? filter : x);
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
     }, 50);
   };
@@ -113,7 +115,7 @@
 
   const deleteCondition = (filter: YtcF.ChatFilter, index: number) => {
     filter.conditions.splice(index, 1);
-    saveFilters();
+    refreshFilters();
   };
   const addCondition = async (filter: YtcF.ChatFilter) => {
     filter.conditions = [...filter.conditions, {
@@ -123,7 +125,7 @@
       invert: false,
       caseSensitive: false
     }];
-    saveFilters();
+    refreshFilters();
     setTimeout(() => {
       const item = getLastFilterItem(filter.id);
       (Array.from(item?.querySelectorAll('.filter-content-item')).pop() as any)?.select();
@@ -140,7 +142,7 @@
       activation: 'manual'
     }];
     $currentEditingPreset = await getPresetById(id) as YtcF.FilterPreset;
-    unsavedFilters = $currentEditingPreset.filters;
+    unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
   };
   const newPreset = () => {
     $inputDialog = {
@@ -162,7 +164,7 @@
   const changeEditingPreset = (async (e: InputEvent) => {
     await tick();
     $currentEditingPreset = await getPresetById((e.target as HTMLSelectElement).value) ?? $currentEditingPreset;
-    unsavedFilters = $currentEditingPreset.filters;
+    unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
   }) as any;
   const deletePreset = () => {
     if ($chatFilterPresets.length === 1) {
@@ -174,7 +176,7 @@
         activation: 'manual'
       }];
       $currentEditingPreset = $chatFilterPresets[0];
-      unsavedFilters = $currentEditingPreset.filters;
+      unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
       $defaultFilterPresetId = $currentEditingPreset.id;
     } else {
       $chatFilterPresets = $chatFilterPresets.filter(x => x.id !== $currentEditingPreset.id);
@@ -182,7 +184,7 @@
       if ($defaultFilterPresetId === $currentEditingPreset.id) {
         $defaultFilterPresetId = $currentEditingPreset.id;
       }
-      unsavedFilters = $currentEditingPreset.filters;
+      unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
     }
   };
   const renameItemCallback = (item: YtcF.FilterPreset) => {
@@ -192,8 +194,20 @@
     };
     return renameItem;
   };
-  const onInputRender = (func: any) => {
-    return func;
+  const discardUnsavedChanges = (filter?: YtcF.ChatFilter) => {
+    if (filter) {
+      unsavedFilters = unsavedFilters.map(x => {
+        if (x.id === filter?.id) {
+          return $currentEditingPreset.filters.find(y => y.id === filter?.id);
+        }
+        return x;
+      }).filter(x => x) as YtcF.ChatFilter[];
+    } else {
+      unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
+    }
+  };
+  const refreshFilters = () => {
+    unsavedFilters = [...unsavedFilters];
   };
 </script>
 
@@ -253,195 +267,7 @@
     </div>
   </div>
   {#each unsavedFilters as filter (filter.id)}
-    <div class="filter filter-item-{filter.id}">
-      <!-- <select bind:value={filter.type} use:exioDropdown>
-        <option value="basic">Basic</option>
-      </select> -->
-      <div class="filter-header">
-        <div class="item">
-          <input
-            class="filter-name"
-            bind:value={filter.nickname}
-            use:exioTextbox
-            on:input={saveFilters}
-            placeholder="Filter Name"
-          />
-          <div class="condition-no-break">
-            <input
-              id="enable-{filter.id}"
-              type="checkbox"
-              use:exioCheckbox
-              bind:checked={filter.enabled}
-              on:change={saveFilters}
-              />
-            <label for="enable-{filter.id}">Enabled</label>
-          </div>
-          <button
-            use:exioButton
-            class="red-bg delete"
-            on:click={() => {
-              $confirmDialog = {
-                action: {
-                  text: 'Delete',
-                  callback: () => {
-                    deleteFilter(filter);
-                  }
-                },
-                title: `Delete Filter "${filter.nickname}"?`,
-                message: UNDONE_MSG
-              };
-            }}
-          >
-            <span use:exioIcon class="offset-1px">delete_forever</span>
-          </button>
-        </div>
-      </div>
-      <div class="condition-no-break" style="margin-top: 10px; height: 0.8rem;">
-        <span class="line" />
-      </div>
-      {#each filter.conditions as condition, i}
-        <div class="filter-items-wrapper">
-          <div class="items">
-            <select
-              bind:value={condition.property}
-              use:exioDropdown
-              on:change={saveFilters}
-            >
-              <option value="message">Message Text</option>
-              <option value="authorName">Author Name</option>
-              <option value="authorChannelId">Author Channel ID</option>
-              <option value="moderator">Author is Moderator</option>
-              <option value="member">Author is Member</option>
-              <option value="owner">Author is Owner</option>
-              <option value="verified">Author is Verified</option>
-              <option value="superchat">Item is Superchat</option>
-              <!-- <option value="videoId">Video ID</option>
-              <option value="videoChannelId">Video Channel ID</option> -->
-            </select>
-            {#if isTextFilter(condition)}
-              <select
-                bind:value={condition.type}
-                use:exioDropdown
-                on:change={saveFilters}
-              >
-                <option value="includes">Contains</option>
-                {#if condition.property === 'message'}
-                  <option value="tltag">Has TL Tag</option>
-                {/if}
-                <option value="startsWith">Starts With</option>
-                <option value="endsWith">Ends With</option>
-                <option value="equals">Equals</option>
-                <option value="regex">Regex</option>
-              </select>
-              {#if condition.type === 'tltag'}
-                <select
-                  bind:value={condition.value}
-                  use:exioDropdown
-                  on:change={saveFilters}
-                >
-                  {#each languagesInfo as lang}
-                    <option value={lang.code}>{lang.selectionName}</option>
-                  {/each}
-                </select>
-              {:else}
-                <input
-                  class="filter-content filter-content-item"
-                  bind:value={condition.value}
-                  use:exioTextbox
-                  on:input={saveFilters}
-                  placeholder="Filter Content"
-                />
-              {/if}
-            {/if}
-          </div>
-          <div class="condition-options">
-            <div class="condition-checkboxes">
-              <div class="condition-no-break">
-                <input
-                  id="invert-{filter.id}-{i}"
-                  type="checkbox"
-                  class="condition-checkbox"
-                  use:exioCheckbox
-                  bind:checked={condition.invert}
-                  on:change={saveFilters}
-                />
-                <label for="invert-{filter.id}-{i}">Invert Condition</label>
-              </div>
-              {#if isTextFilter(condition) && condition.type !== 'regex' && condition.type !== 'tltag'}
-                <div class="condition-no-break">
-                  <input
-                    id="case-{filter.id}-{i}"
-                    type="checkbox"
-                    class="condition-checkbox"
-                    use:exioCheckbox
-                    bind:checked={condition.caseSensitive}
-                    on:change={saveFilters}
-                  />
-                  <label for="case-{filter.id}-{i}">Case Sensitive</label>
-                </div>
-              {/if}
-            </div>
-            <div>
-              <button
-                use:exioButton
-                class="red-bg delete"
-                on:click={() => deleteCondition(filter, i)}
-              >
-                <span use:exioIcon class="offset-1px">close</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        {#if i !== filter.conditions.length - 1}
-          <div class="condition-separator">
-            <span class="line" />
-            <span class="blue-text">AND</span>
-            <span class="line" />
-          </div>
-        {/if}
-      {/each}
-      <div class="condition-no-break" style="margin-top: 10px; height: 0.8rem;">
-        <span class="line" />
-      </div>
-      <button class="add-condition-button lighter-gray" use:exioButton on:click={() => addCondition(filter)}>
-        <div class="add-condition-inner blue-text">
-          <!-- <span class="line" /> -->
-          <span>
-            <span use:exioIcon class="offset-1px add-icon" style="color: inherit;">add</span>
-            Add a Filter Condition
-          </span>
-          <!-- <span class="line" /> -->
-        </div>
-      </button>
-      <!-- {#if isTextFilter(filter)}
-        <div class="items">
-          <input
-            id="enable-{filter.id}"
-            type="checkbox"
-            use:exioCheckbox
-            bind:checked={filter.enabled}
-            on:change={saveFilters}
-            />
-          <label for="enable-{filter.id}">Enable Filter</label>
-          <input
-            id="invert-{filter.id}"
-            type="checkbox"
-            use:exioCheckbox
-            bind:checked={filter.condition.invert}
-            on:change={saveFilters}
-          />
-          <label for="invert-{filter.id}">Invert Filter</label>
-          <input
-            id="case-{filter.id}"
-            type="checkbox"
-            use:exioCheckbox
-            bind:checked={filter.condition.caseSensitive}
-            on:change={saveFilters}
-          />
-          <label for="case-{filter.id}">Case Sensitive</label>
-        </div>
-      {/if} -->
-    </div>
+    <YtcFilterFilter {filter} {saveFilters} {deleteFilter} {isTextFilter} {deleteCondition} {addCondition} {discardUnsavedChanges} />
   {/each}
   <button class="add-filter-button lighter-gray" use:exioButton on:click={newFilter}>
     <div class="add-condition-inner blue-text">
