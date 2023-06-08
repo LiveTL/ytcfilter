@@ -298,17 +298,17 @@
     <div style="margin-top: -5px;">
       <span class="blue-text">Show if</span>
       {#each filter.conditions as condition, index}
-        <span style="font-style: italic;">
+        <span>
           {#each stringifyCondition(condition) as run}
             {#if run.type === 'string'}
-              <span>{run.value}</span>
+              <span style="font-style: italic;">{run.value}</span>
             {:else if run.type === 'literal'}
               &nbsp;"<code>{run.value}</code><span>"</span>
               {#if !run.value}
                 <span use:exioIcon style="vertical-align: -3px; color: #ff9800;">warning</span>
               {/if}
               {#if run.suffix}
-                <span>{run.suffix}</span>
+                <span style="font-style: italic;">{run.suffix}</span>
               {/if}
             {/if}
           {/each}
