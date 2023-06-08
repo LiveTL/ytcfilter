@@ -13,7 +13,7 @@ export const languagesInfo = [
 const languageConversionTable: {
   [key: string]: (typeof languagesInfo)[number];
 } = {};
-const languageNameCode: {
+export const languageNameCode: {
   [key: string]: (typeof languagesInfo)[number];
 } = {};
 

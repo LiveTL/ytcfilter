@@ -50,7 +50,7 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
         } else if (condition.type !== 'regex') {
           const s1 = condition.caseSensitive ? compStr : compStr.toLowerCase();
           const s2 = condition.caseSensitive ? condition.value : condition.value.toLowerCase();
-          const result = s1[condition.type](s2);
+          const result = condition.type === 'equals' ? s1 === s2 : s1[condition.type](s2);
           if (!s2) {
             numValidFilters--;
           } else if (result === condition.invert) {
@@ -209,7 +209,7 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
             value: autoActivate.channelId
           }]
         : [],
-      filters: profile.filters.map((f: any, i: number) => {
+      filters: profile.filters.map((f: any) => {
         switch (f.type) {
           case 'msgIncludes': {
             return {

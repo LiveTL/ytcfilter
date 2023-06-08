@@ -8,7 +8,6 @@
   import { getRandomString } from '../../ts/chat-utils';
   import { onDestroy, tick } from 'svelte';
   import { UNDONE_MSG } from '../../ts/chat-constants';
-  import { languageCodeArray } from '../../ts/tl-tag-detect';
   import YtcFilterFilter from './YtcFilterFilter.svelte';
 
   const getLastFilterItem = (id: string) => {
@@ -68,29 +67,6 @@
       clearTimeout(saveTimeout);
     }
     saveTimeout = setTimeout(async () => {
-      for (const filter of unsavedFilters) {
-        for (const condition of filter.conditions) {
-          if (!isTextFilter(condition)) {
-            condition.type = 'boolean';
-            delete (condition as any).value;
-          } else if (
-            (condition.type as string === 'boolean') ||
-            (condition.type === 'tltag' && condition.property !== 'message')
-          ) {
-            condition.type = 'includes';
-          }
-          if (condition.needsClear && !isBooleanFilter(condition) && condition.type !== 'tltag') {
-            condition.value = '';
-            delete condition.needsClear;
-          }
-          if (condition.type === 'tltag') {
-            condition.needsClear = true;
-            if (!languageCodeArray.includes(condition.value)) {
-              condition.value = 'en';
-            }
-          }
-        }
-      }
       $currentEditingPreset.filters = $currentEditingPreset.filters.map(x => x.id === filter?.id ? filter : x);
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
     }, 50);
@@ -267,7 +243,7 @@
     </div>
   </div>
   {#each unsavedFilters as filter (filter.id)}
-    <YtcFilterFilter {filter} {saveFilters} {deleteFilter} {isTextFilter} {deleteCondition} {addCondition} {discardUnsavedChanges} />
+    <YtcFilterFilter {filter} {saveFilters} {deleteFilter} {isTextFilter} {deleteCondition} {addCondition} {discardUnsavedChanges} {isBooleanFilter} />
   {/each}
   <button class="add-filter-button lighter-gray" use:exioButton on:click={newFilter}>
     <div class="add-condition-inner blue-text">

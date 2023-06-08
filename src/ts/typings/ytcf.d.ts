@@ -5,7 +5,7 @@ declare namespace YtcF {
     needsClear?: boolean;
   }
   interface StringCondition extends BaseCondition {
-    type: 'includes' | 'startsWith' | 'endsWith' | 'regex' | 'tltag';
+    type: 'includes' | 'startsWith' | 'endsWith' | 'regex' | 'tltag' | 'equals';
     property: 'message' | 'authorName' | 'authorChannelId';
     value: string;
     invert: boolean;
