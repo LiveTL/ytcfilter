@@ -4,8 +4,8 @@
   import '../../stylesheets/filters.css';
   import { exioButton, exioCheckbox, exioIcon, exioDropdown, exioTextbox } from 'exio/svelte';
   import { confirmDialog } from '../../ts/storage';
-  import { UNDONE_MSG, UNNAMED_FILTER } from '../../ts/chat-constants';
-  import { languageCodeArray, languageNameCode, languagesInfo } from '../../ts/tl-tag-detect';
+  import { UNDONE_MSG } from '../../ts/chat-constants';
+  import { languageCodeArray, languagesInfo } from '../../ts/tl-tag-detect';
   import YtcFilterFilterSummary from './YtcFilterFilterSummary.svelte';
   export let filter: YtcF.ChatFilter;
   export let saveFilters: (filter?: YtcF.ChatFilter) => Promise<void>;
@@ -203,17 +203,22 @@
   {:else}
   <div class="filter-header">
     <div class="item">
-      {#if filter.nickname}
-        <span style="font-weight: bold; font-size: 1.25rem; display: flex; align-items: center;">
+      <span style="font-weight: bold; font-size: 1.25rem; display: flex; align-items: center;">
+        {#if filter.nickname}
           {filter.nickname}
-        </span>
-      {:else}
-        <div style="display: flex; align-items: center; font-weight: bold; font-size: 1.25rem;">
+        {:else}
           <span>
-            <YtcFilterFilterSummary {filter} {isTextFilter} compact />
+            {#if filter.conditions.length > 0}
+              <YtcFilterFilterSummary {filter} {isTextFilter} compact />
+            {:else}
+              Empty Filter&nbsp;
+            {/if}
           </span>
-        </div>
-      {/if}
+          {#if filter.conditions.length === 0}
+            <span use:exioIcon style="transform: translateY(2px); color: #ff9800;">warning</span>
+          {/if}
+        {/if}
+      </span>
       <div class="condition-no-break">
         <input
           id="enable-{filter.id}"
@@ -255,9 +260,11 @@
       </div>
     </div>
     {#if filter.nickname}
-      <div style="margin-top: -5px;">
-        <YtcFilterFilterSummary {filter} {isTextFilter} />
-      </div>
+      {#if filter.conditions.length > 0}
+        <div style="margin-top: -5px;">
+          <YtcFilterFilterSummary {filter} {isTextFilter} />
+        </div>
+      {/if}
     {/if}
   </div>
   {/if}

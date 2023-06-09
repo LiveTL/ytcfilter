@@ -93,7 +93,7 @@
   }
   .navbar-item {
     width: 100%;
-    height: calc(100% - 2px);
+    height: 100%;
     margin-bottom: 2px;
     background-color: transparent;
     color: initial;

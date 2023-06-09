@@ -33,9 +33,9 @@
       }],
       enabled: true
     };
-    $currentEditingPreset.filters = [...JSON.parse(JSON.stringify($currentEditingPreset.filters)), JSON.parse(JSON.stringify(newItem))];
+    // $currentEditingPreset.filters = [...JSON.parse(JSON.stringify($currentEditingPreset.filters)), JSON.parse(JSON.stringify(newItem))];
     unsavedFilters = [...unsavedFilters, newItem];
-    $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? JSON.parse(JSON.stringify($currentEditingPreset)) : x);
+    // $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? JSON.parse(JSON.stringify($currentEditingPreset)) : x);
     await tick();
     const lastFilterItem = getLastFilterItem(id);
     if (lastFilterItem) {
@@ -68,6 +68,9 @@
     }
     saveTimeout = setTimeout(async () => {
       $currentEditingPreset.filters = $currentEditingPreset.filters.map(x => x.id === filter?.id ? filter : x);
+      if (filter && !$currentEditingPreset.filters.some(x => x.id === filter?.id)) {
+        $currentEditingPreset.filters = [...$currentEditingPreset.filters, filter];
+      }
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
     }, 50);
   };
@@ -227,7 +230,7 @@
       height: calc(100px / 3);
     ">
       <span class="big-text">Currently Editing:</span>
-      <select use:exioDropdown on:change={changeEditingPreset} style="width: 100%; height: calc(100% - 2px);">
+      <select use:exioDropdown on:change={changeEditingPreset} style="width: 100%; height: 100%;">
         {#each $chatFilterPresets as preset}
           <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
             {preset.nickname}
@@ -249,7 +252,7 @@
             hideLabel: true
           }]
         };
-      }} use:exioButton>
+      }} use:exioButton style="height: 100%;">
         <span use:exioIcon style="vertical-align: -1px;">edit_square</span>
       </button>
       <button on:click={() => {
@@ -261,12 +264,12 @@
             text: 'Delete'
           }
         };
-      }} use:exioButton class="red-bg">
+      }} use:exioButton class="red-bg" style="height: 100%;">
         <span style="white-space: nowrap;">
           <span use:exioIcon class="offset-1px">disabled_by_default</span>
         </span>
       </button>
-      <button on:click={newPreset} use:exioButton class="blue-bg">
+      <button on:click={newPreset} use:exioButton class="blue-bg" style="height: 100%;">
         <span style="white-space: nowrap;">
           <span use:exioIcon class="offset-1px">add_box</span>
         </span>
