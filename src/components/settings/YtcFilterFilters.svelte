@@ -216,10 +216,18 @@
 {#if loading}
   <div style="text-align: center; margin: 10px 0px 5px 0px;">Loading...</div>
 {:else}
-  <div class="big-text filters-title" style="margin-top: 5px;">
-    <span style="display: grid; grid-template-columns: auto 1fr auto auto auto; width: 100%; margin-right: 5px; gap: 5px; align-items: center;">
-      <span>Currently Editing:</span>
-      <select use:exioDropdown on:change={changeEditingPreset} style="width: 100%;">
+  <div class="filters-title" style="margin-top: 5px;">
+    <span style="
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      width: 100%;
+      margin-right: 5px;
+      gap: 5px;
+      align-items: center;
+      height: calc(100px / 3);
+    ">
+      <span class="big-text">Currently Editing:</span>
+      <select use:exioDropdown on:change={changeEditingPreset} style="width: 100%; height: calc(100% - 2px);">
         {#each $chatFilterPresets as preset}
           <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
             {preset.nickname}
