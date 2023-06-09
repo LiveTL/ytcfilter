@@ -680,5 +680,12 @@ export const exportSettingsAsJson = async (): Promise<void> => {
 };
 
 export const importSettingsFromJson = async (data: any): Promise<void> => {
+  if (!('ytcf.currentStorageVersion' in data)) {
+    if (!('global' in data)) {
+      throw new Error('Invalid storage JSON dump.');
+    }
+    await migrateV2toV3({ archives: true, presetsAndFilters: true }, data);
+    return;
+  }
   await browserObject.storage.local.set(data);
 };

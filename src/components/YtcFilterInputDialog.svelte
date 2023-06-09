@@ -87,7 +87,7 @@
     backgroundColor: $isDark ? 'black' : 'white'
   }}
   {open}
-  style="font-size: 1rem;"
+  style="font-size: 1rem; min-width: min(350px, calc(100% - 40px));"
   class:reactive-width={Boolean(component)}
   bind:this={wrapperElem}
 >
@@ -124,7 +124,7 @@
           type="text"
           value={item.originalValue}
           use:exioTextbox
-          style="width: 100%; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: 10px;"
+          style="width: 100%; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: {message ? 10 : 0}px;"
           on:keydown={e => {
             if (e.key === 'Enter') {
               action.callback(values);

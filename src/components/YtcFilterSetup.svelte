@@ -73,7 +73,7 @@
     } else if (value === 'paste-json') {
       loading = true;
       $inputDialog = {
-        title: 'Import v2 JSON data',
+        title: 'Import JSON data',
         prompts: [{
           label: 'Paste JSON data here',
           originalValue: '',
@@ -133,7 +133,7 @@
         </div>
       {:else if currentPanel === 'migrate'}
         <div style="text-align: center;" use:exioZoomInAnimation>
-          <div style="font-size: 1.5rem; color: #3ba7ff;">Import Data from v2</div>
+          <div style="font-size: 1.5rem; color: #3ba7ff;">Import Data</div>
           {#if hasV2Data}
             <div style="margin-top: 1rem; font-size: 1rem;">
               Back up your v2 data:
@@ -165,10 +165,10 @@
                 : []
               ),
               {
-              label: 'Upload custom v2 storage JSON',
+              label: 'Upload custom storage JSON',
               value: 'upload-json'
             }, {
-              label: 'Paste custom v2 storage JSON',
+              label: 'Paste custom storage JSON',
               value: 'paste-json'
             }, {
               label: 'Start from scratch',

@@ -123,7 +123,7 @@
   const newPreset = () => {
     $inputDialog = {
       title: 'Create New Preset',
-      message: 'Enter a name for the new preset.',
+      message: '',
       action: {
         text: 'Create',
         callback: commitNewPreset
@@ -133,7 +133,8 @@
           return item.nickname?.startsWith('Preset ');
         }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
           .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1)),
-        label: 'Preset Name'
+        label: 'Preset Name',
+        hideLabel: true
       }]
     };
   };
@@ -236,7 +237,7 @@
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 5px;">
         <button on:click={async () => {
           $inputDialog = {
-            title: `Rename Preset "${$currentEditingPreset.nickname}"`,
+            title: 'Rename Preset',
             action: {
               callback: renameItemCallback($currentEditingPreset),
               cancelled: () => {
@@ -245,7 +246,8 @@
             },
             prompts: [{
               originalValue: $currentEditingPreset.nickname,
-              label: 'Preset Name'
+              label: 'Preset Name',
+              hideLabel: true
             }]
           };
         }} use:exioButton class="full-btn">

@@ -55,7 +55,7 @@ try {
       },
       channel: {
         channelId: channel.navigationEndpoint.browseEndpoint.browseId,
-        handle: channel.navigationEndpoint.browseEndpoint.canonicalBaseUrl,
+        handle: channel.navigationEndpoint.browseEndpoint.canonicalBaseUrl.split('/@')[1],
         name: stringifyRuns(parseMessageRuns(channel.title.runs))
       }
     })

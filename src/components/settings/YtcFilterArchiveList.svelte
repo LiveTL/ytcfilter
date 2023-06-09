@@ -239,13 +239,13 @@
       {#each data.slice(startIndex, startIndex + 10) as item, i (item.key)}
         <tr class="hover-highlight" style="padding: 0x 5px;" on:click={isArchiveLoadSelection ? loadArchiveEntry(item) : undefined}>
           <td>{item.info?.video.videoId}</td>
-          <td style="max-width: 50vw;">
+          <td style="width: 100%;">
             {computeName(item)}
           </td>
-          <td style="font-style: italic;">{item.size ?? 0}</td>
-          <td style="font-style: italic;">{dateConvert(item.lastEdited)}</td>
+          <td style="font-style: italic;" class="snap-small">{item.size ?? 0}</td>
+          <td style="font-style: italic;" class="snap-small">{dateConvert(item.lastEdited)}</td>
           {#if !isArchiveLoadSelection}
-            <td style="font-style: italic; text-align: center;">
+            <td style="font-style: italic; text-align: center;" class="snap-small">
               <span style="white-space: nowrap;">
                 <span class="material-icons link-button" on:click={editArchiveEntry(item)}>edit</span>
                 <span class="material-icons link-button">visibility</span>
@@ -334,9 +334,9 @@
     padding: 10px;
     gap: 10px;
   }
-  @media (max-width: 850px) {
-    .triple-buttons {
-      flex-direction: column;
+  @media (min-width: 850px) {
+    .snap-small {
+      white-space: nowrap;
     }
   }
   .full-flex {

@@ -2,22 +2,16 @@
   import { Theme } from '../../ts/chat-constants';
   import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog } from '../../ts/storage';
   import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
-  import { forceReloadAll, migrateV2toV3 } from '../../ts/ytcf-logic';
+  import { forceReloadAll } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
   import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
   import LoadingBar from '../common/LoadingBar.svelte';
-  let loading = false;
+  let loading: false | string = false;
   const importData = async () => {
     const data = await readFromJson();
     try {
-      loading = true;
-      if (!('ytcf.currentStorageVersion' in data)) {
-        if (!('global' in data)) {
-          throw new Error('Invalid storage JSON dump.');
-        }
-        await migrateV2toV3({ archives: true, presetsAndFilters: true }, data);
-      }
+      loading = 'Importing Data...';
       await importSettingsFromJson(data);
       loading = false;
     } catch (e) {
@@ -41,6 +35,7 @@
       action: {
         text: 'Reset',
         callback: async () => {
+          loading = 'Resetting Data...';
           await chrome.storage.local.clear();
           $confirmDialog = null;
           forceReloadAll();
@@ -51,7 +46,7 @@
 
   $: if (loading) {
     $inputDialog = {
-      title: 'Importing Data...',
+      title: loading,
       component: LoadingBar,
       prompts: [],
       action: {
