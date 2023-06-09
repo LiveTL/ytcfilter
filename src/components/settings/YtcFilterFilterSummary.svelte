@@ -85,6 +85,6 @@
     white-space: nowrap;
     max-width: 200px;
     overflow-x: hidden;
-    transform: translate(0px, 0.25rem);
+    vertical-align: bottom;
   }
 </style>

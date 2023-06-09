@@ -96,15 +96,15 @@ label {
     user-select: none;
     display: flex;
     align-items: center;
-    background-color: rgb(0 110 189 / 30%);
+    background-color: #0d2e46;
 }
 
 [data-theme='dark'] .settings-title {
-    background-color: rgb(0 110 189 / 30%);
+    background-color: #0d2e46;
 }
 
 [data-theme='light'] .settings-title {
-    background-color: rgb(126 182 255 / 30%);
+    background-color: #cfe0f6;
 }
 
 .settings-content {

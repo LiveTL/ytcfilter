@@ -223,7 +223,7 @@
           />
         <label for="enable-{filter.id}">Enabled</label>
       </div>
-      <div>
+      <div style="display: flex; gap: 5px; align-items: center;">
         <button
           use:exioButton
           class="red-bg delete"
