@@ -163,6 +163,18 @@
       unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
     }
   };
+  const copyFilters = (async (e: InputEvent) => {
+    await tick();
+    const target = e.target as HTMLSelectElement;
+    const preset = await getPresetById(target.value);
+    if (preset) {
+      const newItems = JSON.parse(JSON.stringify(preset.filters)) as YtcF.ChatFilter[];
+      newItems.forEach(x => (x.id = getRandomString()));
+      $currentEditingPreset.filters = [...$currentEditingPreset.filters, ...newItems];
+      unsavedFilters = [...unsavedFilters, ...JSON.parse(JSON.stringify(newItems))];
+    }
+    (target.querySelector('option') as HTMLOptionElement).selected = true;
+  }) as any;
   const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string[]) => {
       item.nickname = name[0] || 'Unnamed Preset';
@@ -194,52 +206,94 @@
 </div>
 <div class="settings-content" style="padding-top: 0px;">
   <div style="display: flex; justify-content: center; margin-top: 10px;">
-    <div class="buttons">
-      <select use:exioDropdown on:change={changeEditingPreset} class="preset-dropdown">
-        {#each $chatFilterPresets as preset}
-          <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
-            {preset.nickname}
-          </option>
-        {/each}
-      </select>
-      <button on:click={async () => {
-        const { default: component } = await import('./YtcFilterTriggers.svelte');
-        const beforeEdit = JSON.parse(JSON.stringify($currentEditingPreset));
-        $inputDialog = {
-          title: `Edit Preset "${$currentEditingPreset.nickname}"`,
-          action: {
-            callback: renameItemCallback($currentEditingPreset),
-            cancelled: () => {
-              setTimeout(() => {
-                $currentEditingPreset = beforeEdit;
-              }, 100);
+    <div class="buttons" style="width: 100%;">
+      <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 5px;">
+        <select use:exioDropdown on:change={changeEditingPreset} class="preset-dropdown">
+          {#each $chatFilterPresets as preset}
+            <option value={preset.id} selected={preset.id === $currentEditingPreset.id}>
+              {preset.nickname}
+            </option>
+          {/each}
+        </select>
+        <button on:click={() => {
+          $confirmDialog = {
+            title: `Delete Preset "${$currentEditingPreset.nickname}"?`,
+            message: UNDONE_MSG,
+            action: {
+              callback: deletePreset,
+              text: 'Delete'
+            }
+          };
+        }} use:exioButton class="red-bg">
+          <span style="white-space: nowrap;">
+            <span use:exioIcon class="offset-1px">disabled_by_default</span>
+          </span>
+        </button>
+        <button on:click={newPreset} use:exioButton class="blue-bg">
+          <span use:exioIcon class="offset-1px">add_box</span>
+        </button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 5px;">
+        <button on:click={async () => {
+          $inputDialog = {
+            title: `Rename Preset "${$currentEditingPreset.nickname}"`,
+            action: {
+              callback: renameItemCallback($currentEditingPreset),
+              cancelled: () => {
+              },
+              text: 'Save'
             },
-            text: 'Save'
-          },
-          prompts: [{
-            originalValue: $currentEditingPreset.nickname,
-            label: 'Preset Name'
-          }],
-          component
-        };
-      }} use:exioButton>
-        <span use:exioIcon style="vertical-align: -1px;">edit_square</span>
-      </button>
-      <button on:click={() => {
-        $confirmDialog = {
-          title: `Delete Preset "${$currentEditingPreset.nickname}"?`,
-          message: UNDONE_MSG,
-          action: {
-            callback: deletePreset,
-            text: 'Delete'
-          }
-        };
-      }} use:exioButton class="red-bg">
-        <span use:exioIcon class="offset-1px">disabled_by_default</span>
-      </button>
-      <button on:click={newPreset} use:exioButton class="blue-bg">
-        <span use:exioIcon class="offset-1px">add_box</span>
-      </button>
+            prompts: [{
+              originalValue: $currentEditingPreset.nickname,
+              label: 'Preset Name'
+            }]
+          };
+        }} use:exioButton class="full-btn">
+          Rename
+          <span style="white-space: nowrap;">
+            Preset
+            <span use:exioIcon style="vertical-align: -1px;">edit_square</span>
+          </span>
+        </button>
+        <button on:click={async () => {
+          const { default: component } = await import('./YtcFilterTriggers.svelte');
+          const beforeEdit = JSON.parse(JSON.stringify($currentEditingPreset));
+          $inputDialog = {
+            title: `Edit "${$currentEditingPreset.nickname}" Triggers`,
+            action: {
+              callback: () => {
+                $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
+              },
+              cancelled: () => {
+                setTimeout(() => {
+                  $currentEditingPreset = beforeEdit;
+                }, 100);
+              },
+              text: 'Save'
+            },
+            prompts: [],
+            component
+          };
+        }} use:exioButton class="full-btn">
+          Edit
+          <span style="white-space: nowrap;">
+            Triggers
+            <span use:exioIcon style="vertical-align: -1px;">settings_power</span>
+          </span>
+        </button>
+        <select use:exioDropdown on:change={copyFilters} disabled={$chatFilterPresets.length <= 1} class="full-btn" style="white-space: pre-wrap; text-align: center;">
+          <option disabled selected>
+            Copy Filters From...
+          </option>
+          {#each $chatFilterPresets as preset}
+            {#if preset.id !== $currentEditingPreset.id}
+              <option value={preset.id}>
+                {preset.nickname}
+              </option>
+            {/if}
+          {/each}
+        </select>
+      </div>
     </div>
   </div>
   {#each unsavedFilters as filter (filter.id)}
@@ -266,3 +320,14 @@
     </div>
   {/if} -->
 </div>
+
+<style>
+  .full-btn {
+    width: 100%;
+    height: 100%;
+    background-color: var(--filter-color);
+  }
+  .preset-dropdown {
+    width: 100%;
+  }
+</style>

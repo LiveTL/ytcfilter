@@ -1,6 +1,6 @@
 button,
 select {
-    background-color: #bfbfbf;
+    background-color: #c6c6c6;
     width: fit-content;
 }
 
@@ -74,7 +74,11 @@ label {
 
 :root {
     --gray-bg: #4f4f4f;
-    --filter-color: rgb(128 128 128 / 20%);
+    --filter-color: #dcdcdc;
+}
+
+:root [data-theme=dark] {
+    --filter-color: #292929;
 }
 
 .settings-card {

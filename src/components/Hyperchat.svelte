@@ -47,7 +47,6 @@
     currentFilterPreset,
     chatFilterPresets,
     dataTheme,
-    defaultFilterPresetId,
     videoInfo,
     overrideFilterPresetId,
     ytDark
@@ -588,7 +587,6 @@
   const presetChangedManually = (e: Event) => {
     const target = e.target as HTMLSelectElement;
     const presetId = target.value;
-    $defaultFilterPresetId = presetId;
     $overrideFilterPresetId = presetId;
   };
 

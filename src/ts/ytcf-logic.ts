@@ -9,7 +9,6 @@ import { YTCF_MESSAGEDUMPINFOS_KEY } from './chat-constants';
 const browserObject = (window.chrome ?? (window as any).browser);
 
 export async function shouldFilterMessage(action: Chat.MessageAction): Promise<boolean> {
-  await Promise.all([chatFilterPresets.ready(), defaultFilterPresetId.ready()]);
   const filters = get(currentFilterPreset).filters;
   const msg = action.message;
   for (const filter of filters) {

@@ -115,7 +115,6 @@
         <div>
           <button
             use:exioButton
-            class="gray-bg"
             on:click={() => {
               discardUnsavedChanges(filter);
               small = true;
