@@ -228,7 +228,7 @@
           messages: [{
             message: action.item.contents
           }]
-        }, false, true);
+        }, false, false);
         break;
       case 'unpin':
         pinned = null;

@@ -284,7 +284,13 @@
         Set as
         <span style="white-space: nowrap;">
           Default
-          <span use:exioIcon style="vertical-align: -2px;">library_add_check</span>
+          <span use:exioIcon style="vertical-align: -2px;">
+            {#if $defaultFilterPresetId === $currentEditingPreset.id}
+              check_box
+            {:else}
+              check_box_outline_blank
+            {/if}
+          </span>
         </span>
       </button>
       <button on:click={async () => {

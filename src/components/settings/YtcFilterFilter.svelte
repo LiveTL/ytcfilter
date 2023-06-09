@@ -27,7 +27,6 @@
       ) {
         condition.type = 'includes';
       }
-      console.log(condition, condition.type);
       if (condition.needsClear && !isBooleanFilter(condition) && condition.type !== 'tltag') {
         condition.value = '';
         delete condition.needsClear;
@@ -99,6 +98,7 @@
           <select
             bind:value={condition.property}
             use:exioDropdown
+            on:change={changed}
           >
             <option value="message">Message Text</option>
             <option value="authorName">Author Name</option>
