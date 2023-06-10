@@ -196,7 +196,7 @@
       <div class="add-condition-inner blue-text">
         <span>
           <span use:exioIcon class="offset-1px add-icon" style="color: inherit;">add</span>
-          Add a Filter Condition
+          Add AND Condition
         </span>
       </div>
     </button>
