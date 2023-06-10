@@ -1,7 +1,7 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
-  import { exioButton, exioDropdown, exioIcon, exioTextbox } from 'exio/svelte';
-  import { inputDialog, confirmDialog, exportMode, port, videoInfo } from '../../ts/storage';
+  import { exioButton, exioIcon } from 'exio/svelte';
+  import { inputDialog, confirmDialog, exportMode, port } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
   import '../../stylesheets/line.css';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';

@@ -402,7 +402,7 @@ export const migrateV2toV3 = async (
     const messageDumpInfosData: { [key: string]: YtcF.MessageDumpInfoItem } = {};
     await Promise.all(archives.map(async archive => {
       const actions = archive.actions;
-      archive.actions = [];
+      delete (archive as any).actions;
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       messageDumpInfosData[archive.key] = archive;
       // const actionsStore = stores.addSyncStore(keyGen(archive.key, 'actions'), actions, false);
