@@ -467,7 +467,7 @@
     const hrefNode = document.createElement('div');
     hrefNode.style.textDecoration = 'underline';
     bottomNode.style.transform = 'skew(-7.5deg)';
-    hrefNode.innerText = 'livetl.app/ytcfilter';
+    hrefNode.innerText = 'https://livetl.app/ytcfilter';
     const spanNode = document.createElement('span');
     spanNode.innerHTML = 'Filtered with YtcFilter. ';
     spanNode.style.whiteSpace = 'pre';

@@ -81,6 +81,15 @@
   });
 </script>
 
+<svelte:window 
+  on:keydown={e => {
+    if (e.key === 'Escape') {
+      action.cancelled();
+      $inputDialog = null;
+    }
+  }}
+/>
+
 <dialog
   data-theme={$dataTheme}
   use:exioDialog={{
@@ -107,12 +116,6 @@
             value={item.originalValue}
             use:exioTextbox
             style="overflow: auto; width: min(calc(100vw - 2rem), 400px); height: 4em; box-sizing: border-box; {prompts.length <= 1 ? 'margin-top' : 'margin-bottom'}: 10px;"
-            on:keydown={e => {
-              if (e.key === 'Escape') {
-                action.cancelled();
-                $inputDialog = null;
-              }
-            }}
             on:input={editCallback(index)}
             placeholder={item.label}
             bind:this={inputItem}

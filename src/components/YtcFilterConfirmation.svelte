@@ -25,6 +25,14 @@
   });
 </script>
 
+<svelte:window 
+  on:keydown={e => {
+    if (e.key === 'Escape') {
+      $confirmDialog = null;
+    }
+  }}
+/>
+
 <dialog
   use:exioDialog={{
     backgroundColor: $isDark ? 'black' : 'white'

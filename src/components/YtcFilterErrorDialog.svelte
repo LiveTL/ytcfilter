@@ -25,6 +25,15 @@
   });
 </script>
 
+
+<svelte:window 
+  on:keydown={e => {
+    if (e.key === 'Escape') {
+      $errorDialog = null;
+    }
+  }}
+/>
+
 <dialog
   use:exioDialog={{
     backgroundColor: $isDark ? 'black' : 'white'
