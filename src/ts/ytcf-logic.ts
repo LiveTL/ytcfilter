@@ -29,7 +29,7 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
         let compStr = '';
         switch (condition.property) {
           case 'message':
-            compStr = stringifyRuns(msg.message);
+            compStr = stringifyRuns(msg.message, true);
             break;
           case 'authorName':
             compStr = msg.author.name;
@@ -40,7 +40,7 @@ export async function shouldFilterMessage(action: Chat.MessageAction): Promise<b
         }
         if (condition.value === '') continue;
         if (condition.type === 'tltag') {
-          const parsed = parseTranslation(stringifyRuns(msg.message));
+          const parsed = parseTranslation(stringifyRuns(msg.message, true));
           if (!parsed) break;
           const result = isLangMatch(parsed.lang, condition.value);
           if (result === condition.invert) {

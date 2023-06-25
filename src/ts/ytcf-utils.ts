@@ -1,9 +1,9 @@
-export const stringifyRuns = (msg: Ytc.ParsedRun[]): string => {
+export const stringifyRuns = (msg: Ytc.ParsedRun[], ignoreEmoji = false): string => {
   return msg.map(m => {
     if (m.type === 'text') {
       return m.text;
     } else if (m.type === 'emoji') {
-      return `:${m.alt}:`;
+      return ignoreEmoji ? '' : `:${m.alt}:`;
     } else {
       return m.text;
     }

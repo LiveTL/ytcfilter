@@ -29,33 +29,23 @@
 </script>
 
 {#if paid}
-  <div class={classes} style={backgroundColor + textColor}>
-    <div class="p-2" style={headerStyle}>
-      {#if $showProfileIcons}
-        <img
-          class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
-          src={message.author.profileIcon.src}
-          alt={message.author.profileIcon.alt}
-        />
-      {/if}
-      <span class="mr-1 underline font-bold">{amount}</span>
-      <span class="font-bold tracking-wide" style={nameColor}>
-        {message.author.name}
+  <div>
+    <Message message={message} forceTLColor={
+      isDarkColor(`#${message.superChat?.headerTextColor}`) ? Theme.LIGHT : Theme.DARK
+    }>
+      <span class="{classes} chip" style={backgroundColor + textColor} slot="chip">
+        <span class="p-1" style={headerStyle}>
+          <span class="underline font-bold">{amount}</span>
+        </span>
       </span>
-      {#if message.superSticker}
-        <img
-          class="h-10 w-10 float-right"
-          src={message.superSticker.src}
-          alt={message.superSticker.alt}
-          title={message.superSticker.alt} />
-      {/if}
-    </div>
-    {#if message.message.length > 0}
-      <div class="p-2">
-        <Message message={message} hideName forceTLColor={
-          isDarkColor(`#${message.superChat?.headerTextColor}`) ? Theme.LIGHT : Theme.DARK
-        } />
-      </div>
-    {/if}
+    </Message>
   </div>
 {/if}
+
+<style>
+  .chip {
+    display: inline-block;
+    width: fit-content;
+    vertical-align: middle;
+  }
+</style>

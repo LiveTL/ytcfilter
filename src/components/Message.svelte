@@ -142,6 +142,7 @@
       </span>
       <span class="mr-1.5" class:hidden={!showUserMargin} />
     {/if}
+    <slot name="chip" />
     <MessageRun
       runs={message.message}
       {forceDark}

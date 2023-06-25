@@ -247,12 +247,12 @@
           {#if !isArchiveLoadSelection}
             <td style="font-style: italic; text-align: center;" class="snap-small">
               <span style="white-space: nowrap;">
-                <span class="material-icons link-button" on:click={editArchiveEntry(item)}>edit</span>
-                <span class="material-icons link-button">visibility</span>
+                <span class="material-icons link-button" on:click={editArchiveEntry(item)} title="Edit Archive">edit</span>
+                <span class="material-icons link-button" title="View Archive">visibility</span>
               </span>
                 <span style="white-space: nowrap;">
-                  <span class="material-icons link-button" on:click={downloadArchiveEntry(item)}>download</span>
-                  <span class="material-icons link-button red" on:click={deleteArchiveEntry(item)}>delete</span>
+                  <span class="material-icons link-button" on:click={downloadArchiveEntry(item)} title="Download Archive">download</span>
+                  <span class="material-icons link-button red" on:click={deleteArchiveEntry(item)} title="Delete Archive">delete</span>
                 </span>
             </td>
           {/if}
