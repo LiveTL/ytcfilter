@@ -621,7 +621,7 @@
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
-  <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight}>
+  <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight} style="height: 26px;">
     <div style="display: flex; justify-content: flex-start;">
       <!-- <span class="tiny-text">
         Preset:
@@ -658,7 +658,7 @@
     </div>
   </div>
   <div class="line" />
-  <div class="{containerClass} container" style="font-size: 13px;">
+  <div class="{containerClass} container" style="font-size: 13px; height: calc(100vh - 27px);">
     {#if $enableStickySuperchatBar}
       <StickyBar />
     {/if}

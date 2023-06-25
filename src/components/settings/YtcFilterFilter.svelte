@@ -39,6 +39,7 @@
       }
     }
   };
+  $: small, filter = { ...filter };
 </script>
 
 <div class="filter filter-item-{filter.id}">
@@ -219,15 +220,21 @@
           {/if}
         {/if}
       </span>
-      <div class="condition-no-break">
-        <input
-          id="enable-{filter.id}"
-          type="checkbox"
-          use:exioCheckbox
-          bind:checked={filter.enabled}
-          />
-        <label for="enable-{filter.id}">Enabled</label>
-      </div>
+        <div class="condition-no-break">
+          {#if small}
+            {#if !filter.enabled}
+              [disabled]
+            {/if}
+          {:else}
+            <input
+              id="enable-{filter.id}"
+              type="checkbox"
+              use:exioCheckbox
+              bind:checked={filter.enabled}
+              />
+            <label for="enable-{filter.id}">Enabled</label>
+          {/if}
+        </div>
       <div style="display: flex; gap: 5px; align-items: center;">
         <button
           use:exioButton

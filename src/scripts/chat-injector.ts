@@ -3,7 +3,8 @@ import { detectForceReload } from '../ts/ytcf-logic';
 import { isLiveTL, isAndroid } from '../ts/chat-constants';
 import {
   // hcEnabled,
-  autoLiveChat
+  autoLiveChat,
+  filterInBackground
 } from '../ts/storage';
 import {
   initInterceptor,
@@ -14,6 +15,7 @@ import {
   setTheme
 } from '../ts/messaging';
 import YtcFilterButtons from '../components/YtcFilterButtons.svelte';
+
 // import { parseMessageRuns } from '../ts/chat-parser';
 // import { stringifyRuns } from '../ts/ytcf-logic';
 
@@ -132,7 +134,8 @@ const chatLoaded = async (): Promise<void> => {
     (isLiveTL ? 'hyperchat/index.html' : 'hyperchat.html') +
     `?${params.toString()}`
   );
-  const ytcfilterElement = document.querySelector('.ytcf-iframe');
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const ytcfilterElement = document.querySelector('.ytcf-iframe') as HTMLDivElement | null;
   if (!ytcfilterElement) {
     console.error('Failed to find .ytcf-iframe');
     return;
@@ -140,25 +143,34 @@ const chatLoaded = async (): Promise<void> => {
   const activatorButton = document.querySelector('.ytcf-launch-button') as HTMLButtonElement;
   const popoutButton = document.querySelector('.ytcf-popout-button') as HTMLButtonElement;
   const settingsButton = document.querySelector('.ytcf-settings-button') as HTMLButtonElement;
-  activatorButton.addEventListener('click', () => {
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  activatorButton.addEventListener('click', async () => {
     // activatorButton.style.display = 'none';
     const frame = ytcfilterElement.querySelector('iframe');
     const resizeBar = document.querySelector('.ytcf-resize-bar') as HTMLDivElement;
-    if (frame) {
-      ytcfilterElement.removeChild(frame);
+    if (ytcfilterElement.style.display === 'block') {
+      ytcfilterElement.style.display = 'none';
       resizeBar.style.display = 'none';
-      (ytcfilterElement as HTMLDivElement).style.display = 'none';
+      ytcfilterElement.style.display = 'none';
+      if (frame && !(await filterInBackground.get())) {
+        frame.src = 'about:blank';
+      }
       return;
     }
-    (ytcfilterElement as HTMLDivElement).style.display = 'block';
+    ytcfilterElement.style.display = 'block';
     resizeBar.style.display = 'flex';
-    const iframe = document.createElement('iframe');
-    iframe.src = source;
-    iframe.style.border = '0px';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    ytcfilterElement.appendChild(iframe);
+    if (frame && frame.src !== source) {
+      frame.src = source;
+    }
   });
+  const iframe = document.createElement('iframe');
+  iframe.style.border = '0px';
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  if (await filterInBackground.get()) {
+    iframe.src = source;
+  }
+  ytcfilterElement.appendChild(iframe);
   popoutButton.addEventListener('click', () => {
     createPopup(source);
   });

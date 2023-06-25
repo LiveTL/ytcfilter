@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Theme } from '../../ts/chat-constants';
-  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog } from '../../ts/storage';
+  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground } from '../../ts/storage';
   import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
   import { forceReloadAll } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
@@ -88,6 +88,13 @@
   <div class="setting-item" style="margin-bottom: 5px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$showUserBadges} id="show-user-badges" />
     <label for="show-user-badges">Show User Badges</label>
+  </div>
+</div>
+<div class="settings-title big-text">Quality-of-Life Features</div>
+<div class="settings-content">
+  <div class="setting-item" style="margin-bottom: 5px;">
+    <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
+    <label for="silently-filter">Silently begin filtering messages in the background</label>
   </div>
 </div>
 <div class="settings-title big-text">Advanced</div>
