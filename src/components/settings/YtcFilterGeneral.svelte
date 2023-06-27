@@ -90,9 +90,9 @@
     <label for="show-user-badges">Show User Badges</label>
   </div>
 </div>
-<div class="settings-title big-text">Quality-of-Life Features</div>
+<div class="settings-title big-text">Background Activity</div>
 <div class="settings-content">
-  <div class="setting-item" style="margin-bottom: 5px;">
+  <div class="setting-item" style="margin-top: 0px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
     <label for="silently-filter">Silently begin filtering messages in the background</label>
   </div>
