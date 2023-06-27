@@ -583,8 +583,8 @@ export const findSavedMessageActionKey = async (
 };
 
 export const getAllMessageDumpInfoItems = async (): Promise<YtcF.MessageDumpInfoItem[]> => {
-  const data = (await browserObject.storage.local.get(YTCF_MESSAGEDUMPINFOS_KEY))[YTCF_MESSAGEDUMPINFOS_KEY] || {};
-  return Object.keys(data).map((key) => data[key]);
+  const data = await chrome.storage.local.get(null);
+  return Object.keys(data).filter(s => s.startsWith(YTCF_MESSAGEDUMPINFOS_KEY)).map((key) => data[key]);
 };
 
 const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
