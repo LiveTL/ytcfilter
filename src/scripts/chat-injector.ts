@@ -144,7 +144,7 @@ const chatLoaded = async (): Promise<void> => {
   const popoutButton = document.querySelector('.ytcf-popout-button') as HTMLButtonElement;
   const settingsButton = document.querySelector('.ytcf-settings-button') as HTMLButtonElement;
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  activatorButton.addEventListener('click', async () => {
+  const clickListener = async (forceClose = false): Promise<void> => {
     // activatorButton.style.display = 'none';
     const frame = ytcfilterElement.querySelector('iframe');
     const resizeBar = document.querySelector('.ytcf-resize-bar') as HTMLDivElement;
@@ -152,7 +152,7 @@ const chatLoaded = async (): Promise<void> => {
       ytcfilterElement.style.display = 'none';
       resizeBar.style.display = 'none';
       ytcfilterElement.style.display = 'none';
-      if (frame && !(await filterInBackground.get())) {
+      if (frame && (forceClose || !(await filterInBackground.get()))) {
         frame.src = 'about:blank';
       }
       return;
@@ -162,7 +162,9 @@ const chatLoaded = async (): Promise<void> => {
     if (frame && frame.src !== source) {
       frame.src = source;
     }
-  });
+  };
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  activatorButton.addEventListener('click', async () => await clickListener());
   const iframe = document.createElement('iframe');
   iframe.style.border = '0px';
   iframe.style.width = '100%';
@@ -173,6 +175,7 @@ const chatLoaded = async (): Promise<void> => {
   ytcfilterElement.appendChild(iframe);
   popoutButton.addEventListener('click', () => {
     createPopup(source);
+    clickListener(true);
   });
   settingsButton.addEventListener('click', () => {
     createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
