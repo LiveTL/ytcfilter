@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { confirmDialog, isDark } from '../ts/storage';
+  import { confirmDialog, isDark, dataTheme } from '../ts/storage';
   import { exioDialog, exioButton } from 'exio/svelte';
   import '../stylesheets/ui.css';
   import { onDestroy } from 'svelte';
@@ -34,6 +34,7 @@
 />
 
 <dialog
+  data-theme={$dataTheme}
   use:exioDialog={{
     backgroundColor: $isDark ? 'black' : 'white'
   }}
@@ -41,7 +42,7 @@
   style="font-size: 1rem;"
 >
   <div class="big-text select-none">{title}</div>
-  <p class="select-none">{message}</p>
+  <p class="select-none" style="margin: revert;">{message}</p>
   <div style="display: flex; justify-content: flex-end; gap: 10px;">
     <button on:click={() => ($confirmDialog = null)} use:exioButton>Cancel</button>
     <button on:click={() => {
@@ -50,3 +51,10 @@
     }} use:exioButton class="red-bg">{action.text}</button>
   </div>
 </dialog>
+
+<style>
+  button {
+    cursor: default;
+    line-height: 1.325;
+  }
+</style>

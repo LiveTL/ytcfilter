@@ -79,7 +79,7 @@ declare namespace Chat {
 
   type BackgroundResponse =
     Actions | InitialData | ThemeUpdate | LtlMessageResponse |
-    registerClientResponse | executeChatActionMsg | chatUserActionResponse | loadArchiveRequest;
+    registerClientResponse | executeChatActionMsg | chatUserActionResponse | loadArchiveRequest | closeArchiveViewRequest;
 
   type InterceptorSource = 'ytc' | 'ltlMessage';
 
@@ -145,10 +145,14 @@ declare namespace Chat {
     key: string;
   }
 
+  interface closeArchiveViewRequest {
+    type: 'closeArchiveViewRequest';
+  }
+
   type BackgroundMessage =
     RegisterInterceptorMsg | RegisterClientMsg | processJsonMsg |
     setInitialDataMsg | updatePlayerProgressMsg | setThemeMsg | getThemeMsg |
-    RegisterYtcInterceptorMsg | sendLtlMessageMsg | executeChatActionMsg | chatUserActionResponse;
+    RegisterYtcInterceptorMsg | sendLtlMessageMsg | executeChatActionMsg | chatUserActionResponse | loadArchiveRequest | closeArchiveViewRequest;
 
   type Port = Omit<chrome.runtime.Port, 'postMessage' | 'onMessage'> & {
     postMessage: (message: BackgroundMessage | BackgroundResponse) => void;

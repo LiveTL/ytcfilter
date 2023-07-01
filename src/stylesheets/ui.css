@@ -111,3 +111,7 @@ label {
     padding: 10px 10px 10px 10px;
     margin-bottom: 5px;
 }
+.shifted-icon {
+  display: inline-block;
+  transform: translateY(2px);
+}

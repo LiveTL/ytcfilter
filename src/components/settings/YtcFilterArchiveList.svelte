@@ -2,9 +2,10 @@
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
   import { inputDialog, confirmDialog, exportMode, port } from '../../ts/storage';
-  import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
+  import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser, isLiveTL } from '../../ts/chat-constants';
   import '../../stylesheets/line.css';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';
+  import FullFrame from '../FullFrame.svelte';
   // import { exioIcon } from 'exio/svelte';
   export let isArchiveLoadSelection = false;
   let data: YtcF.MessageDumpInfoItem[] = [];
@@ -149,6 +150,7 @@
         type: 'loadArchiveRequest',
         key: entry.key
       });
+      window.close();
     }
   };
 
@@ -172,7 +174,22 @@
       item.info?.video.title ? `${item.info?.video.title}${item.info?.channel.name ? ` (${item.info?.channel.name})` : ''}` : ''
     ) || UNNAMED_ARCHIVE;
   };
+  let archiveEntryUrl = '';
+  const viewArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
+    const paramsClone = new URLSearchParams();
+    paramsClone.set('archiveKey', item.key);
+    return () => {
+      archiveEntryUrl = (chrome.runtime.getURL(
+        (isLiveTL ? 'hyperchat/hyperchat.html' : 'hyperchat.html') + '?' + paramsClone.toString()
+      ));
+    };
+  };
+  const closeFunc = () => {
+    archiveEntryUrl = '';
+  };
 </script>
+
+<FullFrame src={archiveEntryUrl} {closeFunc} />
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
   {#if loading}
@@ -247,7 +264,7 @@
             <td style="font-style: italic; text-align: center;" class="snap-small">
               <span style="white-space: nowrap;">
                 <span class="material-icons link-button" on:click={editArchiveEntry(item)} title="Edit Archive">edit</span>
-                <span class="material-icons link-button" title="View Archive">visibility</span>
+                <span class="material-icons link-button" title="Open Archive" on:click={viewArchiveEntry(item)}>visibility</span>
               </span>
                 <span style="white-space: nowrap;">
                   <span class="material-icons link-button" on:click={downloadArchiveEntry(item)} title="Download Archive">download</span>

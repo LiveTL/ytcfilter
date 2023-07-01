@@ -3,6 +3,7 @@
   import { exioButton, exioIcon } from 'exio/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { embedHeight } from '../ts/storage';
+  import '../stylesheets/ui.css';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
@@ -176,10 +177,6 @@
     background-color: transparent;
     width: 100%;
     color: inherit;
-  }
-  .shifted-icon {
-    display: inline-block;
-    transform: translateY(2px);
   }
   .logo {
     width: 15px;

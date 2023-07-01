@@ -22,6 +22,7 @@
   export let forceDark = false;
   export let hideName = false;
   export let hideDropdown = false;
+  export let miniDropdown = false;
 
   const nameClass = 'font-bold tracking-wide align-middle';
   const generateNameColorClass = (member: boolean, moderator: boolean, owner: boolean, forceDark: boolean) => {
@@ -66,7 +67,7 @@
   export let forceTLColor: Theme = Theme.YOUTUBE;
 
   const menuItems = [
-    ...chatUserActionsItems.map((d) => ({
+    ...(miniDropdown ? [] : chatUserActionsItems).map((d) => ({
       icon: d.icon,
       text: d.text,
       value: d.value.toString(),

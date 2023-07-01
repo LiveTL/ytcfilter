@@ -1,5 +1,6 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
+  import '../stylesheets/ui.css';
   import { onDestroy, afterUpdate, tick, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import dark from 'smelte/src/dark';
@@ -20,7 +21,10 @@
     Theme,
     YoutubeEmojiRenderMode,
     chatUserActionsItems,
-    isLiveTL
+    isLiveTL,
+
+    UNDONE_MSG
+
   } from '../ts/chat-constants';
   import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
@@ -49,12 +53,17 @@
     dataTheme,
     videoInfo,
     overrideFilterPresetId,
-    ytDark
+    ytDark,
+
+    confirmDialog
+
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, readFromJson, redirectIfInitialSetup } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
+  import FullFrame from './FullFrame.svelte';
+  import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -64,6 +73,14 @@
   const paramsFrameId = params.get('frameid');
   const paramsIsReplay = params.get('isReplay');
   const paramsContinuation = params.get('continuation');
+  const paramsArchiveKey = params.get('archiveKey');
+  const paramsYtDark = params.get('ytDark');
+  let embedded = false;
+  try {
+    embedded = window.self !== window.top;
+  } catch (e) {
+    embedded = true;
+  }
 
   // const CHAT_HISTORY_SIZE = 150;
   // const TRUNCATE_SIZE = 20;
@@ -200,6 +217,7 @@
   };
 
   const onChatAction = (action: Chat.Actions, isInitial = false) => {
+    if (paramsArchiveKey) return;
     switch (action.type) {
       case 'messages':
         newMessages(action, isInitial);
@@ -245,15 +263,16 @@
   };
 
   const loadArchive = async (key: string) => {
-    archiveSelectionFrame = '';
+    archiveEmbedFrame = '';
     if (!key) return;
     const data = await getSavedMessageDumpActions(key);
     if (!data) return;
-    // newMessages({
-    //   type: 'messages',
-    //   messages: data
-    // }, false, true);
-    overrideActions = temporaryArchiveActions = data;
+    const paramsClone = new URLSearchParams(params.toString());
+    paramsClone.set('archiveKey', key);
+    paramsClone.set('ytDark', $ytDark.toString());
+    archiveEmbedFrame = (chrome.runtime.getURL(
+      (isLiveTL ? 'hyperchat/hyperchat.html' : 'hyperchat.html') + '?' + paramsClone.toString()
+    ));
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -274,9 +293,13 @@
         $ytDark = response.dark;
         break;
       case 'loadArchiveRequest':
-        loadArchive(response.key);
+        if (!paramsArchiveKey) loadArchive(response.key);
+        break;
+      case 'closeArchiveViewRequest':
+        archiveEmbedFrame = '';
         break;
       case 'chatUserActionResponse':
+        if (paramsArchiveKey) break;
         $alertDialog = {
           title: response.success ? 'Success!' : 'Error',
           message: chatUserActionsItems.find(v => v.value === response.action)
@@ -311,6 +334,7 @@
 
     if (paramsTabId == null || paramsFrameId == null || paramsTabId.length < 1 || paramsFrameId.length < 1) {
       console.error('No tabId or frameId found from params');
+      if (paramsArchiveKey) initialized = true;
       return;
     }
 
@@ -427,7 +451,7 @@
     }
   };
 
-  let archiveSelectionFrame = '';
+  let archiveEmbedFrame = '';
 
   const executeImport = (e: any) => {
     const el = (e.target as HTMLSelectElement);
@@ -439,9 +463,11 @@
         const paramsClone = new URLSearchParams(params.toString());
         paramsClone.set('isArchiveLoadSelection', 'true');
         // createPopup
-        archiveSelectionFrame = (chrome.runtime.getURL(
+        const url = (chrome.runtime.getURL(
           (isLiveTL ? 'hyperchat/options.html' : 'options.html') + '?' + paramsClone.toString()
         ));
+        if (embedded) createPopup(url);
+        else archiveEmbedFrame = url;
         break;
       }
     }
@@ -529,12 +555,21 @@
   $: showWelcome = initialized && (messageActions.length === 0 && !overrideActions.length);
 
   const clearMessages = () => {
-    messageKeys.clear();
-    messageActions = [];
+    $confirmDialog = {
+      action: {
+        callback: () => {
+          messageKeys.clear();
+          messageActions = [];
+        },
+        text: 'Clear'
+      },
+      message: UNDONE_MSG,
+      title: 'Clear Messages?'
+    };
   };
   let key = '';
   const initMessageStorage = async () => {
-    let tempKey = await findSavedMessageActionKey(paramsContinuation, $videoInfo);
+    let tempKey = paramsArchiveKey || await findSavedMessageActionKey(paramsContinuation, $videoInfo);
     tempKey = tempKey === null ? getRandomString() : tempKey;
     const newMsgs = await getSavedMessageDumpActions(tempKey);
     if (newMsgs?.length) {
@@ -576,6 +611,9 @@
       }
     } catch (e) {
     }
+    if (paramsYtDark) {
+      $ytDark = paramsYtDark === 'true';
+    }
   });
   const openSettings = () => createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
 
@@ -603,10 +641,16 @@
     overwriteOverride();
   }
   let topBarHeight = 0;
+
+  const closeArchive = () => {
+    if ($port) $port.postMessage({ type: 'closeArchiveViewRequest' });
+    else (window.parent as any).closeFunc();
+  };
 </script>
 
 <ReportBanDialog />
 <SuperchatViewDialog />
+<YtcFilterConfirmation />
 
 <svelte:window on:resize={() => {
   scrollToBottom();
@@ -615,14 +659,7 @@
 
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
-{#if archiveSelectionFrame}
-  <!-- svelte-ignore a11y-missing-attribute -->
-  <iframe
-    src={archiveSelectionFrame}
-    style="background-color: {$dataTheme === 'dark' ? 'black' : 'white'};"
-    class="archive-frame"
-  />
-{/if}
+<FullFrame src={archiveEmbedFrame} />
 
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight} style="height: 26px;">
@@ -630,20 +667,31 @@
       <!-- <span class="tiny-text">
         Preset:
       </span> -->
-      <select use:exioDropdown value={
-        $currentFilterPreset?.id
-      } on:change={presetChangedManually} class="preset-selector">
-        {#each $chatFilterPresets as preset}
-          <option value={preset.id}>{preset.nickname}</option>
-        {/each}
-      </select>
+      {#if !paramsArchiveKey}
+        <select use:exioDropdown value={
+          $currentFilterPreset?.id
+        } on:change={presetChangedManually} class="preset-selector">
+          {#each $chatFilterPresets as preset}
+            <option value={preset.id}>{preset.nickname}</option>
+          {/each}
+        </select>
+      {:else}
+        <button use:exioButton on:click={closeArchive} class="whitespace-nowrap">
+          <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
+            arrow_back
+          </div>
+          Back
+        </button>
+      {/if}
     </div>
     <div style="display: flex; justify-content: flex-end;">
-      <select use:exioDropdown on:change={executeImport} style="width: 64px;">
-        <option selected disabled value="import">Load</option>
-        <option value="savedarchive">Archive</option>
-        <option value="jsondump">JSON</option>
-      </select>
+      {#if !paramsArchiveKey && !embedded}
+        <select use:exioDropdown on:change={executeImport} style="width: 64px;">
+          <option selected disabled value="import">Open</option>
+          <option value="savedarchive">Archive</option>
+          <option value="jsondump">JSON</option>
+        </select>
+      {/if}
       <select use:exioDropdown on:change={executeExport} disabled={showWelcome} style="width: 64px;">
         <option selected disabled value="export">Save</option>
         <option value="screenshot">PNG</option>
@@ -697,6 +745,7 @@
                   message={action.message}
                   deleted={action.deleted}
                   on:clientSideDelete={deleteMessageClientSide}
+                  miniDropdown={Boolean(paramsArchiveKey)}
                 />
               {/if}
             </div>
@@ -774,14 +823,5 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
-  }
-  .archive-frame {
-    border: 0px;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
   }
 </style>

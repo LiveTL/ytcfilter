@@ -27,9 +27,11 @@
     <button use:exioButton class="btn" on:click={refreshFunc}>
       <span use:exioIcon>refresh</span>
     </button>
-    <button use:exioButton class="btn red-bg" on:click={closeFunc} style="margin-left: 5px;">
-      <span use:exioIcon>close</span>
-    </button>
+    {#if isArchiveLoadSelection}
+      <button use:exioButton class="btn red-bg" on:click={closeFunc} style="margin-left: 5px;">
+        <span use:exioIcon>close</span>
+      </button>
+    {/if}
   </span>
 </div>
 <YtcFilterArchiveList bind:refreshFunc bind:loadArchiveEntry {isArchiveLoadSelection} {searchQuery} />
