@@ -68,6 +68,7 @@
   // const CHAT_HISTORY_SIZE = 150;
   // const TRUNCATE_SIZE = 20;
   let messageActions: (Chat.MessageAction | Welcome)[] = [];
+  let overrideActions: (Chat.MessageAction | Welcome)[] = [];
   const messageKeys = new Set<string>();
   let pinned: Ytc.ParsedPinned | null;
   let div: HTMLElement;
@@ -138,19 +139,9 @@
     return newItems;
   };
 
-  let piledMessages: {
-    messagesAction: Chat.MessagesAction;
-    isInitial: boolean;
-    forceDisplay: boolean;
-  }[] = [];
-
   const newMessages = async (
     messagesAction: Chat.MessagesAction, isInitial: boolean, forceDisplay = false
   ) => {
-    if (!isAtBottom) {
-      piledMessages = [...piledMessages, { messagesAction, isInitial, forceDisplay }];
-      return;
-    }
     // On replays' initial data, only show messages with negative timestamp
     if (isInitial && isReplay) {
       messageActions = [...messageActions, ...(await applyYtcf(filterTickers(messagesAction.messages).filter(
@@ -163,13 +154,11 @@
     // if (!isInitial) checkTruncateMessages();
   };
 
-  $: if (isAtBottom && piledMessages.length > 0) {
-    for (const item of piledMessages) {
-      newMessages(item.messagesAction, item.isInitial, item.forceDisplay);
-    }
-    piledMessages = [];
+  $: if (isAtBottom && overrideActions.length > 0) {
+    overrideActions = [];
   }
-
+  const setOverride = () => (overrideActions = messageActions);
+  $: if (!isAtBottom) setOverride();
 
   const onBonk = (bonk: Ytc.ParsedBonk) => {
     messageActions.forEach((action) => {
@@ -260,10 +249,11 @@
     if (!key) return;
     const data = await getSavedMessageDumpActions(key);
     if (!data) return;
-    newMessages({
-      type: 'messages',
-      messages: data
-    }, false, true);
+    // newMessages({
+    //   type: 'messages',
+    //   messages: data
+    // }, false, true);
+    overrideActions = temporaryArchiveActions = data;
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -536,7 +526,7 @@
   const exportJsonDump = async () => {
     downloadAsJson(await getSavedMessageDumpInfo(key));
   };
-  $: showWelcome = initialized && messageActions.length === 0;
+  $: showWelcome = initialized && (messageActions.length === 0 && !overrideActions.length);
 
   const clearMessages = () => {
     messageKeys.clear();
@@ -685,7 +675,7 @@
               <WelcomeMessage />
             </div>
           {/if}
-          {#each messageActions as action (action.message.messageId)}
+          {#each (overrideActions.length ? overrideActions : messageActions)  as action (action.message.messageId)}
             <div
               class="hover-highlight p-1.5 w-full block"
               class:flex = {!isWelcome(action)}
