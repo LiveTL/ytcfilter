@@ -130,7 +130,7 @@
       };
     };
   };
-  const loadArchiveEntry = (entry: YtcF.MessageDumpInfoItem) => async () => {
+  export const loadArchiveEntry = (entry: YtcF.MessageDumpInfoItem) => async () => {
     const params = new URLSearchParams(window.location.search);
     const paramsTabId = params.get('tabid');
     const paramsFrameId = params.get('frameid');
@@ -149,7 +149,6 @@
         type: 'loadArchiveRequest',
         key: entry.key
       });
-      window.close();
     }
   };
 

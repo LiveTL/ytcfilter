@@ -5,6 +5,10 @@
   let refreshFunc: any;
   export let isArchiveLoadSelection = false;
   let searchQuery = '';
+  let loadArchiveEntry: any;
+  const closeFunc = () => {
+    loadArchiveEntry({ key: '' })();
+  };
 </script>
 
 <div
@@ -20,15 +24,18 @@
       use:exioTextbox
       bind:value={searchQuery}
     />
-    <button use:exioButton class="refresh" on:click={refreshFunc}>
+    <button use:exioButton class="btn" on:click={refreshFunc}>
       <span use:exioIcon>refresh</span>
+    </button>
+    <button use:exioButton class="btn red-bg" on:click={closeFunc} style="margin-left: 5px;">
+      <span use:exioIcon>close</span>
     </button>
   </span>
 </div>
-<YtcFilterArchiveList bind:refreshFunc {isArchiveLoadSelection} {searchQuery} />
+<YtcFilterArchiveList bind:refreshFunc bind:loadArchiveEntry {isArchiveLoadSelection} {searchQuery} />
 
 <style>
-  .refresh {
+  .btn {
     height: 32px;
     width: 40px;
     font-size: 1rem;

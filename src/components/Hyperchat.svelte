@@ -256,6 +256,8 @@
   };
 
   const loadArchive = async (key: string) => {
+    archiveSelectionFrame = '';
+    if (!key) return;
     const data = await getSavedMessageDumpActions(key);
     if (!data) return;
     newMessages({
@@ -430,10 +432,12 @@
     if (obj) {
       newMessages({
         type: 'messages',
-        messages: obj.actions
+        messages: (obj as any).actions
       }, false, true);
     }
   };
+
+  let archiveSelectionFrame = '';
 
   const executeImport = (e: any) => {
     const el = (e.target as HTMLSelectElement);
@@ -444,7 +448,8 @@
       case 'savedarchive': {
         const paramsClone = new URLSearchParams(params.toString());
         paramsClone.set('isArchiveLoadSelection', 'true');
-        createPopup(chrome.runtime.getURL(
+        // createPopup
+        archiveSelectionFrame = (chrome.runtime.getURL(
           (isLiveTL ? 'hyperchat/options.html' : 'options.html') + '?' + paramsClone.toString()
         ));
         break;
@@ -620,6 +625,15 @@
 
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
+{#if archiveSelectionFrame}
+  <!-- svelte-ignore a11y-missing-attribute -->
+  <iframe
+    src={archiveSelectionFrame}
+    style="background-color: {$dataTheme === 'dark' ? 'black' : 'white'};"
+    class="archive-frame"
+  />
+{/if}
+
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight} style="height: 26px;">
     <div style="display: flex; justify-content: flex-start;">
@@ -770,5 +784,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
+  }
+  .archive-frame {
+    border: 0px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
   }
 </style>
