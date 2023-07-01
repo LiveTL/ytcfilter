@@ -94,7 +94,7 @@
 <div class="settings-content">
   <div class="setting-item" style="margin-top: 0px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
-    <label for="silently-filter">Silently begin filtering messages in the background</label>
+    <label for="silently-filter">Begin filtering messages in the background immediately on load</label>
   </div>
 </div>
 <div class="settings-title big-text">Advanced</div>

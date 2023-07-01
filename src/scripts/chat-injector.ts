@@ -148,7 +148,7 @@ const chatLoaded = async (): Promise<void> => {
     // activatorButton.style.display = 'none';
     const frame = ytcfilterElement.querySelector('iframe');
     const resizeBar = document.querySelector('.ytcf-resize-bar') as HTMLDivElement;
-    if (ytcfilterElement.style.display === 'block') {
+    if (forceClose || ytcfilterElement.style.display === 'block') {
       ytcfilterElement.style.display = 'none';
       resizeBar.style.display = 'none';
       ytcfilterElement.style.display = 'none';
