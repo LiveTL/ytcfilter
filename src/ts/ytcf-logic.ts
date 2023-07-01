@@ -518,9 +518,9 @@ export const saveMessageActions = async (
   const obj: YtcF.MessageDumpInfoItem = {
     continuation: (
       continuation === null ||
-      lastObj.continuation.includes(continuation)
+      lastObj.continuation?.includes(continuation)
         ? lastObj.continuation
-        : [...lastObj.continuation, continuation]
+        : [...(lastObj.continuation as any || []), continuation]
     ),
     info: {
       channel: {
@@ -621,7 +621,7 @@ export const downloadAsTxt = async (item: YtcF.MessageDumpInfoItem): Promise<voi
   a.click();
 };
 
-export const readFromJson = async (): Promise<object> => {
+export const readFromJson = async (): Promise<any> => {
   return await new Promise((resolve) => {
     const element = document.createElement('input');
     element.type = 'file';

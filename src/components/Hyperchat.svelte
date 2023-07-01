@@ -59,7 +59,7 @@
 
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, readFromJson, redirectIfInitialSetup } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, readFromJson, redirectIfInitialSetup, saveMessageDumpInfo } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
   import FullFrame from './FullFrame.svelte';
@@ -444,10 +444,23 @@
   const importJsonDump = async () => {
     const obj = await readFromJson();
     if (obj) {
-      newMessages({
-        type: 'messages',
-        messages: (obj as any).actions
-      }, false, true);
+      console.log(obj);
+      const item = obj[0];
+      // newMessages({
+      //   type: 'messages',
+      //   messages: (obj as any).actions
+      // }, false, true);
+      const itemClone = JSON.parse(JSON.stringify(item));
+      delete itemClone.actions;
+      await saveMessageDumpInfo(item.key, itemClone);
+      await saveMessageActions(
+        item.key,
+        item.continuation,
+        item.info,
+        item.actions,
+        item.presetId
+      );
+      loadArchive(item.key);
     }
   };
 
@@ -552,7 +565,7 @@
   const exportJsonDump = async () => {
     downloadAsJson(await getSavedMessageDumpInfo(key));
   };
-  $: showWelcome = initialized && (messageActions.length === 0 && !overrideActions.length);
+  $: showWelcome = initialized && (messageActions.length === 0 && !paramsArchiveKey);
 
   const clearMessages = () => {
     $confirmDialog = {
@@ -579,10 +592,12 @@
       }, false, true);
     }
     key = tempKey;
-    const cachedPreset = (await getSavedMessageDumpInfo(key))?.presetId;
+    const info = await getSavedMessageDumpInfo(key);
+    const cachedPreset = info?.presetId;
     if (!$overrideFilterPresetId && cachedPreset) {
       $overrideFilterPresetId = cachedPreset;
     }
+    if (paramsArchiveKey && info?.info) $videoInfo = info?.info;
   };
   $: if (initialized) {
     initMessageStorage();
@@ -698,11 +713,16 @@
         <option value="textfile">TXT</option>
         <option value="jsondump">JSON</option>
       </select>
-      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">Clear</button>
-      {#if isPopout}
+      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">
+        Clear
+        <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
+          close
+        </div>
+      </button>
+      {#if isPopout || paramsArchiveKey}
         <button use:exioButton on:click={openSettings} class="inline-flex gap-1 items-center">
           Settings
-          <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
+          <div use:exioIcon class="inline-block" style="color: inherit;">
             settings
           </div>
         </button>
@@ -796,6 +816,7 @@
   .top-button-wrapper button, .top-button-wrapper select {
     cursor: default;
     padding: 2px 5px;
+    background-color: white;
   }
   :global(.mode-dark) .top-button-wrapper button, :global(.mode-dark) .top-button-wrapper select {
     background-color: #0f0f0f;

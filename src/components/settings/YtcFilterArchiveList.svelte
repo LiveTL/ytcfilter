@@ -1,7 +1,7 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { inputDialog, confirmDialog, exportMode, port } from '../../ts/storage';
+  import { inputDialog, confirmDialog, exportMode, port, dataTheme } from '../../ts/storage';
   import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser, isLiveTL } from '../../ts/chat-constants';
   import '../../stylesheets/line.css';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';
@@ -178,6 +178,7 @@
   const viewArchiveEntry = (item: YtcF.MessageDumpInfoItem) => {
     const paramsClone = new URLSearchParams();
     paramsClone.set('archiveKey', item.key);
+    paramsClone.set('ytDark', $dataTheme === 'dark' ? 'true' : 'false');
     return () => {
       archiveEntryUrl = (chrome.runtime.getURL(
         (isLiveTL ? 'hyperchat/hyperchat.html' : 'hyperchat.html') + '?' + paramsClone.toString()
