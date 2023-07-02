@@ -413,14 +413,18 @@ export const migrateV2toV3 = async (
         [keyGen(archive.key, 'actions')]: actions
       });
     }));
-    browserObject.storage.local.set({
-      [YTCF_MESSAGEDUMPINFOS_KEY]: messageDumpInfosData
+    // browserObject.storage.local.set({
+    //   [YTCF_MESSAGEDUMPINFOS_KEY]: messageDumpInfosData
+    // });
+    Object.keys(messageDumpInfosData).forEach(key => {
+      browserObject.storage.local.set({
+        [keyGen(key, 'info')]: messageDumpInfosData[key]
+      });
     });
   }
   await showProfileIcons.set(false);
   await showTimestamps.set(true);
   await currentStorageVersion.set('v3');
-  await initialSetupDone.set(true);
 };
 
 export const getSavedMessageDump = async (
@@ -529,7 +533,8 @@ export const saveMessageActions = async (
         handle: info?.channel?.handle ?? lastObj.info?.channel?.handle ?? ''
       },
       video: {
-        videoId: info?.video.videoId ?? lastObj.info?.video.videoId ?? '',
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
+        videoId: info?.video.videoId || lastObj.info?.video.videoId || '',
         title: info?.video.title ?? lastObj.info?.video.title ?? ''
       }
     },
@@ -688,4 +693,26 @@ export const importSettingsFromJson = async (data: any): Promise<void> => {
     return;
   }
   await browserObject.storage.local.set(data);
+};
+
+export const importJsonDump = async (): Promise<string | undefined> => {
+  const obj = await readFromJson();
+  if (obj) {
+    const item = obj[0];
+    // newMessages({
+    //   type: 'messages',
+    //   messages: (obj as any).actions
+    // }, false, true);
+    const itemClone = JSON.parse(JSON.stringify(item));
+    delete itemClone.actions;
+    await saveMessageDumpInfo(item.key, itemClone);
+    await saveMessageActions(
+      item.key,
+      item.continuation,
+      item.info,
+      item.actions,
+      item.presetId
+    );
+    return item.key;
+  }
 };

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Theme } from '../../ts/chat-constants';
-  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground } from '../../ts/storage';
+  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground, initialSetupDone } from '../../ts/storage';
   import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
   import { forceReloadAll } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
@@ -13,6 +13,7 @@
     try {
       loading = 'Importing Data...';
       await importSettingsFromJson(data);
+      $initialSetupDone = true;
       loading = false;
     } catch (e) {
       loading = false;
@@ -90,30 +91,30 @@
     <label for="show-user-badges">Show User Badges</label>
   </div>
 </div>
-<div class="settings-title big-text">Background Activity</div>
+<!-- <div class="settings-title big-text">Background Activity</div> -->
+<div class="settings-title big-text">Storage & Background Activity</div>
 <div class="settings-content">
   <div class="setting-item" style="margin-top: 0px;">
+    <span>Storage Data: </span>
+    <button use:exioButton on:click={async () => {
+      exportSettingsAsJson();
+    }}>
+      Export as JSON
+      <span use:exioIcon style="vertical-align: -2px;">download</span>
+    </button>
+    <button use:exioButton on:click={importData}>
+      Import and Merge
+      <span use:exioIcon style="vertical-align: -2px;">upload</span>
+    </button>
+    <button use:exioButton class="red-bg" on:click={resetData}>
+      Reset All
+      <span use:exioIcon style="vertical-align: -2px;">restart_alt</span>
+    </button>
+  </div>
+  <div class="setting-item" style="margin-bottom: 5px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
     <label for="silently-filter">Begin filtering messages in the background immediately on load</label>
   </div>
-</div>
-<div class="settings-title big-text">Advanced</div>
-<div class="settings-content">
-  <span>Storage Data: </span>
-  <button use:exioButton on:click={async () => {
-    exportSettingsAsJson();
-  }}>
-    Export
-    <span use:exioIcon style="vertical-align: -2px;">download</span>
-  </button>
-  <button use:exioButton on:click={importData}>
-    Import
-    <span use:exioIcon style="vertical-align: -2px;">upload</span>
-  </button>
-  <button use:exioButton class="red-bg" on:click={resetData}>
-    Reset
-    <span use:exioIcon style="vertical-align: -2px;">restart_alt</span>
-  </button>
 </div>
 
 <style>

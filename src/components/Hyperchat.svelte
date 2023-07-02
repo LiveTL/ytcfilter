@@ -55,11 +55,14 @@
     overrideFilterPresetId,
     ytDark,
 
-    confirmDialog
+    confirmDialog,
+
+    initialSetupDone
+
 
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, readFromJson, redirectIfInitialSetup, saveMessageDumpInfo } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
   import FullFrame from './FullFrame.svelte';
@@ -441,37 +444,16 @@
     el.value = 'export';
   };
 
-  const importJsonDump = async () => {
-    const obj = await readFromJson();
-    if (obj) {
-      console.log(obj);
-      const item = obj[0];
-      // newMessages({
-      //   type: 'messages',
-      //   messages: (obj as any).actions
-      // }, false, true);
-      const itemClone = JSON.parse(JSON.stringify(item));
-      delete itemClone.actions;
-      await saveMessageDumpInfo(item.key, itemClone);
-      await saveMessageActions(
-        item.key,
-        item.continuation,
-        item.info,
-        item.actions,
-        item.presetId
-      );
-      loadArchive(item.key);
-    }
-  };
-
   let archiveEmbedFrame = '';
 
-  const executeImport = (e: any) => {
+  const executeImport = async (e: any) => {
     const el = (e.target as HTMLSelectElement);
     switch (el.value) {
-      case 'jsondump':
-        importJsonDump();
+      case 'jsondump': {
+        const key = await importJsonDump();
+        if (key) loadArchive(key);
         break;
+      }
       case 'savedarchive': {
         const paramsClone = new URLSearchParams(params.toString());
         paramsClone.set('isArchiveLoadSelection', 'true');
@@ -602,7 +584,7 @@
   $: if (initialized) {
     initMessageStorage();
   }
-  $: if (key) {
+  $: if (key && $initialSetupDone) {
     saveMessageActions(
       key,
       paramsContinuation,
@@ -713,13 +695,13 @@
         <option value="textfile">TXT</option>
         <option value="jsondump">JSON</option>
       </select>
-      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap">
+      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap" disabled={showWelcome}>
         Clear
         <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
           close
         </div>
       </button>
-      {#if isPopout || paramsArchiveKey}
+      {#if isPopout}
         <button use:exioButton on:click={openSettings} class="inline-flex gap-1 items-center">
           Settings
           <div use:exioIcon class="inline-block" style="color: inherit;">

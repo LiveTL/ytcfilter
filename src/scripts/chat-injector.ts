@@ -5,6 +5,7 @@ import {
   // hcEnabled,
   autoLiveChat,
   filterInBackground
+  , initialSetupDone
 } from '../ts/storage';
 import {
   initInterceptor,
@@ -180,6 +181,10 @@ const chatLoaded = async (): Promise<void> => {
   settingsButton.addEventListener('click', () => {
     createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
   });
+
+  if (!(await initialSetupDone.get())) {
+    clickListener();
+  }
 
   return;
 

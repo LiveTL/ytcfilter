@@ -5,7 +5,7 @@
   import '../stylesheets/line.css';
   import { exioButton, exioComponent, exioIcon, exioZoomInAnimation } from 'exio/svelte';
   import { getBrowser, Browser } from '../ts/chat-constants';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import ExioRadios from './common/ExioRadios.svelte';
   import { downloadV2Data, getV2Storage, migrateV2toV3, readFromJson } from '../ts/ytcf-logic';
   import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';
@@ -65,10 +65,13 @@
   const startImport = async () => {
     if (value === 'scratch') {
       $currentStorageVersion = 'v3';
+      currentPanel = 'done';
       $initialSetupDone = true;
     } else if (value.startsWith('migrate')) {
       loading = true;
       await migrateV2toV3({ presetsAndFilters: value.includes('filters'), archives: value.includes('archives') });
+      currentPanel = 'done';
+      $initialSetupDone = true;
       loading = false;
     } else if (value === 'paste-json') {
       loading = true;
@@ -86,6 +89,8 @@
             try {
               const json = JSON.parse(values[0]);
               await migrateV2toV3({ presetsAndFilters: true, archives: true }, json);
+              currentPanel = 'done';
+              $initialSetupDone = true;
             } catch (e) {
               console.error(e);
               cancelled(e as any);
@@ -99,6 +104,8 @@
       loading = true;
       try {
         await migrateV2toV3({ presetsAndFilters: true, archives: true }, await readFromJson());
+        currentPanel = 'done';
+        $initialSetupDone = true;
       } catch (e) {
         console.error(e);
         cancelled(e as any);
@@ -106,8 +113,8 @@
       loading = false;
     }
   };
-  $: if ($initialSetupDone) currentPanel = 'done';
   const returnToYtcF = () => (window.location.href = referrer || window.location.href);
+  $: if ($initialSetupDone && currentPanel !== 'done') returnToYtcF();
 </script>
 
 <YtcFilterInputDialog />
