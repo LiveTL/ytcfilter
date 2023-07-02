@@ -2,7 +2,6 @@
   import Message from './Message.svelte';
   import isDarkColor from 'is-dark-color';
   import { Theme } from '../ts/chat-constants';
-  import { showProfileIcons } from '../ts/storage';
 
   export let message: Ytc.ParsedMessage;
 

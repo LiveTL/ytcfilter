@@ -632,7 +632,7 @@ export const readFromJson = async (): Promise<any> => {
     element.type = 'file';
     element.accept = '.json';
     element.style.display = 'none';
-    element.addEventListener('blur', (e) => {
+    element.addEventListener('change', (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         const reader = new FileReader();
