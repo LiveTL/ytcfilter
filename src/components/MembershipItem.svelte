@@ -16,11 +16,12 @@
   $: isMilestoneChat = message.message.length > 0;
 
   $: primaryText = (membership || membershipGift)?.headerPrimaryText;
+  const backgroundColor = `background-color: #${membershipBackground}`;
 </script>
 
 {#if membership || membershipGift}
-  <div class={classes} style="background-color: #{membershipBackground};">
-    <div
+  <div class={classes}>
+    <!-- <div
       class="p-2"
       style="{isMilestoneChat ? `background-color: #${milestoneChatBackground};` : ''}"
     >
@@ -55,6 +56,29 @@
       <div class="p-2">
         <Message message={message} hideName />
       </div>
-    {/if}
+    {/if} -->
+    <Message message={message}>
+      <span class="{classes} chip" style={backgroundColor} slot="chip">
+        <span class="p-1">
+          <span class="underline font-bold">
+            {#if primaryText && primaryText.length > 0}
+              <MessageRun
+                class="font-medium"
+                runs={primaryText}
+              />
+            {/if}
+          </span>
+        </span>
+      </span>
+    </Message>
   </div>
 {/if}
+
+<style>
+  .chip {
+    display: inline-block;
+    width: fit-content;
+    vertical-align: middle;
+  }
+</style>
+
