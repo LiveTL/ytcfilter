@@ -19,6 +19,7 @@
   const referrer = params.get('referrer');
   let value = 'migrate-filters-and-archives';
   let loading = false;
+  let showBack = false;
   onMount(async () => {
     if (paramsTabId != null && paramsFrameId != null && paramsTabId.length >= 1 && paramsFrameId.length >= 1) {
       if (getBrowser() === Browser.FIREFOX) {
@@ -103,7 +104,10 @@
     } else if (value === 'upload-json') {
       loading = true;
       try {
-        await migrateV2toV3({ presetsAndFilters: true, archives: true }, await readFromJson());
+        showBack = true;
+        const data = await readFromJson();
+        showBack = false;
+        await migrateV2toV3({ presetsAndFilters: true, archives: true }, data);
         currentPanel = 'done';
         $initialSetupDone = true;
       } catch (e) {
@@ -115,6 +119,13 @@
   };
   const returnToYtcF = () => (window.location.href = referrer || window.location.href);
   $: if ($initialSetupDone && currentPanel !== 'done') returnToYtcF();
+  const cancel = () => {
+    $inputDialog = null;
+    $errorDialog = null;
+    currentPanel = 'migrate';
+    showBack = false;
+    loading = false;
+  };
 </script>
 
 <YtcFilterInputDialog />
@@ -127,7 +138,15 @@
 >
   <div class="flex-parent">
     {#if loading}
-      <LoadingBar />
+      <div style="margin: 10px; width: 100%; text-align: center;">
+        <LoadingBar />
+        {#if showBack}
+          <button use:exioButton style="margin-top: 1rem; font-size: 1rem;" on:click={cancel}>
+            <span use:exioIcon class="shifted-icon">arrow_back</span>
+            Back
+          </button>
+        {/if}
+      </div>
     {:else}
       {#if currentPanel === 'welcome'}
         <div style="text-align: center;" use:exioZoomInAnimation>
