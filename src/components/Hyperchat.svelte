@@ -116,12 +116,14 @@
     return result;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const messageBlockers = [memberOnlyBlocker, emojiSpamBlocker];
 
-  const shouldShowMessage = (m: Chat.MessageAction, forceDisplay = false): boolean => (
-    ((!messageBlockers.some(blocker => blocker(m)) || forceDisplay) && !duplicateKeyBlocker(m))
+  const shouldShowMessage = (m: Chat.MessageAction, _forceDisplay = false): boolean => (
+    // ((!messageBlockers.some(blocker => blocker(m)) || forceDisplay) && )
     // do not flip the order of the conditions above
     // this gives the duplicateKeyBlocker a chance to add the key
+    !duplicateKeyBlocker(m)
   );
 
   const isWelcome = (m: Chat.MessageAction | Welcome): m is Welcome =>
