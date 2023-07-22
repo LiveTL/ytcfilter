@@ -102,7 +102,7 @@ export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [
   activation: 'manual'
 }] as YtcF.FilterPreset[], true);
 export const defaultFilterPresetId = stores.addSyncStore('ytcf.defaultFilterPresetId', INITIAL_PRESET_ID, false);
-export const videoInfo = writable(null as null | SimpleVideoInfo);
+export const videoInfo = writable(undefined as undefined | null | SimpleVideoInfo);
 export const overrideFilterPresetId = writable(null as null | string);
 export const currentFilterPreset = derived(
   [chatFilterPresets, defaultFilterPresetId, overrideFilterPresetId],

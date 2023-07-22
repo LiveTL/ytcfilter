@@ -8,11 +8,7 @@ import { YTCF_MESSAGEDUMPINFOS_KEY } from './chat-constants';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
-export async function shouldFilterMessage(action: Chat.MessageAction): Promise<boolean> {
-  await Promise.all([
-    chatFilterPresets.ready(),
-    defaultFilterPresetId.ready()
-  ]);
+export function shouldFilterMessage(action: Chat.MessageAction): boolean {
   const filters = get(currentFilterPreset).filters;
   const msg = action.message;
   for (const filter of filters) {
@@ -518,7 +514,7 @@ export const getSavedMessageDumpActions = async (
 export const saveMessageActions = async (
   key: string,
   continuation: string | null,
-  info: SimpleVideoInfo | null,
+  info: SimpleVideoInfo | undefined | null,
   actions: Chat.MessageAction[],
   presetId: string
 ): Promise<void> => {
@@ -530,18 +526,7 @@ export const saveMessageActions = async (
         ? lastObj.continuation
         : [...(lastObj.continuation as any || []), continuation]
     ),
-    info: {
-      channel: {
-        channelId: info?.channel?.channelId ?? lastObj.info?.channel?.channelId ?? '',
-        name: info?.channel?.name ?? lastObj.info?.channel?.name ?? '',
-        handle: info?.channel?.handle ?? lastObj.info?.channel?.handle ?? ''
-      },
-      video: {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
-        videoId: info?.video.videoId || lastObj.info?.video.videoId || '',
-        title: info?.video.title ?? lastObj.info?.video.title ?? ''
-      }
-    },
+    info: mergeVideoInfoObjs(lastObj?.info, info),
     key,
     presetId,
     lastEdited: Date.now(),
@@ -557,6 +542,24 @@ export const saveMessageActions = async (
   await browserObject.storage.local.set({
     [keyGen(key, 'actions')]: actions
   });
+};
+
+export const mergeVideoInfoObjs = (
+  lastObj: SimpleVideoInfo | null | undefined,
+  newObj: SimpleVideoInfo | null | undefined
+): SimpleVideoInfo => {
+  return {
+    channel: {
+      channelId: newObj?.channel?.channelId ?? lastObj?.channel?.channelId ?? '',
+      name: newObj?.channel?.name ?? lastObj?.channel?.name ?? '',
+      handle: newObj?.channel?.handle ?? lastObj?.channel?.handle ?? ''
+    },
+    video: {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
+      videoId: newObj?.video.videoId || lastObj?.video.videoId || '',
+      title: newObj?.video.title ?? lastObj?.video.title ?? ''
+    }
+  };
 };
 
 export const deleteSavedMessageActions = async (key: string): Promise<void> => {

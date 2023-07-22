@@ -54,19 +54,17 @@
     videoInfo,
     overrideFilterPresetId,
     ytDark,
-
     confirmDialog,
-
-    initialSetupDone
-
-
+    initialSetupDone,
+    defaultFilterPresetId
   } from '../ts/storage';
   import { version } from '../manifest.json';
-  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump } from '../ts/ytcf-logic';
+  import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump, mergeVideoInfoObjs } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import '../stylesheets/line.css';
   import FullFrame from './FullFrame.svelte';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
+  import { writable } from 'svelte/store';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -96,7 +94,7 @@
   // let truncateInterval: number;
   const isReplay = paramsIsReplay;
   const smelteDark = dark();
-  let initialized = false;
+  const initialized = writable(false);
 
   type MessageBlocker = (a: Chat.MessageAction) => boolean;
 
@@ -148,11 +146,40 @@
   //   messageActions = messageActions;
   // };
 
+  let isReadyToStartFiltering = false;
+  const readyToStartFiltering = async () => {
+    if (isReadyToStartFiltering) return true;
+    await Promise.all([
+      chatFilterPresets.ready(),
+      defaultFilterPresetId.ready(),
+      new Promise(resolve => {
+        const unsub = initialized.subscribe((v) => {
+          if (v) {
+            unsub();
+            resolve(null);
+          }
+        });
+      }),
+      new Promise(resolve => {
+        const unsub = videoInfo.subscribe((v) => {
+          if (v !== undefined) {
+            unsub();
+            resolve(null);
+          }
+        });
+      })
+    ]);
+    await tick();
+    isReadyToStartFiltering = true;
+    await tick();
+    return true;
+  };
+
   const applyYtcf = async (items: Chat.MessageAction[], forceDisplay = false) => {
     const newItems = [];
     for (const a of items) {
       if (
-        (forceDisplay || await shouldFilterMessage(a)) &&
+        (forceDisplay || (await readyToStartFiltering() && shouldFilterMessage(a))) &&
         shouldShowMessage(a, forceDisplay)
       ) {
         newItems.push(a);
@@ -291,8 +318,8 @@
           onChatAction(action, true);
         });
         $selfChannel = response.selfChannel;
-        $videoInfo = response.videoInfo;
-        initialized = true;
+        $videoInfo = mergeVideoInfoObjs($videoInfo, response.videoInfo);
+        $initialized = true;
         break;
       case 'themeUpdate':
         $ytDark = response.dark;
@@ -339,7 +366,7 @@
 
     if (paramsTabId == null || paramsFrameId == null || paramsTabId.length < 1 || paramsFrameId.length < 1) {
       console.error('No tabId or frameId found from params');
-      if (paramsArchiveKey) initialized = true;
+      if (paramsArchiveKey) $initialized = true;
       return;
     }
 
@@ -549,7 +576,7 @@
   const exportJsonDump = async () => {
     downloadAsJson(await getSavedMessageDumpInfo(key));
   };
-  $: showWelcome = initialized && (messageActions.length === 0 && !paramsArchiveKey);
+  $: showWelcome = $initialized && (messageActions.length === 0 && !paramsArchiveKey);
 
   const clearMessages = () => {
     $confirmDialog = {
@@ -581,9 +608,9 @@
     if (!$overrideFilterPresetId && cachedPreset) {
       $overrideFilterPresetId = cachedPreset;
     }
-    if (paramsArchiveKey && info?.info) $videoInfo = info?.info;
+    if (paramsArchiveKey && info?.info) $videoInfo = mergeVideoInfoObjs(info?.info, $videoInfo);
   };
-  $: if (initialized) {
+  $: if ($initialized) {
     initMessageStorage();
   }
   $: if (key && $initialSetupDone) {
@@ -636,7 +663,7 @@
     messageKeys.delete(obj.detail);
   };
 
-  $: if (initialized && $videoInfo !== null) {
+  $: if ($initialized && $videoInfo) {
     overwriteOverride();
   }
   let topBarHeight = 0;
