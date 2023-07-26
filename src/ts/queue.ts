@@ -162,7 +162,7 @@ export function ytcQueue(isReplay = false): YtcQueue {
 
     if (isReplay && diff < -1) {
       console.log('Video scrubbed backwards, forcing chat clear');
-      messageQueue.clear();
+      // messageQueue.clear(); // YTCF
       latestAction.set({ type: 'forceUpdate', messages: [] });
     } else {
       pushTillCurrentToStore(timeMs);
@@ -215,7 +215,7 @@ export function ytcQueue(isReplay = false): YtcQueue {
 
     if (chunk.refresh) {
       console.log('Chunk refresh detected.');
-      messageQueue.clear();
+      // messageQueue.clear(); // YTCF
     }
 
     const messageActions =
