@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "YtcFilter",
-  "homepage_url": "https://livetl.app/en/ytcfilter/",
-  "description": "YouTube Chat Filter",
+  "name": "HyperChat [Improved YouTube Chat]",
+  "homepage_url": "https://livetl.app/en/hyperchat/",
+  "description": "Improved YouTube chat with CPU/RAM optimizations, customization options, and cutting-edge features!",
   "version": "3.0.0",
   "permissions": [
     "storage"
@@ -23,6 +23,16 @@
         "scripts/chat-injector.ts"
       ],
       "css": ["stylesheets/titlebar.css"],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&*"
+      ],
+      "js": [
+        "scripts/chat-mounter.ts"
+      ],
+      "css": ["stylesheets/scrollbar.css", "stylesheets/page404.css"],
       "all_frames": true
     }
   ],

@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../stylesheets/scrollbar.css';
   import '../stylesheets/ui.css';
-  import { onDestroy, afterUpdate, tick, onMount } from 'svelte';
+  import { onDestroy, onMount, afterUpdate, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import dark from 'smelte/src/dark';
   import WelcomeMessage from './YtcFilterWelcome.svelte';
@@ -302,9 +302,7 @@
     const paramsClone = new URLSearchParams(params.toString());
     paramsClone.set('archiveKey', key);
     paramsClone.set('ytDark', $ytDark.toString());
-    archiveEmbedFrame = (chrome.runtime.getURL(
-      (isLiveTL ? 'hyperchat/hyperchat.html' : 'hyperchat.html') + '?' + paramsClone.toString()
-    ));
+    archiveEmbedFrame = `https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&${paramsClone.toString()}`;
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -360,6 +358,7 @@
   };
 
   // Doesn't work well with onMount, so onLoad will have to do
+  // Update: use onMount because hc now mounts in content script
   const onLoad = () => {
     $lastOpenedVersion = version;
     document.body.classList.add('overflow-hidden');
@@ -370,17 +369,12 @@
       return;
     }
 
-    // ff doesn't support extension to content script raw messaging yet
-    if (getBrowser() === Browser.FIREFOX) {
-      const frameInfo = {
-        tabId: parseInt(paramsTabId),
-        frameId: parseInt(paramsFrameId)
-      };
+    const frameInfo = {
+      tabId: parseInt(paramsTabId),
+      frameId: parseInt(paramsFrameId)
+    };
 
-      $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
-    } else {
-      $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
-    }
+    $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
 
     $port?.onMessage.addListener(onPortMessage);
 
@@ -392,6 +386,8 @@
       type: 'getTheme'
     });
   };
+
+  onMount(onLoad);
 
   const onRefresh = () => {
     if (isAtBottom) {
@@ -418,7 +414,7 @@
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
   );
 
-  const containerClass = 'h-screen w-screen text-black dark:text-white bg-ytbg-light dark:bg-ytbg-dark flex flex-col justify-between max-w-none';
+  const containerClass = 'h-screen w-screen text-black dark:text-white bg-white bg-ytbg-light dark:bg-ytbg-dark flex flex-col justify-between max-w-none';
 
   const isSuperchat = (action: Chat.MessageAction) => (action.message.superChat || action.message.superSticker);
   const isMembership = (action: Chat.MessageAction) => (action.message.membership || action.message.membershipGiftPurchase);

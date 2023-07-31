@@ -25,13 +25,15 @@
   $: if (!paid) {
     console.error('Not a paid message', { message });
   }
+  const darkEval = () => {
+    if (!('superChat' in message)) return undefined;
+    return isDarkColor(`#${message.superChat?.headerTextColor}`) ? Theme.LIGHT : Theme.DARK;
+  };
 </script>
 
 {#if paid}
   <div>
-    <Message message={message} forceTLColor={
-      isDarkColor(`#${message.superChat?.headerTextColor}`) ? Theme.LIGHT : Theme.DARK
-    }>
+    <Message message={message} forceTLColor={darkEval()}>
       <span class="{classes} chip" style={backgroundColor + textColor} slot="chip">
         <span class="p-1" style={headerStyle}>
           <span class="underline font-bold">{amount}</span>

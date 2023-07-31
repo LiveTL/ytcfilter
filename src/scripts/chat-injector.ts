@@ -43,7 +43,7 @@ const chatLoaded = async (): Promise<void> => {
   });
 
   // Init and inject interceptor
-  initInterceptor('ytc', ytcfg, frameIsReplay);
+  initInterceptor('ytc', ytcfg, frameIsReplay());
   window.addEventListener('messageReceive', (d) => {
     processMessageChunk((d as CustomEvent).detail);
   });
@@ -130,11 +130,9 @@ const chatLoaded = async (): Promise<void> => {
   params.set('tabid', frameInfo.tabId.toString());
   params.set('frameid', frameInfo.frameId.toString());
   params.set('continuation', new URLSearchParams(window.location.search).get('continuation') ?? '');
-  if (frameIsReplay) params.set('isReplay', 'true');
-  const source = chrome.runtime.getURL(
-    (isLiveTL ? 'hyperchat/index.html' : 'hyperchat.html') +
-    `?${params.toString()}`
-  );
+  if (frameIsReplay()) params.set('isReplay', 'true');
+  // inject into an empty 404 page
+  const source = `https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&${params.toString()}`;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const ytcfilterElement = document.querySelector('.ytcf-iframe') as HTMLDivElement | null;
   if (!ytcfilterElement) {

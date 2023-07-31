@@ -180,9 +180,7 @@
     paramsClone.set('archiveKey', item.key);
     paramsClone.set('ytDark', $dataTheme === 'dark' ? 'true' : 'false');
     return () => {
-      archiveEntryUrl = (chrome.runtime.getURL(
-        (isLiveTL ? 'hyperchat/hyperchat.html' : 'hyperchat.html') + '?' + paramsClone.toString()
-      ));
+      archiveEntryUrl = `https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&${paramsClone.toString()}}`;
     };
   };
   const closeFunc = () => {

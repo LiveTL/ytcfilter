@@ -20,9 +20,15 @@ export function getRandomString(len = 10): string {
   return randomString.join('');
 }
 
-export const frameIsReplay = window.location.href.startsWith(
-  `${(location.protocol + '//' + location.host)}/live_chat_replay`
-);
+export const frameIsReplay = (): boolean => {
+  try {
+    return window.location.href.startsWith(
+      `${(location.protocol + '//' + location.host)}/live_chat_replay`
+    );
+  } catch (e) {
+    return false;
+  }
+};
 
 /*
  * Type predicates
