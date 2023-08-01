@@ -9,6 +9,7 @@
   import { onDestroy, onMount, tick } from 'svelte';
   import { UNDONE_MSG } from '../../ts/chat-constants';
   import YtcFilterFilter from './YtcFilterFilter.svelte';
+  import YtcFilterTriggers from './YtcFilterTriggers.svelte';
 
   const getLastFilterItem = (id: string) => {
     return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
@@ -294,7 +295,7 @@
         </span>
       </button>
       <button on:click={async () => {
-        const { default: component } = await import('./YtcFilterTriggers.svelte');
+        const component = YtcFilterTriggers;
         const beforeEdit = JSON.parse(JSON.stringify($currentEditingPreset));
         $inputDialog = {
           title: `Edit "${$currentEditingPreset.nickname}" Triggers`,

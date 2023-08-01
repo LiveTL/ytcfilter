@@ -16,16 +16,13 @@
     // paramsTabId,
     // paramsFrameId,
     // paramsIsReplay,
-    getBrowser,
-    Browser,
     Theme,
     YoutubeEmojiRenderMode,
     chatUserActionsItems,
     isLiveTL,
-
     UNDONE_MSG
-
   } from '../ts/chat-constants';
+  import '../ts/resize-tracker';
   import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
@@ -65,6 +62,7 @@
   import FullFrame from './FullFrame.svelte';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
   import { writable } from 'svelte/store';
+  import html2canvas from 'html2canvas';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
   type Welcome = typeof welcome;
@@ -497,7 +495,6 @@
   let screenshotElement: HTMLDivElement | undefined;
   let hiddenElement: HTMLDivElement | undefined;
   const exportScreenshot = async () => {
-    const { default: html2canvas } = await import('html2canvas');
     const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
     clonedNode.id = 'screenshot-element';
     hiddenElement?.appendChild(clonedNode);
@@ -623,7 +620,6 @@
     await redirectIfInitialSetup();
     try {
       if (window.parent === window) {
-        import('../ts/resize-tracker');
         isPopout = true;
       } else {
         isAtBottom = window.innerHeight === 0;
