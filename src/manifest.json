@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "HyperChat [Improved YouTube Chat]",
-  "homepage_url": "https://livetl.app/en/hyperchat/",
-  "description": "Improved YouTube chat with CPU/RAM optimizations, customization options, and cutting-edge features!",
-  "version": "3.0.0",
+  "name": "YtcFilter",
+  "homepage_url": "https://livetl.app/en/ytcfilter/",
+  "description": "YouTube Chat Filter",
+  "version": "0.3.0",
   "permissions": [
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "icons": {
     "48": "assets/logo-48.png",
@@ -57,12 +58,5 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true
-  },
-  "{{chrome}}.incognito": "split",
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{51076d9a-d4c2-11ed-af84-706655572bfb}",
-      "strict_min_version": "42.0"
-    }
   }
 }
