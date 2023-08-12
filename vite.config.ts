@@ -23,7 +23,7 @@ export default defineConfig({
       },
       assets: 'assets',
       watchFilePaths: [
-        path.resolve(__dirname, 'src/ytcf-manifest.json')
+        path.resolve(__dirname, 'src/manifest.json')
       ],
       additionalInputs: [
         'hyperchat.html',
