@@ -5,7 +5,7 @@ import {
   isMembershipGiftPurchaseRenderer
 } from './chat-utils';
 
-const currentDomain = location.protocol.includes('youtube') ? (location.protocol + '//' + location.host) : 'https://www.youtube.com';
+const currentDomain = location.host.includes('youtube') ? (location.protocol + '//' + location.host) : 'https://www.youtube.com';
 
 // Source: https://stackoverflow.com/a/64396666
 const standardEmoji =

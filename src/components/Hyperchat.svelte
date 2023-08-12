@@ -495,10 +495,16 @@
   let screenshotElement: HTMLDivElement | undefined;
   let hiddenElement: HTMLDivElement | undefined;
   const exportScreenshot = async () => {
+    console.log('THEME IS ', $dataTheme);
     const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
     clonedNode.id = 'screenshot-element';
     hiddenElement?.appendChild(clonedNode);
-    const style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
+    let style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'shift-screenshot';
+      document.head.appendChild(style);
+    }
     const bottomNode = document.createElement('div');
     clonedNode.appendChild(bottomNode);
     bottomNode.id = 'screenshot-bottom';

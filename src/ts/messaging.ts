@@ -3,7 +3,7 @@ import { ytcQueue } from './queue';
 import sha1 from 'sha-1';
 import { chatReportUserOptions, ChatUserActions, ChatReportUserOptions } from '../ts/chat-constants';
 
-const currentDomain = location.protocol.includes('youtube') ? (location.protocol + '//' + location.host) : 'https://www.youtube.com';
+const currentDomain = location.host.includes('youtube') ? (location.protocol + '//' + location.host) : 'https://www.youtube.com';
 
 let interceptor: Chat.Interceptor = { clients: [] };
 
