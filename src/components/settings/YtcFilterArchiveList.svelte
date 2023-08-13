@@ -146,11 +146,11 @@
       } else {
         $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
       }
-      $port?.postMessage({
-        type: 'loadArchiveRequest',
-        key: entry.key
-      });
-      window.close();
+      // $port?.postMessage({
+      //   type: 'loadArchiveRequest',
+      //   key: entry.key
+      // });
+      // window.close();
     }
   };
 
@@ -180,7 +180,7 @@
     paramsClone.set('archiveKey', item.key);
     paramsClone.set('ytDark', $dataTheme === 'dark' ? 'true' : 'false');
     return () => {
-      archiveEntryUrl = `https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&${paramsClone.toString()}}`;
+      archiveEntryUrl = `/hyperchat.html?${paramsClone.toString()}}`;
     };
   };
   const closeFunc = () => {

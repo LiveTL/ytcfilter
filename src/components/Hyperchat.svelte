@@ -208,12 +208,14 @@
   $: if (!isAtBottom) setOverride();
 
   const onBonk = (bonk: Ytc.ParsedBonk) => {
-    messageActions.forEach((action) => {
+    const f = (action: typeof messageActions[number]) => {
       if (isWelcome(action)) return;
       if (action.message.author.id === bonk.authorId) {
         action.deleted = { replace: bonk.replacedMessage };
       }
-    });
+    };
+    messageActions.forEach(f);
+    overrideActions.forEach(f);
   };
 
   const filterTickers = (items: Chat.MessageAction[]): Chat.MessageAction[] => {
@@ -236,14 +238,16 @@
   };
 
   const onDelete = (deletion: Ytc.ParsedDeleted) => {
-    messageActions.some((action) => {
+    const f = (action: typeof messageActions[number]) => {
       if (isWelcome(action)) return false;
       if (action.message.messageId === deletion.messageId) {
         action.deleted = { replace: deletion.replacedMessage };
         return true;
       }
       return false;
-    });
+    };
+    messageActions.some(f);
+    overrideActions.some(f);
   };
 
   const onChatAction = (action: Chat.Actions, isInitial = false) => {
@@ -300,7 +304,9 @@
     const paramsClone = new URLSearchParams(params.toString());
     paramsClone.set('archiveKey', key);
     paramsClone.set('ytDark', $ytDark.toString());
-    archiveEmbedFrame = `https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&${paramsClone.toString()}`;
+    paramsClone.delete('v');
+    paramsClone.delete('ytcfilter');
+    archiveEmbedFrame = chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/hyperchat.html?${paramsClone.toString()}`);
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -320,9 +326,9 @@
       case 'themeUpdate':
         $ytDark = response.dark;
         break;
-      case 'loadArchiveRequest':
-        if (!paramsArchiveKey) loadArchive(response.key);
-        break;
+      // case 'loadArchiveRequest':
+      //   if (!paramsArchiveKey) loadArchive(response.key);
+      //   break;
       case 'closeArchiveViewRequest':
         archiveEmbedFrame = '';
         break;
@@ -659,6 +665,7 @@
   const deleteMessageClientSide = (obj: CustomEvent) => {
     messageActions = messageActions.filter(item => isWelcome(item) || item.message.messageId !== obj.detail);
     messageKeys.delete(obj.detail);
+    setOverride();
   };
 
   $: if ($initialized && $videoInfo) {
