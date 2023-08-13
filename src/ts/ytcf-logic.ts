@@ -4,7 +4,7 @@ import { stringifyRuns, download } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
-import { YTCF_MESSAGEDUMPINFOS_KEY } from './chat-constants';
+import { YTCF_MESSAGEDUMPINFOS_KEY, isLiveTL } from './chat-constants';
 
 const browserObject = (window.chrome ?? (window as any).browser);
 
@@ -664,7 +664,7 @@ export const redirectIfInitialSetup = async (): Promise<void> => {
     const query = window.location.search;
     const params = new URLSearchParams(query);
     params.set('referrer', window.location.href);
-    window.location.href = `/setup.html?${params.toString()}`;
+    window.location.href = chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/setup.html?${params.toString()}`);
   } else {
     await currentStorageVersion.set('v3');
   }
