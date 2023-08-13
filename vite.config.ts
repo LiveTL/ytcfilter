@@ -43,8 +43,9 @@ export default defineConfig({
     copy({
       targets: [
         { src: 'build/*.css', dest: 'build/stylesheets' },
-        { src: 'build/*.js', dest: 'build/scripts' },
-      ]
+        { src: 'build/*.js', dest: 'build/scripts' }
+      ],
+      concurrency: 1
     }),
     copy({
       hook: 'writeBundle',

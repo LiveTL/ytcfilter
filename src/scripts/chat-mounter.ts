@@ -6,6 +6,12 @@ const mount = (): void => {
 
   document.documentElement.style.cssText = 'background-color: transparent !important;';
   document.body.style.cssText = 'background-color: transparent !important;';
+  document.querySelector('#error-page')?.remove();
+  document.querySelectorAll('style').forEach((style) => {
+    if (!style.id.includes('svelte')) {
+      style.remove();
+    }
+  });
 
   const font = document.createElement('link');
   font.href = (
