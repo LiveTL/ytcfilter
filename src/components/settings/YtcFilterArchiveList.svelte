@@ -2,7 +2,7 @@
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
   import { inputDialog, confirmDialog, exportMode, port, dataTheme } from '../../ts/storage';
-  import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser, isLiveTL } from '../../ts/chat-constants';
+  import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
   import '../../stylesheets/line.css';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';
   import FullFrame from '../FullFrame.svelte';
@@ -146,11 +146,11 @@
       } else {
         $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
       }
-      // $port?.postMessage({
-      //   type: 'loadArchiveRequest',
-      //   key: entry.key
-      // });
-      // window.close();
+      $port?.postMessage({
+        type: 'loadArchiveRequest',
+        key: entry.key
+      });
+      window.close();
     }
   };
 
@@ -180,7 +180,7 @@
     paramsClone.set('archiveKey', item.key);
     paramsClone.set('ytDark', $dataTheme === 'dark' ? 'true' : 'false');
     return () => {
-      archiveEntryUrl = `/hyperchat.html?${paramsClone.toString()}}`;
+      archiveEntryUrl = `/hyperchat.html?${paramsClone.toString()}`;
     };
   };
   const closeFunc = () => {

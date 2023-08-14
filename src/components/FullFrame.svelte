@@ -4,10 +4,10 @@
   export let src: string;
   export let closeFunc: any = null;
   onMount(() => {
-    if (closeFunc) (window as any).closeFunc = closeFunc;
+    if (closeFunc) window.addEventListener('closeArchiveViewRequest', closeFunc);
   });
   onDestroy(() => {
-    if (closeFunc) (window as any).closeFunc = null;
+    if (closeFunc) window.removeEventListener('closeArchiveViewRequest', closeFunc);
   });
 </script>
 

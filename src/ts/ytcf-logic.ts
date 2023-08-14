@@ -534,6 +534,7 @@ export const saveMessageActions = async (
     nickname: lastObj.nickname || '',
     size: actions.length
   };
+  console.log(obj);
   await saveMessageDumpInfo(key, obj);
   // const actionsStore = stores.addSyncStore(keyGen(key, 'actions'), actions, false);
   // await actionsStore.ready();

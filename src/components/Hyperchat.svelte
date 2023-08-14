@@ -93,6 +93,7 @@
   const isReplay = paramsIsReplay;
   const smelteDark = dark();
   const initialized = writable(false);
+  let messageStorageInitDone = false;
 
   type MessageBlocker = (a: Chat.MessageAction) => boolean;
 
@@ -258,9 +259,15 @@
         break;
       case 'bonk':
         onBonk(action.bonk);
+        if (overrideActions.length > 0) {
+          setOverride();
+        }
         break;
       case 'delete':
         onDelete(action.deletion);
+        if (overrideActions.length > 0) {
+          setOverride();
+        }
         break;
       case 'pin':
         pinned = action;
@@ -301,12 +308,12 @@
     if (!key) return;
     const data = await getSavedMessageDumpActions(key);
     if (!data) return;
-    const paramsClone = new URLSearchParams(params.toString());
+    const paramsClone = new URLSearchParams();
     paramsClone.set('archiveKey', key);
     paramsClone.set('ytDark', $ytDark.toString());
-    paramsClone.delete('v');
-    paramsClone.delete('ytcfilter');
-    archiveEmbedFrame = chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/hyperchat.html?${paramsClone.toString()}`);
+    archiveEmbedFrame = window.location.host.includes('youtube')
+      ? 'https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&' + paramsClone.toString()
+      : chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/hyperchat.html?${paramsClone.toString()}`);
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -320,15 +327,15 @@
           onChatAction(action, true);
         });
         $selfChannel = response.selfChannel;
-        $videoInfo = mergeVideoInfoObjs($videoInfo, response.videoInfo);
+        if (!paramsArchiveKey) $videoInfo = mergeVideoInfoObjs($videoInfo, response.videoInfo);
         $initialized = true;
         break;
       case 'themeUpdate':
         $ytDark = response.dark;
         break;
-      // case 'loadArchiveRequest':
-      //   if (!paramsArchiveKey) loadArchive(response.key);
-      //   break;
+      case 'loadArchiveRequest':
+        if (!paramsArchiveKey) loadArchive(response.key);
+        break;
       case 'closeArchiveViewRequest':
         archiveEmbedFrame = '';
         break;
@@ -595,6 +602,7 @@
       message: UNDONE_MSG,
       title: 'Clear Messages?'
     };
+    scrollToBottom();
   };
   let key = '';
   const initMessageStorage = async () => {
@@ -614,11 +622,12 @@
       $overrideFilterPresetId = cachedPreset;
     }
     if (paramsArchiveKey && info?.info) $videoInfo = mergeVideoInfoObjs(info?.info, $videoInfo);
+    messageStorageInitDone = true;
   };
   $: if ($initialized) {
     initMessageStorage();
   }
-  $: if (key && $initialSetupDone) {
+  $: if (key && $initialSetupDone && messageStorageInitDone) {
     saveMessageActions(
       key,
       paramsContinuation,
@@ -626,6 +635,12 @@
       messageActions.filter(item => !isWelcome(item)) as Chat.MessageAction[],
       $currentFilterPreset.id
     );
+    console.log(
+      key,
+      paramsContinuation,
+      $videoInfo,
+      messageActions.filter(item => !isWelcome(item)) as Chat.MessageAction[],
+      $currentFilterPreset.id);
   }
   let isPopout = false;
   onMount(async () => {
@@ -675,7 +690,7 @@
 
   const closeArchive = () => {
     if ($port) $port.postMessage({ type: 'closeArchiveViewRequest' });
-    else (window.parent as any).closeFunc();
+    else (window.parent as typeof window).dispatchEvent(new CustomEvent('closeArchiveViewRequest'));
   };
 </script>
 
