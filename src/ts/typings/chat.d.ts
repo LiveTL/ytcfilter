@@ -147,6 +147,7 @@ declare namespace Chat {
 
   interface closeArchiveViewRequest {
     type: 'closeArchiveViewRequest';
+    wrapperWindowId: string;
   }
 
   type BackgroundMessage =

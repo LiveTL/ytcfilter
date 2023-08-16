@@ -23,7 +23,7 @@
     UNDONE_MSG
   } from '../ts/chat-constants';
   import '../ts/resize-tracker';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
+  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString, getFrameInfoAsync } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
     theme,
@@ -74,6 +74,7 @@
   const paramsContinuation = params.get('continuation');
   const paramsArchiveKey = params.get('archiveKey');
   const paramsYtDark = params.get('ytDark');
+  const paramsWrapperWindowId = params.get('wrapperWindowId');
   let embedded = false;
   try {
     embedded = window.self !== window.top;
@@ -305,18 +306,32 @@
 
   const loadArchive = async (key: string) => {
     archiveEmbedFrame = '';
+    wrapperWindowId = '';
     if (!key) return;
     const data = await getSavedMessageDumpActions(key);
     if (!data) return;
     const paramsClone = new URLSearchParams();
     paramsClone.set('archiveKey', key);
     paramsClone.set('ytDark', $ytDark.toString());
+    paramsClone.set('tabid', paramsTabId as string);
+    paramsClone.set('frameid', paramsFrameId as string);
+    wrapperWindowId = getRandomString();
+    paramsClone.set('wrapperWindowId', wrapperWindowId);
     archiveEmbedFrame = window.location.host.includes('youtube')
       ? 'https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&' + paramsClone.toString()
       : chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/hyperchat.html?${paramsClone.toString()}`);
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
+    console.log(response);
+    if (archiveEmbedFrame) {
+      console.log(archiveEmbedFrame);
+      if (response.type === 'closeArchiveViewRequest' && wrapperWindowId === response.wrapperWindowId) {
+        archiveEmbedFrame = '';
+        wrapperWindowId = '';
+      }
+      if (response.type !== 'loadArchiveRequest') return;
+    }
     if (responseIsAction(response)) {
       onChatAction(response);
       return;
@@ -334,13 +349,9 @@
         $ytDark = response.dark;
         break;
       case 'loadArchiveRequest':
-        if (!paramsArchiveKey) loadArchive(response.key);
-        break;
-      case 'closeArchiveViewRequest':
-        archiveEmbedFrame = '';
+        loadArchive(response.key);
         break;
       case 'chatUserActionResponse':
-        if (paramsArchiveKey) break;
         $alertDialog = {
           title: response.success ? 'Success!' : 'Error',
           message: chatUserActionsItems.find(v => v.value === response.action)
@@ -368,6 +379,8 @@
     }
   };
 
+  $: document.title = $videoInfo?.video?.title || 'YtcFilter';
+
   // Doesn't work well with onMount, so onLoad will have to do
   // Update: use onMount because hc now mounts in content script
   const onLoad = () => {
@@ -393,9 +406,12 @@
       type: 'registerClient',
       getInitialData: true
     });
-    $port?.postMessage({
-      type: 'getTheme'
-    });
+    if (paramsArchiveKey) $initialized = true;
+    else {
+      $port?.postMessage({
+        type: 'getTheme'
+      });
+    }
   };
 
   onMount(onLoad);
@@ -481,6 +497,7 @@
   };
 
   let archiveEmbedFrame = '';
+  let wrapperWindowId = '';
 
   const executeImport = async (e: any) => {
     const el = (e.target as HTMLSelectElement);
@@ -493,12 +510,18 @@
       case 'savedarchive': {
         const paramsClone = new URLSearchParams(params.toString());
         paramsClone.set('isArchiveLoadSelection', 'true');
+        if (!embedded) {
+          wrapperWindowId = getRandomString();
+          paramsClone.set('wrapperWindowId', wrapperWindowId);
+        }
         // createPopup
         const url = (chrome.runtime.getURL(
           (isLiveTL ? 'hyperchat/options.html' : 'options.html') + '?' + paramsClone.toString()
         ));
         if (embedded) createPopup(url);
-        else archiveEmbedFrame = url;
+        else {
+          archiveEmbedFrame = url;
+        }
         break;
       }
     }
@@ -689,8 +712,7 @@
   let topBarHeight = 0;
 
   const closeArchive = () => {
-    if ($port) $port.postMessage({ type: 'closeArchiveViewRequest' });
-    else (window.parent as typeof window).dispatchEvent(new CustomEvent('closeArchiveViewRequest'));
+    if ($port) $port.postMessage({ type: 'closeArchiveViewRequest', wrapperWindowId: paramsWrapperWindowId as string });
   };
 </script>
 

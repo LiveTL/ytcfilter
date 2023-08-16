@@ -188,9 +188,9 @@ const sendLoadArchiveRequest = (request: Chat.loadArchiveRequest): void => {
   );
 };
 
-const sendCloseArchiveViewRequest = (): void => {
+const sendCloseArchiveViewRequest = (wrapperWindowId: string): void => {
   interceptor.clients.forEach(
-    (clientPort) => clientPort.postMessage({ type: 'closeArchiveViewRequest' })
+    (clientPort) => clientPort.postMessage({ type: 'closeArchiveViewRequest', wrapperWindowId })
   );
 };
 
@@ -351,7 +351,7 @@ export const initInterceptor = (
           sendLoadArchiveRequest(message);
           break;
         case 'closeArchiveViewRequest':
-          sendCloseArchiveViewRequest();
+          sendCloseArchiveViewRequest(message.wrapperWindowId);
           break;
         case 'executeChatAction':
           executeChatAction(message.message, ytcfg, message.action, message.reportOption).catch(console.error);

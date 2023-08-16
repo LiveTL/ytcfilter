@@ -1,14 +1,6 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
   import { dataTheme } from '../ts/storage';
   export let src: string;
-  export let closeFunc: any = null;
-  onMount(() => {
-    if (closeFunc) window.addEventListener('closeArchiveViewRequest', closeFunc);
-  });
-  onDestroy(() => {
-    if (closeFunc) window.removeEventListener('closeArchiveViewRequest', closeFunc);
-  });
 </script>
 
 <!-- svelte-ignore a11y-missing-attribute -->
