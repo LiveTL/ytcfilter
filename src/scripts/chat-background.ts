@@ -41,6 +41,9 @@ chrome.runtime.onConnect.addListener(hc => {
   // frameId and tabId should be int
   const { frameId, tabId } = JSON.parse(hc.name);
   const interceptorPort = chrome.tabs.connect(tabId, { frameId });
+  hc.onDisconnect.addListener(() => {
+    interceptorPort.disconnect();
+  });
   interceptorPort.onMessage.addListener(msg => {
     hc.postMessage(msg);
   });

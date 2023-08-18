@@ -23,6 +23,16 @@
   onDestroy(() => {
     $confirmDialog = null;
   });
+  let titleElem: HTMLDivElement, messageElem: HTMLParagraphElement, actionElem: HTMLButtonElement;
+  $: if (titleElem) {
+    titleElem.innerText = title;
+  }
+  $: if (messageElem) {
+    messageElem.innerText = message;
+  }
+  $: if (actionElem) {
+    actionElem.innerText = action.text;
+  }
 </script>
 
 <svelte:window 
@@ -41,14 +51,14 @@
   {open}
   style="font-size: 1rem;"
 >
-  <div class="big-text select-none">{title}</div>
-  <p class="select-none" style="margin: revert;">{message}</p>
+  <div class="big-text select-none" bind:this={titleElem}>{title}</div>
+  <p class="select-none" style="margin: revert;" bind:this={messageElem}>{message}</p>
   <div style="display: flex; justify-content: flex-end; gap: 10px;">
     <button on:click={() => ($confirmDialog = null)} use:exioButton>Cancel</button>
     <button on:click={() => {
       action.callback();
       $confirmDialog = null;
-    }} use:exioButton class="red-bg">{action.text}</button>
+    }} use:exioButton class="red-bg" bind:this={actionElem}>{action.text}</button>
   </div>
 </dialog>
 

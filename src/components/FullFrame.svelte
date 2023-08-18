@@ -1,16 +1,27 @@
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte';
   import { dataTheme } from '../ts/storage';
   export let src: string;
+  const postMessageListener = (event: any) => {
+    console.log(event);
+    if (event.data.type === 'archiveViewCloseRequest') {
+      src = '';
+    }
+  };
+  onMount(() => {
+    window.addEventListener('message', postMessageListener);
+  });
+  onDestroy(() => {
+    window.removeEventListener('message', postMessageListener);
+  });
 </script>
 
 <!-- svelte-ignore a11y-missing-attribute -->
-{#if src}
-  <iframe
-    {src}
-    style="background-color: {$dataTheme === 'dark' ? 'black' : 'white'};"
-    class="archive-frame"
-  />
-{/if}
+<iframe
+  {src}
+  style="background-color: {$dataTheme === 'dark' ? 'black' : 'white'}; display: {src ? 'block' : 'none'};"
+  class="archive-frame"
+/>
 
 <style>
   .archive-frame {

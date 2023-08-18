@@ -1,8 +1,8 @@
 <script lang="ts">
   import { deleteSavedMessageActions, downloadAsJson, downloadAsTxt, getAllMessageDumpInfoItems, saveMessageDumpInfo } from '../../ts/ytcf-logic';
   import { exioButton, exioIcon } from 'exio/svelte';
-  import { inputDialog, confirmDialog, exportMode, port, dataTheme } from '../../ts/storage';
-  import { UNNAMED_ARCHIVE, UNDONE_MSG, getBrowser, Browser } from '../../ts/chat-constants';
+  import { inputDialog, confirmDialog, exportMode, dataTheme } from '../../ts/storage';
+  import { UNNAMED_ARCHIVE, UNDONE_MSG } from '../../ts/chat-constants';
   import '../../stylesheets/line.css';
   import ExportSelector from './YtcFilterDownloadSelect.svelte';
   import FullFrame from '../FullFrame.svelte';
@@ -132,26 +132,10 @@
     };
   };
   export const loadArchiveEntry = (entry: YtcF.MessageDumpInfoItem) => async () => {
-    const params = new URLSearchParams(window.location.search);
-    const paramsTabId = params.get('tabid');
-    const paramsFrameId = params.get('frameid');
-    if (paramsTabId != null && paramsFrameId != null && paramsTabId.length >= 1 && paramsFrameId.length >= 1) {
-      if (getBrowser() === Browser.FIREFOX) {
-        const frameInfo = {
-          tabId: parseInt(paramsTabId),
-          frameId: parseInt(paramsFrameId)
-        };
-
-        $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
-      } else {
-        $port = chrome.tabs.connect(parseInt(paramsTabId), { frameId: parseInt(paramsFrameId) });
-      }
-      $port?.postMessage({
-        type: 'loadArchiveRequest',
-        key: entry.key
-      });
-      window.close();
-    }
+    window.parent.postMessage({
+      type: 'loadArchiveRequest',
+      key: entry.key
+    }, '*');
   };
 
   let startIndex = 0;

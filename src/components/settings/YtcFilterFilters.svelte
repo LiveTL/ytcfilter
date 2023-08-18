@@ -98,13 +98,17 @@
     refreshFilters();
   };
   const addCondition = async (filter: YtcF.ChatFilter) => {
-    filter.conditions = [...filter.conditions, {
-      type: 'includes',
-      property: 'message',
-      value: '',
-      invert: false,
-      caseSensitive: false
-    }];
+    const obj = {
+      ...filter,
+      conditions: [...filter.conditions, {
+        type: 'includes',
+        property: 'message',
+        value: '',
+        invert: false,
+        caseSensitive: false
+      }]
+    };
+    unsavedFilters = unsavedFilters.map(x => x.id === filter.id ? obj : x) as YtcF.ChatFilter[];
     refreshFilters();
     setTimeout(() => {
       const item = getLastFilterItem(filter.id);

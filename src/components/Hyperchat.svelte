@@ -74,7 +74,6 @@
   const paramsContinuation = params.get('continuation');
   const paramsArchiveKey = params.get('archiveKey');
   const paramsYtDark = params.get('ytDark');
-  const paramsWrapperWindowId = params.get('wrapperWindowId');
   let embedded = false;
   try {
     embedded = window.self !== window.top;
@@ -306,7 +305,7 @@
 
   const loadArchive = async (key: string) => {
     archiveEmbedFrame = '';
-    wrapperWindowId = '';
+    await tick();
     if (!key) return;
     const data = await getSavedMessageDumpActions(key);
     if (!data) return;
@@ -315,23 +314,10 @@
     paramsClone.set('ytDark', $ytDark.toString());
     paramsClone.set('tabid', paramsTabId as string);
     paramsClone.set('frameid', paramsFrameId as string);
-    wrapperWindowId = getRandomString();
-    paramsClone.set('wrapperWindowId', wrapperWindowId);
-    archiveEmbedFrame = window.location.host.includes('youtube')
-      ? 'https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&' + paramsClone.toString()
-      : chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/hyperchat.html?${paramsClone.toString()}`);
+    archiveEmbedFrame = 'https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&' + paramsClone.toString();
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
-    console.log(response);
-    if (archiveEmbedFrame) {
-      console.log(archiveEmbedFrame);
-      if (response.type === 'closeArchiveViewRequest' && wrapperWindowId === response.wrapperWindowId) {
-        archiveEmbedFrame = '';
-        wrapperWindowId = '';
-      }
-      if (response.type !== 'loadArchiveRequest') return;
-    }
     if (responseIsAction(response)) {
       onChatAction(response);
       return;
@@ -347,9 +333,6 @@
         break;
       case 'themeUpdate':
         $ytDark = response.dark;
-        break;
-      case 'loadArchiveRequest':
-        loadArchive(response.key);
         break;
       case 'chatUserActionResponse':
         $alertDialog = {
@@ -381,9 +364,16 @@
 
   $: document.title = $videoInfo?.video?.title || 'YtcFilter';
 
+  const postMessageListener = (event: any) => {
+    if (event.data.type === 'loadArchiveRequest') {
+      loadArchive(event.data.key);
+    }
+  };
+
   // Doesn't work well with onMount, so onLoad will have to do
   // Update: use onMount because hc now mounts in content script
   const onLoad = () => {
+    window.addEventListener('message', postMessageListener);
     $lastOpenedVersion = version;
     document.body.classList.add('overflow-hidden');
 
@@ -432,6 +422,7 @@
 
   onDestroy(() => {
     $port?.disconnect();
+    window.removeEventListener('message', postMessageListener);
     // if (truncateInterval) window.clearInterval(truncateInterval);
   });
 
@@ -497,11 +488,12 @@
   };
 
   let archiveEmbedFrame = '';
-  let wrapperWindowId = '';
 
   const executeImport = async (e: any) => {
     const el = (e.target as HTMLSelectElement);
-    switch (el.value) {
+    const val = el.value;
+    el.value = 'import';
+    switch (val) {
       case 'jsondump': {
         const key = await importJsonDump();
         if (key) loadArchive(key);
@@ -510,10 +502,6 @@
       case 'savedarchive': {
         const paramsClone = new URLSearchParams(params.toString());
         paramsClone.set('isArchiveLoadSelection', 'true');
-        if (!embedded) {
-          wrapperWindowId = getRandomString();
-          paramsClone.set('wrapperWindowId', wrapperWindowId);
-        }
         // createPopup
         const url = (chrome.runtime.getURL(
           (isLiveTL ? 'hyperchat/options.html' : 'options.html') + '?' + paramsClone.toString()
@@ -525,7 +513,6 @@
         break;
       }
     }
-    el.value = 'import';
   };
 
   let screenshotElement: HTMLDivElement | undefined;
@@ -712,7 +699,9 @@
   let topBarHeight = 0;
 
   const closeArchive = () => {
-    if ($port) $port.postMessage({ type: 'closeArchiveViewRequest', wrapperWindowId: paramsWrapperWindowId as string });
+    window.parent.postMessage({
+      type: 'archiveViewCloseRequest'
+    }, '*');
   };
 </script>
 

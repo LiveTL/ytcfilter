@@ -6,9 +6,8 @@
   let refreshFunc: any;
   export let isArchiveLoadSelection = false;
   let searchQuery = '';
-  let loadArchiveEntry: any;
   const closeFunc = () => {
-    loadArchiveEntry({ key: '' })();
+    window.parent.postMessage({ type: 'archiveViewCloseRequest' }, '*');
   };
   const importFunc = async () => {
     await importJsonDump();
@@ -44,7 +43,7 @@
     <span use:exioIcon>upload_file</span>
   </button>
 </div>
-<YtcFilterArchiveList bind:refreshFunc bind:loadArchiveEntry {isArchiveLoadSelection} {searchQuery} />
+<YtcFilterArchiveList bind:refreshFunc {isArchiveLoadSelection} {searchQuery} />
 
 <style>
   .btn {
