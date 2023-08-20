@@ -1,6 +1,10 @@
 <script lang="ts">
-  import '../stylesheets/scrollbar.css';
-  import '../stylesheets/ui.css';
+  // @ts-ignore
+  import inline1 from '../stylesheets/scrollbar.css?inline';
+  // @ts-ignore
+  import inline2 from '../stylesheets/ui.css?inline';
+  // @ts-ignore
+  import inline3 from '../stylesheets/line.css?inline';
   import { onDestroy, onMount, afterUpdate, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import dark from 'smelte/src/dark';
@@ -58,7 +62,6 @@
   import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump, mergeVideoInfoObjs } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
-  import '../stylesheets/line.css';
   import FullFrame from './FullFrame.svelte';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
   import { writable } from 'svelte/store';
@@ -370,9 +373,17 @@
     }
   };
 
+  const styleElem = document.createElement('style');
+
   // Doesn't work well with onMount, so onLoad will have to do
   // Update: use onMount because hc now mounts in content script
   const onLoad = () => {
+    document.head.appendChild(styleElem);
+    styleElem.innerHTML = `
+      ${inline1}
+      ${inline2}
+      ${inline3}
+    `;
     window.addEventListener('message', postMessageListener);
     $lastOpenedVersion = version;
     document.body.classList.add('overflow-hidden');
@@ -423,6 +434,7 @@
   onDestroy(() => {
     $port?.disconnect();
     window.removeEventListener('message', postMessageListener);
+    styleElem.remove();
     // if (truncateInterval) window.clearInterval(truncateInterval);
   });
 
