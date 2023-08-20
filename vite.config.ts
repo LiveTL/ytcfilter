@@ -5,20 +5,12 @@ import path from 'path';
 import copy from 'rollup-plugin-copy';
 import manifest from './src/manifest.json';
 
-const copyObj = {
-  targets: [
-    { src: 'build/*.css', dest: 'build/stylesheets' },
-    { src: 'src/stylesheets/*.css', dest: 'build/stylesheets' },
-    { src: 'build/*.js', dest: 'build/scripts' }
-  ]
-};
-
 export default defineConfig({
   root: 'src',
   build: {
     outDir: path.resolve(__dirname, 'build'),
     emptyOutDir: true,
-    minify: process.env.MINIFY !== 'false'
+    minify: process.env.MINIFY !== 'false' ? 'terser' : false
   },
   plugins: [
     browserExtension({
@@ -48,10 +40,6 @@ export default defineConfig({
     svelte({
       configFile: path.resolve(__dirname, 'svelte.config.js'),
       emitCss: false
-    }),
-    copy({
-      ...copyObj,
-      hook: 'writeBundle'
     }),
     copy({
       hook: 'writeBundle',
