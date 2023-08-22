@@ -50,21 +50,18 @@ const chatLoaded = async (): Promise<void> => {
   window.addEventListener('messageSent', (d) => {
     processSentMessage((d as CustomEvent).detail);
   });
-  let json = '{}';
-  window.addEventListener('videoInfoYtcFilter', d => {
-    console.log('calling setInitialData', json, JSON.parse((d as CustomEvent).detail));
-    setInitialData(json, JSON.parse((d as CustomEvent).detail));
-  });
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('scripts/chat-interceptor.js');
   document.body.appendChild(script);
 
   // Handle initial data
-  const scripts = document.querySelector('body')?.querySelectorAll('script');
-  if (!scripts) {
-    console.error('Unable to get script elements.');
-    return;
-  }
+  const scripts = document.querySelectorAll('script');
+  // if (!scripts) {
+  //   console.error('Unable to get script elements.');
+  //   return;
+  // }
+  let json = '{}';
+  console.log(Array.from(scripts));
   for (const script of Array.from(scripts)) {
     const start = 'window["ytInitialData"] = ';
     const text = script.text;
@@ -74,6 +71,10 @@ const chatLoaded = async (): Promise<void> => {
     json = text.replace(start, '').slice(0, -1);
     break;
   }
+  window.addEventListener('videoInfoYtcFilter', d => {
+    console.log('calling setInitialData', json, JSON.parse((d as CustomEvent).detail));
+    setInitialData(json, JSON.parse((d as CustomEvent).detail));
+  });
 
   // Catch YT messages
   window.addEventListener('message', (d) => {
