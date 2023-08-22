@@ -27,7 +27,7 @@
     UNDONE_MSG
   } from '../ts/chat-constants';
   import '../ts/resize-tracker';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString, getFrameInfoAsync } from '../ts/chat-utils';
+  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
     theme,
@@ -155,20 +155,20 @@
       chatFilterPresets.ready(),
       defaultFilterPresetId.ready(),
       new Promise(resolve => {
-        const unsub = initialized.subscribe((v) => {
-          if (v) {
-            unsub();
+        const interval = setInterval(() => {
+          if ($initialized) {
+            clearInterval(interval);
             resolve(null);
           }
-        });
+        }, 10);
       }),
       new Promise(resolve => {
-        const unsub = videoInfo.subscribe((v) => {
-          if (v !== undefined) {
-            unsub();
+        const interval = setInterval(() => {
+          if ($videoInfo !== undefined) {
+            clearInterval(interval);
             resolve(null);
           }
-        });
+        }, 10);
       })
     ]);
     await tick();

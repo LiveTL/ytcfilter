@@ -50,12 +50,10 @@ const chatLoaded = async (): Promise<void> => {
   window.addEventListener('messageSent', (d) => {
     processSentMessage((d as CustomEvent).detail);
   });
-  let videoInfoResolver = (_info: string): void => {};
-  const videoInfoPromise = new Promise<string>((resolve) => {
-    videoInfoResolver = resolve;
-  });
-  window.addEventListener('videoInfo', d => {
-    videoInfoResolver((d as CustomEvent).detail);
+  let json = '{}';
+  window.addEventListener('videoInfoYtcFilter', d => {
+    console.log('calling setInitialData', json, JSON.parse((d as CustomEvent).detail));
+    setInitialData(json, JSON.parse((d as CustomEvent).detail));
   });
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('scripts/chat-interceptor.js');
@@ -73,11 +71,7 @@ const chatLoaded = async (): Promise<void> => {
     if (!text || !text.startsWith(start)) {
       continue;
     }
-    const json = text.replace(start, '').slice(0, -1);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    videoInfoPromise.then((info) => {
-      setInitialData(json, JSON.parse(info));
-    });
+    json = text.replace(start, '').slice(0, -1);
     break;
   }
 

@@ -66,22 +66,30 @@ const registerClient = (
     }
   );
 
-  if (getInitialData && isYtcInterceptor(interceptor)) {
-    const selfChannel = interceptor.queue.selfChannel.get();
-    const videoInfo = interceptor.queue.videoInfo.get();
-    const payload: Chat.InitialData = {
-      type: 'initialData',
-      initialData: interceptor.queue.getInitialData(),
-      selfChannel: selfChannel != null
-        ? {
-            name: selfChannel.authorName?.simpleText ?? '',
-            channelId: selfChannel.authorExternalChannelId ?? ''
-          }
-        : null,
-      videoInfo
+  if (getInitialData) {
+    const callback = (): void => {
+      if (isYtcInterceptor(interceptor) && interceptor.queue.initialDataReady.get()) {
+        const selfChannel = interceptor.queue.selfChannel.get();
+        const videoInfo = interceptor.queue.videoInfo.get();
+        if (!videoInfo) console.debug('Video info not ready', { port, interceptor });
+        const payload: Chat.InitialData = {
+          type: 'initialData',
+          initialData: interceptor.queue.getInitialData(),
+          selfChannel: selfChannel != null
+            ? {
+                name: selfChannel.authorName?.simpleText ?? '',
+                channelId: selfChannel.authorExternalChannelId ?? ''
+              }
+            : null,
+          videoInfo
+        };
+        port.postMessage(payload);
+        console.debug('Sent initial data', { port, interceptor, payload });
+        unsubber();
+      }
     };
-    port.postMessage(payload);
-    console.debug('Sent initial data', { port, interceptor, payload });
+    const unsubber = (interceptor as Chat.YtcInterceptor).queue.initialDataReady.subscribe(() => setTimeout(callback, 0));
+    callback();
   }
 };
 
@@ -140,12 +148,14 @@ export const setInitialData = (json: string, info: SimpleVideoInfo | null): void
     ?.addLiveChatTextMessageFromTemplateAction?.template
     ?.liveChatTextMessageRenderer ?? {
     authorName: {
-      simpleText: parsedJson.continuationContents.liveChatContinuation.viewerName
+      simpleText: parsedJson?.continuationContents?.liveChatContinuation?.viewerName
     }
   };
 
   interceptor.queue.selfChannel.set(user);
   interceptor.queue.videoInfo.set(info);
+  interceptor.queue.initialDataReady.set(true);
+  console.log('initialDataReady', interceptor.queue.initialDataReady.get());
 };
 
 /** Updates the player progress of the queue of the interceptor. */
