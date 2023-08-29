@@ -127,7 +127,7 @@ const chatLoaded = async (): Promise<void> => {
   params.set('continuation', new URLSearchParams(window.location.search).get('continuation') ?? '');
   if (frameIsReplay()) params.set('isReplay', 'true');
   // inject into an empty 404 page
-  const source = `https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&${params.toString()}`;
+  const source = `https://www.youtube.com/embed/ytcfilter_embed?${params.toString()}`;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const ytcfilterElement = document.querySelector('.ytcf-iframe') as HTMLDivElement | null;
   if (!ytcfilterElement) {

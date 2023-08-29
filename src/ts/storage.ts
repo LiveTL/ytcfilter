@@ -80,7 +80,7 @@ export const isDark = derived([theme, ytDark], ([$theme, $ytDark]) => {
       (
         (
           !window.location.hostname.includes('youtube') ||
-          window.location.href.includes('v=Lq9eqHDKJPE&ytcfilter=1')
+          window.location.href.includes('/embed/ytcfilter_embed')
         ) &&
         (
           (

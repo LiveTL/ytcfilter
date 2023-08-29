@@ -317,7 +317,7 @@
     paramsClone.set('ytDark', $ytDark.toString());
     paramsClone.set('tabid', paramsTabId as string);
     paramsClone.set('frameid', paramsFrameId as string);
-    archiveEmbedFrame = 'https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&' + paramsClone.toString();
+    archiveEmbedFrame = 'https://www.youtube.com/embed/ytcfilter_embed?' + paramsClone.toString();
   };
 
   const onPortMessage = (response: Chat.BackgroundResponse) => {
@@ -414,8 +414,6 @@
       });
     }
   };
-
-  onMount(onLoad);
 
   const onRefresh = () => {
     if (isAtBottom) {

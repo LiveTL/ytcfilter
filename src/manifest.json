@@ -28,7 +28,7 @@
     },
     {
       "matches": [
-        "https://www.youtube.com/live_chat?v=Lq9eqHDKJPE&ytcfilter=1&*"
+        "https://www.youtube.com/embed/ytcfilter_embed?*"
       ],
       "js": [
         "scripts/chat-mounter.ts"

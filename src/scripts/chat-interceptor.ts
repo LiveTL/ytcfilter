@@ -2,7 +2,7 @@ import { stringifyRuns } from '../ts/ytcf-utils';
 import { fixLeaks } from '../ts/ytc-fix-memleaks';
 import { parseMessageRuns } from '../ts/chat-parser';
 
-if (!window.location.href.includes('v=Lq9eqHDKJPE&ytcfilter=1')) {
+if (!window.location.href.includes('/embed/ytcfilter_embed')) {
   for (const eventName of ['visibilitychange', 'webkitvisibilitychange', 'blur']) {
     window.addEventListener(eventName, event => {
       event.stopImmediatePropagation();
