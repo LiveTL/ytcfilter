@@ -21,8 +21,12 @@
     <br />
     <strong>Video:</strong>
     {#if $videoInfo}
-      <span class="trimmed">{$videoInfo?.video?.title ?? 'Unknown'}</span>
-      (<span class="trimmed">{$videoInfo?.channel?.name ?? 'Unknown'}</span>)
+      {#if $videoInfo?.video?.title}
+        <span class="trimmed">{$videoInfo?.video?.title ?? 'Unknown'}</span>
+        (<span class="trimmed">{$videoInfo?.channel?.name ?? 'Unknown'}</span>)
+      {:else}
+        <span>{$videoInfo.video.videoId}</span>
+      {/if}
     {:else}
       <span>Unknown</span>
     {/if}
