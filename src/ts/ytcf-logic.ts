@@ -6,7 +6,7 @@ import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
 import { YTCF_MESSAGEDUMPINFOS_KEY, isLiveTL } from './chat-constants';
 
-const browserObject = (window.chrome ?? (window as any).browser);
+const browserObject = chrome;
 
 export function shouldFilterMessage(action: Chat.MessageAction): boolean {
   const filters = get(currentFilterPreset).filters;
