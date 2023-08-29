@@ -679,6 +679,7 @@
     if (paramsYtDark) {
       $ytDark = paramsYtDark === 'true';
     }
+    onLoad();
   });
   const openSettings = () => createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
 
@@ -722,7 +723,7 @@
 <svelte:window on:resize={() => {
   scrollToBottom();
   topBarResized();
-}} on:load={onLoad} />
+}} />
 
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
