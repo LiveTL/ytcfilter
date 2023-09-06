@@ -727,7 +727,7 @@
 
 <div bind:this={hiddenElement} style="opacity: 0; position: absolute; z-index: -1;" />
 
-<FullFrame src={archiveEmbedFrame} />
+<FullFrame bind:src={archiveEmbedFrame} />
 
 <div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight} style="height: 26px;">
