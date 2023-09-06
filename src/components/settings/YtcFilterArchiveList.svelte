@@ -169,7 +169,7 @@
   };
 </script>
 
-<FullFrame src={archiveEntryUrl} />
+<FullFrame bind:src={archiveEntryUrl} />
 
 <div style="padding-bottom: 1px; padding: 2px 10px 10px 10px;">
   {#if loading}
