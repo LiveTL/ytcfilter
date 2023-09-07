@@ -3,7 +3,6 @@
   import { dataTheme } from '../ts/storage';
   export let src: string;
   const postMessageListener = (event: any) => {
-    console.log(event);
     if (event.data.type === 'archiveViewCloseRequest') {
       src = '';
     }

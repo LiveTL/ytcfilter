@@ -107,7 +107,6 @@
         showBack = true;
         const data = await readFromJson();
         showBack = false;
-        console.log(data);
         await migrateV2toV3({ presetsAndFilters: true, archives: true }, data);
         currentPanel = 'done';
         $initialSetupDone = true;

@@ -528,7 +528,6 @@
   let screenshotElement: HTMLDivElement | undefined;
   let hiddenElement: HTMLDivElement | undefined;
   const exportScreenshot = async () => {
-    console.log('THEME IS ', $dataTheme);
     const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
     clonedNode.id = 'screenshot-element';
     hiddenElement?.appendChild(clonedNode);
@@ -655,12 +654,6 @@
       messageActions.filter(item => !isWelcome(item)) as Chat.MessageAction[],
       $currentFilterPreset.id
     );
-    console.log(
-      key,
-      paramsContinuation,
-      $videoInfo,
-      messageActions.filter(item => !isWelcome(item)) as Chat.MessageAction[],
-      $currentFilterPreset.id);
   }
   let isPopout = false;
   onMount(async () => {

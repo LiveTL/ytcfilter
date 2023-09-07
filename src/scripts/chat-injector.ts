@@ -61,7 +61,6 @@ const chatLoaded = async (): Promise<void> => {
   //   return;
   // }
   let json = '{}';
-  console.log(Array.from(scripts));
   for (const script of Array.from(scripts)) {
     const start = 'window["ytInitialData"] = ';
     const text = script.text;
@@ -72,7 +71,6 @@ const chatLoaded = async (): Promise<void> => {
     break;
   }
   window.addEventListener('videoInfoYtcFilter', d => {
-    console.log('calling setInitialData', json, JSON.parse((d as CustomEvent).detail));
     setInitialData(json, JSON.parse((d as CustomEvent).detail));
   });
 

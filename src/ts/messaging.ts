@@ -155,7 +155,6 @@ export const setInitialData = (json: string, info: SimpleVideoInfo | null): void
   interceptor.queue.selfChannel.set(user);
   interceptor.queue.videoInfo.set(info);
   interceptor.queue.initialDataReady.set(true);
-  console.log('initialDataReady', interceptor.queue.initialDataReady.get());
 };
 
 /** Updates the player progress of the queue of the interceptor. */
