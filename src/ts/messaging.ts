@@ -347,6 +347,9 @@ export const initInterceptor = (
         case 'executeChatAction':
           executeChatAction(message.message, ytcfg, message.action, message.reportOption).catch(console.error);
           break;
+        case 'ping':
+          port.postMessage({ type: 'ping' });
+          break;
         default:
           console.error('Unknown message type', port, message);
           break;

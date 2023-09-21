@@ -359,6 +359,8 @@
         break;
       case 'registerClientResponse':
         break;
+      case 'ping':
+        break;
       default:
         console.error('Unknown payload type', { port, response });
         break;
@@ -413,6 +415,13 @@
         type: 'getTheme'
       });
     }
+
+    // service worker gets shut down after 30s of not receiving events
+    const interval = setInterval(() => $port?.postMessage({
+      type: 'ping'
+    }), 15_000);
+
+    return () => clearInterval(interval);
   };
 
   const onRefresh = () => {
