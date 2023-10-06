@@ -15,7 +15,12 @@
   }
   $: isMilestoneChat = message.message.length > 0;
 
-  $: primaryText = (membership || membershipGift)?.headerPrimaryText;
+  let primaryText: Ytc.ParsedRun[];
+  const updateText = () => {
+    const v = (membership || membershipGift)?.headerPrimaryText;
+    primaryText = (v?.length ? v : membership?.headerSubtext) || [];
+  }
+  $: membership, membershipGift, updateText;
   const backgroundColor = `background-color: #${membershipBackground}`;
 </script>
 
