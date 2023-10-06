@@ -27,7 +27,15 @@
     UNDONE_MSG
   } from '../ts/chat-constants';
   import '../ts/resize-tracker';
-  import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction, createPopup, getRandomString } from '../ts/chat-utils';
+  import {
+    isAllEmoji,
+    isChatMessage,
+    isPrivileged,
+    responseIsAction,
+    useReconnect,
+    createPopup,
+    getRandomString
+  } from '../ts/chat-utils';
   import Button from 'smelte/src/components/Button';
   import {
     theme,
@@ -401,27 +409,32 @@
       frameId: parseInt(paramsFrameId)
     };
 
-    $port = chrome.runtime.connect({ name: JSON.stringify(frameInfo) });
+    let hasRun = false;
+    $port = useReconnect(() => {
+      const port = chrome.runtime.connect({
+        name: JSON.stringify(frameInfo)
+      }) as Chat.Port;
 
-    $port?.onMessage.addListener(onPortMessage);
+      port.onMessage.addListener(onPortMessage);
 
-    $port?.postMessage({
-      type: 'registerClient',
-      getInitialData: true
-    });
-    if (paramsArchiveKey) $initialized = true;
-    else {
-      $port?.postMessage({
-        type: 'getTheme'
+      port.postMessage({
+        type: 'registerClient',
+        getInitialData:   true
       });
-    }
+      if (paramsArchiveKey) $initialized = true;
+      else {
+        if (!hasRun) {
+          port.postMessage({
+            type: 'getTheme'
+          });
+        }
+      }
+      hasRun = true;
 
-    // service worker gets shut down after 30s of not receiving events
-    const interval = setInterval(() => $port?.postMessage({
-      type: 'ping'
-    }), 15_000);
+      return port;
+    });
 
-    return () => clearInterval(interval);
+    return () => $port?.destroy && $port?.destroy();
   };
 
   const onRefresh = () => {
