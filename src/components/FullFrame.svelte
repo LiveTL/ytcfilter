@@ -13,6 +13,13 @@
   onDestroy(() => {
     window.removeEventListener('message', postMessageListener);
   });
+  const toggleScroll = () => {
+    const html = document.querySelector('html');
+    if (html) {
+      html.style.overflow = src ? 'hidden' : 'auto';
+    }
+  };
+  $: src, toggleScroll();
 </script>
 
 <!-- svelte-ignore a11y-missing-attribute -->

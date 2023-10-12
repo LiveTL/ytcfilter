@@ -187,27 +187,6 @@
         <span use:exioIcon style="vertical-align: -2px;">search</span>
       </button>
     </div> -->
-    <div class="full-flex spaced">
-      <button
-        use:exioButton
-        style="white-space: nowrap;"
-        on:click={() => (startIndex = Math.max(startIndex - 10, 0))}
-        disabled={startIndex === 0}
-      >
-        <span use:exioIcon style="vertical-align: -1px;">chevron_left</span>
-      </button>
-      <div>
-        {startIndex + 1}-{Math.min(startIndex + 10, data.length)} of {data.length}
-      </div>
-      <button
-        use:exioButton
-        style="white-space: nowrap;"
-        on:click={() => (startIndex = Math.min(startIndex + 10, data.length - 1))}
-        disabled={startIndex >= data.length - 10}
-      >
-        <span use:exioIcon style="vertical-align: -1px;">chevron_right</span>
-      </button>
-    </div>
     <table style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr>
@@ -282,6 +261,27 @@
       </div> -->
     </table>
   {/if}
+  <div class="full-flex spaced">
+    <button
+      use:exioButton
+      style="white-space: nowrap;"
+      on:click={() => (startIndex = Math.max(startIndex - 10, 0))}
+      disabled={startIndex === 0}
+    >
+      <span use:exioIcon style="vertical-align: -1px;">chevron_left</span>
+    </button>
+    <div>
+      {startIndex + 1}-{Math.min(startIndex + 10, data.length)} of {data.length}
+    </div>
+    <button
+      use:exioButton
+      style="white-space: nowrap;"
+      on:click={() => (startIndex = Math.min(startIndex + 10, data.length - 1))}
+      disabled={startIndex >= data.length - 10}
+    >
+      <span use:exioIcon style="vertical-align: -1px;">chevron_right</span>
+    </button>
+  </div>
 </div>
 
 <style>
@@ -342,6 +342,7 @@
     margin: 5px 0px;
   }
   .spaced {
-    justify-content: space-between;
+    justify-content: center;
+    gap: 10px;
   }
 </style>
