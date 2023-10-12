@@ -5,7 +5,7 @@
   import '../stylesheets/line.css';
   import { exioButton, exioComponent, exioIcon, exioZoomInAnimation } from 'exio/svelte';
   import { getBrowser, Browser } from '../ts/chat-constants';
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import ExioRadios from './common/ExioRadios.svelte';
   import { downloadV2Data, getV2Storage, migrateV2toV3, readFromJson } from '../ts/ytcf-logic';
   import YtcFilterInputDialog from './YtcFilterInputDialog.svelte';

@@ -323,13 +323,13 @@
   button {
     font-size: 1rem;
   }
-  .item {
+  /* .item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px;
     gap: 10px;
-  }
+  } */
   @media (min-width: 850px) {
     .snap-small {
       white-space: nowrap;

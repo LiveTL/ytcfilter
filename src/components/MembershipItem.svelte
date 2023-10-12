@@ -1,8 +1,7 @@
 <script lang="ts">
   import Message from './Message.svelte';
   import MessageRun from './MessageRuns.svelte';
-  import { showProfileIcons } from '../ts/storage';
-  import { membershipBackground, milestoneChatBackground } from '../ts/chat-constants';
+  import { membershipBackground } from '../ts/chat-constants';
 
   export let message: Ytc.ParsedMessage;
 
@@ -19,7 +18,7 @@
   const updateText = () => {
     const v = (membership || membershipGift)?.headerPrimaryText;
     primaryText = (v?.length ? v : membership?.headerSubtext) || [];
-  }
+  };
   $: membership, membershipGift, updateText;
   const backgroundColor = `background-color: #${membershipBackground}`;
 </script>

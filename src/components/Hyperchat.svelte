@@ -419,7 +419,7 @@
 
       port.postMessage({
         type: 'registerClient',
-        getInitialData:   true
+        getInitialData: true
       });
       if (paramsArchiveKey) $initialized = true;
       else {
