@@ -2606,10 +2606,10 @@ execa@^4.0.0:
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
-exio@^0.6.36:
-  version "0.6.36"
-  resolved "https://registry.yarnpkg.com/exio/-/exio-0.6.36.tgz#4ef35a5b3a847252e951d2ded316d03711fd0481"
-  integrity sha512-I/OnkKC+Tt8TnDPqCurUply8oBYPkk0BLKD48+AOZQPmY4KFPeFcswmrqgvapaMBuAIhAigWkBwZn1Rxy3CQZA==
+exio@^0.6.38:
+  version "0.6.38"
+  resolved "https://registry.yarnpkg.com/exio/-/exio-0.6.38.tgz#f1d134cb626ba7146975bd5ae10ee04df27e74f5"
+  integrity sha512-4AmZ1cL0RMFZAsIdLSVPPzQ3nrbDDYedVzDsUD/GAiqf2UXsKgFu9R852H4k4TlHuCgqUkXneHXfS5qCxydd5g==
   dependencies:
     dialog-polyfill "^0.5.6"
 
@@ -7095,13 +7095,6 @@ tar-stream@^1.5.2:
     to-buffer "^1.1.1"
     xtend "^4.0.0"
 
-text-segmentation@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/text-segmentation/-/text-segmentation-1.0.3.tgz#52a388159efffe746b24a63ba311b6ac9f2d7943"
-  integrity sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw==
-  dependencies:
-    utrie "^1.0.2"
-
 terser@^5.19.2:
   version "5.19.2"
   resolved "https://registry.yarnpkg.com/terser/-/terser-5.19.2.tgz#bdb8017a9a4a8de4663a7983f45c506534f9234e"
@@ -7111,6 +7104,13 @@ terser@^5.19.2:
     acorn "^8.8.2"
     commander "^2.20.0"
     source-map-support "~0.5.20"
+
+text-segmentation@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/text-segmentation/-/text-segmentation-1.0.3.tgz#52a388159efffe746b24a63ba311b6ac9f2d7943"
+  integrity sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw==
+  dependencies:
+    utrie "^1.0.2"
 
 text-table@^0.2.0:
   version "0.2.0"
