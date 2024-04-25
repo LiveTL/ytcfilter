@@ -10,7 +10,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, 'build'),
     emptyOutDir: true,
-    minify: process.env.MINIFY !== 'false' ? 'terser' : false
+    minify: process.env.MINIFY !== 'false' ? 'terser' : false,
   },
   plugins: [
     browserExtension({
@@ -35,7 +35,16 @@ export default defineConfig({
       browser: process.env.BROWSER === undefined ? 'chrome' : process.env.BROWSER,
       webExtConfig: {
         startUrl: 'https://www.youtube.com/watch?v=jfKfPfyJRdk'
-      }
+      },
+      libModeViteConfig: defineConfig({ 
+        build: { 
+          rollupOptions: { 
+            output: { 
+              inlineDynamicImports: true, 
+            }, 
+          }, 
+        }, 
+      }), 
     }),
     svelte({
       configFile: path.resolve(__dirname, 'svelte.config.js'),
