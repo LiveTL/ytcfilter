@@ -13,7 +13,7 @@ declare namespace YtcF {
   }
   interface BooleanCondition extends BaseCondition {
     type: 'boolean';
-    property: 'superchat' | 'verified' | 'moderator' | 'owner' | 'member';
+    property: 'superchat' | 'verified' | 'moderator' | 'owner' | 'member' | 'membershipItem';
     invert: boolean;
   }
   type FilterCondition = StringCondition | BooleanCondition;

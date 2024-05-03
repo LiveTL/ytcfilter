@@ -108,7 +108,8 @@
             <option value="member">Author is Member</option>
             <option value="owner">Author is Owner</option>
             <option value="verified">Author is Verified</option>
-            <option value="superchat">Item is Superchat</option>
+            <option value="superchat">Is Superchat Item</option>
+            <option value="membershipItem">Is Membership Item</option>
             <!-- <option value="videoId">Video ID</option>
             <option value="videoChannelId">Video Channel ID</option> -->
           </select>

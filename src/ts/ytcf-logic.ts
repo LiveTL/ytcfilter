@@ -20,6 +20,8 @@ export function shouldFilterMessage(action: Chat.MessageAction): boolean {
           if ((
             condition.property === 'superchat' && Boolean(msg.superChat) !== condition.invert
           ) || (
+            condition.property === 'membershipItem' && Boolean(msg.membership) !== condition.invert
+          ) || (
             msg.author.types.includes(condition.property) !== condition.invert
           )) {
             numSatisfied++;
