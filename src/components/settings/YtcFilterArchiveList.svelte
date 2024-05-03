@@ -143,15 +143,11 @@
   const dateConvert = (dateNum: number) => {
     const date = new Date(dateNum);
     const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const year = date.getFullYear();
     const month = months[date.getMonth()];
     const day = date.getDate();
-    const year = date.getFullYear();
-    const hour = hours % 12 === 0 ? 12 : hours % 12;
-    const minute = minutes < 10 ? `0${minutes}` : minutes;
-    return `${month} ${day} ${year}, ${hour}:${minute} ${ampm}`;
+    const hoursColonMinutes = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    return `${month} ${day} ${year}, ${hoursColonMinutes}`;
   };
   const computeName = (item: YtcF.MessageDumpInfoItem) => {
     return item.nickname || (

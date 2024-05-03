@@ -13,7 +13,17 @@ const standardEmoji =
 
 const formatTimestamp = (timestampUsec: number): string => {
   return (new Date(timestampUsec / 1000))
-    .toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    .toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+const convert12hTo24h = (timestamp: string): string => {
+  const parts = timestamp.split(' ');
+  const time = parts[0];
+  const ampm = parts[1];
+  const [hour, minute] = time.split(':').map(Number);
+  const isPM = ampm === 'PM';
+  const newHour = (hour % 12) + (isPM ? 12 : 0);
+  return `${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 };
 
 const colorToHex = (color: number): string => color.toString(16).slice(-6);
@@ -116,7 +126,7 @@ const parseAddChatItemAction = (action: Ytc.AddChatItemAction, isReplay = false,
       profileIcon
     },
     message: runs,
-    timestamp: isReplay && timestampText != null ? timestampText : formatTimestamp(timestampUsec),
+    timestamp: isReplay && timestampText != null ? convert12hTo24h(timestampText) : formatTimestamp(timestampUsec),
     showtime: isReplay ? liveTimeoutOrReplayMs : liveShowtimeMs,
     messageId: renderer.id,
     params: messageRenderer.contextMenuEndpoint?.liveChatItemContextMenuEndpoint.params
