@@ -39,8 +39,9 @@
   <button use:exioButton class="btn" on:click={refreshFunc}>
     <span use:exioIcon>refresh</span>
   </button>
-  <button use:exioButton class="btn blue-bg" on:click={importFunc}>
-    <span use:exioIcon>upload_file</span>
+  <button use:exioButton class="blue-bg" on:click={importFunc}>
+    Upload
+    <span use:exioIcon style="vertical-align: -2px;">upload</span>
   </button>
 </div>
 <YtcFilterArchiveList bind:refreshFunc {isArchiveLoadSelection} {searchQuery} />
