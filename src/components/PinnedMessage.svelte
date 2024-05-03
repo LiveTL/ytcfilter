@@ -61,7 +61,7 @@
     </div>
     {#if !shorten && !dismissed}
       <div class="mt-1" transition:slide|local={{ duration: 300 }}>
-        <Message message={pinned.item.contents} forceDark forceTLColor={Theme.DARK} hideDropdown />
+        <Message message={pinned.item.contents} forceDark forceTLColor={Theme.DARK} hideDropdown on:clientSideDelete />
       </div>
     {/if}
   </div>

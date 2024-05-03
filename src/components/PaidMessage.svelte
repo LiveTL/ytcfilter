@@ -20,7 +20,7 @@
     headerStyle = '';
   }
 
-  const classes = 'inline-flex flex-col rounded break-words overflow-hidden w-full';
+  const classes = 'inline-flex flex-col rounded break-words overflow-visible w-full';
 
   $: if (!paid) {
     console.error('Not a paid message', { message });
@@ -33,7 +33,7 @@
 
 {#if paid}
   <div>
-    <Message message={message} forceTLColor={darkEval()}>
+    <Message message={message} forceTLColor={darkEval()} on:clientSideDelete>
       <span class="{classes} chip" style={backgroundColor + textColor} slot="chip">
         <span class="p-1" style={headerStyle}>
           <span class="underline font-bold">{amount}</span>

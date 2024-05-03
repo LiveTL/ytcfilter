@@ -5,7 +5,7 @@
 
   export let message: Ytc.ParsedMessage;
 
-  const classes = 'inline-flex flex-col rounded break-words overflow-hidden w-full text-white';
+  const classes = 'inline-flex flex-col rounded break-words overflow-visible w-full text-white';
 
   $: membership = message.membership;
   $: membershipGift = message.membershipGiftPurchase;
@@ -61,7 +61,7 @@
         <Message message={message} hideName />
       </div>
     {/if} -->
-    <Message message={message}>
+    <Message message={message} on:clientSideDelete>
       <span class="{classes} chip" style={backgroundColor} slot="chip">
         <span class="p-1">
           <span class="underline font-bold">

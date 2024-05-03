@@ -825,9 +825,9 @@
               {#if isWelcome(action)}
                 <WelcomeMessage />
               {:else if isSuperchat(action)}
-                <PaidMessage message={action.message} />
+                <PaidMessage message={action.message} on:clientSideDelete={deleteMessageClientSide} />
               {:else if isMembership(action)}
-                <MembershipItem message={action.message} />
+                <MembershipItem message={action.message} on:clientSideDelete={deleteMessageClientSide} />
               {:else if isMessage(action)}
                 <Message
                   message={action.message}
