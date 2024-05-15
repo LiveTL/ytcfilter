@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YtcFilter",
-  "homepage_url": "https://livetl.app/en/ytcfilter/",
+  "homepage_url": "https://livetl.app/ytcfilter/",
   "description": "YouTube Chat Filter",
   "version": "0.3.0",
   "permissions": [
