@@ -744,7 +744,7 @@
 
 <FullFrame bind:src={archiveEmbedFrame} />
 
-<div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark">
+<div style="display: grid; grid-template-rows: auto auto 1fr;" class="h-screen w-screen bg-ytbg-light dark:bg-ytbg-dark text-black dark:text-white">
   <div data-theme={$dataTheme} class="w-screen top-button-wrapper" bind:clientHeight={topBarHeight} style="height: 26px;">
     <div style="display: flex; justify-content: flex-start;">
       <!-- <span class="tiny-text">
