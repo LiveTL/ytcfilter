@@ -19,7 +19,7 @@
     const v = (membership || membershipGift)?.headerPrimaryText;
     primaryText = (v?.length ? v : membership?.headerSubtext) || [];
   };
-  $: membership, membershipGift, updateText;
+  $: membership, membershipGift, updateText();
   const backgroundColor = `background-color: #${membershipBackground}`;
 </script>
 
