@@ -64,7 +64,7 @@
     <Message message={message} on:clientSideDelete>
       <span class="{classes} chip text-white" style={backgroundColor} slot="chip">
         <span class="p-1">
-          <span class="underline font-bold">
+          <span class="font-bold">
             {#if primaryText && primaryText.length > 0}
               <MessageRun
                 class="font-medium"
