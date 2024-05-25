@@ -20,6 +20,7 @@
   let value = 'migrate-filters-and-archives';
   let loading = false;
   let showBack = false;
+  let v2BackupSkipped = false;
   onMount(async () => {
     if (paramsTabId != null && paramsFrameId != null && paramsTabId.length >= 1 && paramsFrameId.length >= 1) {
       if (getBrowser() === Browser.FIREFOX) {
@@ -162,29 +163,43 @@
           <div style="font-size: 1.5rem; color: #3ba7ff;">Import Data</div>
           {#if hasV2Data}
             <div style="margin-top: 1rem; font-size: 1rem;">
-              Back up your v2 data:
+              {#if !v2BackupSkipped}
+                First, back
+              {:else}
+                Back
+              {/if}
+              up v2 data:
               <a href="/" style="color: #3ba7ff; text-decoration: none;" on:click={e => {
                 e.preventDefault();
                 downloadV2Data();
+                v2BackupSkipped = true;
               }}>
                 ytcf-v2-data.json
                 <span use:exioIcon style="color: inherit; transform: translate(-0.2em, 0.2em);">download</span>
               </a>
+              {#if !v2BackupSkipped}
+                <a href="/" style="color: white; text-decoration: none; opacity: 0.5;" on:click={e => {
+                  e.preventDefault();
+                  v2BackupSkipped = true;
+                }}>
+                  Skip
+                </a>
+              {/if}
             </div>
           {/if}
-          <div style="font-size: 1rem; margin-top: 1rem;">
+          <div style="font-size: 1rem; margin-top: 1rem; {(!hasV2Data || v2BackupSkipped) ? '' : 'opacity: 0.5; touch-action: none; pointer-events: none;'}">
             <ExioRadios options={[
               ...(
                 hasV2Data
                 ? [
                   {
-                    label: 'Import filters, presets, and archives',
+                    label: 'Import v2 filters, presets, and archives',
                     value: 'migrate-filters-and-archives'
                   }, {
-                    label: 'Import filters and presets only',
+                    label: 'Import v2 filters and presets only',
                     value: 'migrate-filters-only'
                   }, {
-                    label: 'Import archives only',
+                    label: 'Import v2 archives only',
                     value: 'migrate-archives-only'
                   }
                 ]

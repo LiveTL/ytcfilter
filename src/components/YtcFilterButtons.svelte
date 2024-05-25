@@ -10,7 +10,7 @@
   let resizing = false;
   let touchOrigin: { x: number, y: number } | null = null;
   let windowHeight = window.innerHeight;
-  let height = 0.4 * windowHeight;
+  let height = 0.5 * windowHeight;
   let loaded = false;
   // TODO FIX RESIZE SAVING
   onMount(async () => {
