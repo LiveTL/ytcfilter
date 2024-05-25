@@ -175,10 +175,10 @@
                 v2BackupSkipped = true;
               }}>
                 ytcf-v2-data.json
-                <span use:exioIcon style="color: inherit; transform: translate(-0.2em, 0.2em);">download</span>
+                <span use:exioIcon style="color: #3ba7ff; transform: translate(-0.2em, 0.2em);">download</span>
               </a>
               {#if !v2BackupSkipped}
-                <a href="/" style="color: white; text-decoration: none; opacity: 0.5;" on:click={e => {
+                <a href="/" style="color: inherit; text-decoration: none; opacity: 0.5;" on:click={e => {
                   e.preventDefault();
                   v2BackupSkipped = true;
                 }}>
