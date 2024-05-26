@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     env:
-      ADDON_ID: "{14a15c41-13f4-498e-986c-7f00435c4d00}"
+      ADDON_ID: "{20f2dcdf-6f8d-4aeb-862b-b13174475d9c}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
