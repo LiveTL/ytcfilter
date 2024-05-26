@@ -31,13 +31,4 @@ const mount = (): void => {
   }, 1);
 };
 
-if (isLiveTL) {
-  mount();
-}
-else {
-  setTimeout(() => {
-    if (document.querySelector('.hyperchat-root') === null) {
-      mount();
-    }
-  }, 500);
-}
+mount();
