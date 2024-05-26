@@ -98,8 +98,63 @@ export const enableStickySuperchatBar = stores.addSyncStore('ytcf.enableStickySu
 export const enableHighlightedMentions = stores.addSyncStore('ytcf.enableHighlightedMentions', false);
 export const lastOpenedVersion = stores.addSyncStore('ytcf.lastOpenedVersion', '');
 export const chatFilterPresets = stores.addSyncStore('ytcf.chatFilterPresets', [{
-  filters: [],
-  nickname: 'Preset 1',
+  filters: [
+    {
+      "conditions": [
+        {
+          "caseSensitive": false,
+          "invert": false,
+          "needsClear": true,
+          "property": "message",
+          "type": "tltag",
+          "value": "en"
+        }
+      ],
+      "enabled": true,
+      "id": "IqhLrwTVEL",
+      "type": "basic"
+    },
+    {
+      "conditions": [
+        {
+          "caseSensitive": false,
+          "invert": false,
+          "property": "moderator",
+          "type": "boolean"
+        }
+      ],
+      "enabled": true,
+      "id": "berdVtyXHw",
+      "type": "basic"
+    },
+    {
+      "conditions": [
+        {
+          "caseSensitive": false,
+          "invert": false,
+          "property": "owner",
+          "type": "boolean"
+        }
+      ],
+      "enabled": true,
+      "id": "qUYNRyhzQy",
+      "type": "basic"
+    },
+    {
+      "conditions": [
+        {
+          "caseSensitive": false,
+          "invert": false,
+          "property": "verified",
+          "type": "boolean"
+        }
+      ],
+      "enabled": true,
+      "id": "gEljlegSPX",
+      "type": "basic"
+    }
+  ],
+  nickname: 'Example Preset',
   id: INITIAL_PRESET_ID,
   triggers: [],
   activation: 'manual'
