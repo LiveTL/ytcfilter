@@ -5,8 +5,7 @@
   "description": "YouTube Chat Filter",
   "version": "0.3.0",
   "permissions": [
-    "storage",
-    "unlimitedStorage"
+    "storage"
   ],
   "icons": {
     "48": "assets/logo-48.png",
