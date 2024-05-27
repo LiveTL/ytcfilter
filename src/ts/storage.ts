@@ -227,3 +227,4 @@ export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | nul
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 export const bytesUsed = stores.addSyncStore('hc.bytes.used', 0);
 export const filterInBackground = stores.addSyncStore('ytcf.startFilteringInBackground', true);
+export const autoOpenFilterPanel = stores.addSyncStore('ytcf.autoOpenFilterPanel', false);

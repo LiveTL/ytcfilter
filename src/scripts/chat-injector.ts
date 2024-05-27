@@ -4,8 +4,9 @@ import { isLiveTL, isAndroid } from '../ts/chat-constants';
 import {
   // hcEnabled,
   autoLiveChat,
-  filterInBackground
-  , initialSetupDone
+  filterInBackground,
+  initialSetupDone,
+  autoOpenFilterPanel
 } from '../ts/storage';
 import {
   initInterceptor,
@@ -173,7 +174,7 @@ const chatLoaded = async (): Promise<void> => {
     createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
   });
 
-  if (!(await initialSetupDone.get())) {
+  if (!(await initialSetupDone.get()) || await autoOpenFilterPanel.get()) {
     clickListener();
   }
 

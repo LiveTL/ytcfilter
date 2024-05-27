@@ -3,7 +3,8 @@
     currentFilterPreset,
     videoInfo
   } from '../ts/storage';
-  const classes = 'p-2 rounded inline-flex flex-col overflow-hidden bg-secondary-50 dark:bg-secondary-600 pointer-events-none touch-none select-none';
+  import { version } from '../manifest.json';
+  const classes = 'p-2 rounded inline-flex flex-col overflow-hidden pointer-events-none touch-none select-none';
 </script>
 
 <div class={classes}>
@@ -32,6 +33,11 @@
     {:else}
       <span>Unknown</span>
     {/if}
+    <br />
+    <strong>New in v{version}:</strong>
+    <span>
+      auto-open setting.
+    </span>
   </p>
 </div>
 

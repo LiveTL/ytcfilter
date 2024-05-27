@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Theme } from '../../ts/chat-constants';
-  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground, initialSetupDone } from '../../ts/storage';
+  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground, initialSetupDone, autoOpenFilterPanel } from '../../ts/storage';
   import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
   import { forceReloadAll } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
@@ -112,8 +112,12 @@
     </button>
   </div>
   <div class="setting-item" style="margin-bottom: 5px;">
+    <input class="check" type="checkbox" use:exioCheckbox bind:checked={$autoOpenFilterPanel} id="open-auto" />
+    <label for="open-auto">Automatically show filtered messages panel on load</label>
+  </div>
+  <div class="setting-item" style="margin-bottom: 5px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
-    <label for="silently-filter">Begin filtering messages in the background immediately on load</label>
+    <label for="silently-filter">Silently begin filtering messages in the background on load</label>
   </div>
 </div>
 
