@@ -739,7 +739,8 @@
     const iframe = window.parent.document.querySelector('.ytcf-iframe') as HTMLDivElement;
     if (!iframe || (topBarVisible && iframe.style.display != 'block')) return;
     // elem.style.display = topBarVisible ? 'none' : 'flex';
-    elem.style.setProperty('display', topBarVisible ? 'none' : 'flex', 'important');
+    if (topBarVisible) elem.style.setProperty('display', 'none', 'important');
+    else elem.style.removeProperty('display');
     topBarVisible = !topBarVisible;
   };
 </script>
