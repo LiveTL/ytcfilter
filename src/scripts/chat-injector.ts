@@ -154,6 +154,8 @@ const chatLoaded = async (): Promise<void> => {
     resizeBar.style.display = 'flex';
     if (frame && frame.src !== source) {
       frame.src = source;
+    } else {
+      (frame?.contentWindow as any).toggleTopBar();
     }
   };
   // eslint-disable-next-line @typescript-eslint/no-misused-promises

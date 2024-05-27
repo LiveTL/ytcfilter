@@ -679,7 +679,7 @@
   }
   let isPopout = false;
   onMount(async () => {
-    await redirectIfInitialSetup();
+    if (await redirectIfInitialSetup()) return;
     try {
       if (window.parent === window) {
         isPopout = true;
@@ -695,6 +695,8 @@
       $ytDark = paramsYtDark === 'true';
     }
     onLoad();
+    toggleTopBar();
+    (window as any).toggleTopBar = toggleTopBar;
   });
   const openSettings = () => createPopup(chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : '') + '/options.html'));
 
@@ -728,6 +730,16 @@
     window.parent.postMessage({
       type: 'archiveViewCloseRequest'
     }, '*');
+  };
+
+  let topBarVisible = true;
+  const toggleTopBar = () => {
+    const elem = window.parent.document.querySelector('.ytcf-button-wrapper') as HTMLDivElement;
+    if (!elem) return;
+    const iframe = window.parent.document.querySelector('.ytcf-iframe') as HTMLDivElement;
+    if (!iframe || (topBarVisible && iframe.style.display != 'block')) return;
+    elem.style.display = topBarVisible ? 'none' : 'flex';
+    topBarVisible = !topBarVisible;
   };
 </script>
 
@@ -792,6 +804,13 @@
           Settings
           <div use:exioIcon class="inline-block" style="color: inherit;">
             settings
+          </div>
+        </button>
+      {:else}
+        <button use:exioButton on:click={toggleTopBar} class="inline-flex gap-1 items-center">
+          {topBarVisible ? 'Less' : 'More'}
+          <div use:exioIcon class="inline-block" style="color: inherit;">
+            unfold_{topBarVisible ? 'less' : 'more'}_double
           </div>
         </button>
       {/if}

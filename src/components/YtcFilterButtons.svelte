@@ -3,7 +3,8 @@
   import { exioButton, exioIcon } from 'exio/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { embedHeight } from '../ts/storage';
-  import '../stylesheets/ui.css';
+  // @ts-ignore
+  import inline from '../stylesheets/ui.css?inline';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
   let attrObserver: MutationObserver;
@@ -15,6 +16,9 @@
   // TODO FIX RESIZE SAVING
   onMount(async () => {
     await embedHeight.ready();
+    const styleElem = document.createElement('style');
+    styleElem.innerHTML = inline;
+    document.head.appendChild(styleElem);
     if ($embedHeight !== null) {
       height = $embedHeight * windowHeight;
     }

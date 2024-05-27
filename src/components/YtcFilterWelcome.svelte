@@ -34,9 +34,9 @@
       <span>Unknown</span>
     {/if}
     <br />
-    <strong>New in v{version}:</strong>
+    <strong>v{version}:</strong>
     <span>
-      auto-open setting.
+      auto-open setting + more.
     </span>
   </p>
 </div>

@@ -664,7 +664,7 @@ export const readFromJson = async (): Promise<any> => {
   });
 };
 
-export const redirectIfInitialSetup = async (): Promise<void> => {
+export const redirectIfInitialSetup = async (): Promise<boolean> => {
   await initialSetupDone.ready();
   await currentStorageVersion.ready();
   if (!get(initialSetupDone)) {
@@ -673,9 +673,11 @@ export const redirectIfInitialSetup = async (): Promise<void> => {
     const params = new URLSearchParams(query);
     params.set('referrer', window.location.href);
     window.location.href = chrome.runtime.getURL(`${(isLiveTL ? 'ytcfilter' : '')}/setup.html?${params.toString()}`);
+    return true;
   } else {
     await currentStorageVersion.set('v3');
   }
+  return false;
 };
 
 export const detectForceReload = async (): Promise<void> => {
