@@ -375,6 +375,12 @@ export const getParsedV2Data = async (importedData: object | null = null): Promi
       actions: parsedMessageActions
     });
   }
+  // if presets contains one with id "staff", move it to the front
+  const staffPreset = presets.find(p => p.id === 'staff');
+  if (staffPreset) {
+    presets.splice(presets.indexOf(staffPreset), 1);
+    presets.unshift(staffPreset);
+  }
   return {
     presets,
     archives,
