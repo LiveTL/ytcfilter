@@ -8,7 +8,7 @@ body:
       label: Checklist
       description: These are some simple guidelines for creating a bug report, make sure your bug report follows all of these guidelines before submitting
       options:
-        - label: This is an issue for Hyperchat, not LiveTL. I will go to [the LiveTL repo](https://github.com/LiveTL/LiveTL) to report an issue for LiveTL.
+        - label: This is an issue for YtcFilter, not LiveTL or HyperChat. I will go to [the LiveTL repo](https://github.com/LiveTL/LiveTL) to report an issue with LiveTL, or [the HyperChat repo](https://github.com/LiveTL/HyperChat) to report an issue with HyperChat.
           required: true
         - label: I have checked for a duplicate or similar issue. I made sure to check closed issues as well. 
           required: true
