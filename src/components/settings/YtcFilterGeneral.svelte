@@ -7,6 +7,7 @@
   import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
   import LoadingBar from '../common/LoadingBar.svelte';
+  import { version } from '../../manifest.json';
   let loading: false | string = false;
   const importData = async () => {
     const data = await readFromJson();
@@ -118,6 +119,22 @@
   <div class="setting-item" style="margin-bottom: 5px;">
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
     <label for="silently-filter">Silently begin filtering messages in the background on load</label>
+  </div>
+</div>
+<div class="settings-title big-text">About</div>
+<div class="settings-content">
+  <div class="setting-item" style="margin-top: 0px;">
+    <div><strong>YtcFilter v{version}</strong></div>
+    <div>
+      <strong>Support:</strong> via <a href="https://discord.com/invite/uJrV3tmthg" style="color: #3ba7ff;" target="_blank">
+        Discord
+      </a>
+    </div>
+    <div>
+      <strong>Website:</strong> <a href="https://livetl.app/" style="color: #3ba7ff;" target="_blank">
+        livetl.app
+      </a>
+    </div>
   </div>
 </div>
 
