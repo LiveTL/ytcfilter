@@ -17,7 +17,12 @@ jobs:
         with:
           node-version: 16
       - name: Install modules
-        run: yarn
+        run: |
+          sudo apt install jq
+          yarn
+          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
+          jq --arg version $VERSION '.version = $version' src/manifest.json > src/manifest.json.tmp
+          mv src/manifest.json.tmp src/manifest.json
       - name: Build Chrome
         run: |
           VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//') yarn build:chrome
