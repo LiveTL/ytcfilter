@@ -38,6 +38,7 @@
     "eslint-plugin-svelte3": "^3.2.0",
     "exio": "^0.6.47",
     "express": "4.17.3",
+    "filenamify": "^6.0.0",
     "html2canvas": "^1.4.1",
     "iframe-translator": "^0.3.5",
     "is-dark-color": "^1.2.0",
@@ -61,5 +62,6 @@
     "typescript": "4.3.5",
     "vite": "2.9.16",
     "vite-plugin-web-extension": "^1.4.0"
-  }
+  },
+  "dependencies": {}
 }

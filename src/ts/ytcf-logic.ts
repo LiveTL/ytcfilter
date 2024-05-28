@@ -5,6 +5,7 @@ import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
 import { YTCF_MESSAGEDUMPINFOS_KEY, isLiveTL } from './chat-constants';
+import { filenamifyPath } from 'filenamify';
 
 const browserObject = chrome;
 
@@ -608,11 +609,22 @@ export const getAllMessageDumpInfoItems = async (): Promise<YtcF.MessageDumpInfo
 };
 
 const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  return ((obj?.info?.video?.title) ?? '') || obj?.info?.channel?.name ||
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    obj?.info?.video?.videoId || obj?.info?.channel?.channelId ||
-    (obj?.lastEdited !== undefined ? new Date(obj?.lastEdited) : new Date()).toISOString();
+  // // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  // return ((obj?.info?.video?.title) ?? '') || obj?.info?.channel?.name ||
+  //   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  //   obj?.info?.video?.videoId || obj?.info?.channel?.channelId ||
+  //   (obj?.lastEdited !== undefined ? new Date(obj?.lastEdited) : new Date()).toISOString();
+  // cut title to 100 characters
+  const title = (obj?.info?.video?.title || '').slice(0, 100);
+  const channelName = obj?.info?.channel?.name;
+  const videoId = obj?.info?.video?.videoId;
+  const channelId = obj?.info?.channel?.channelId;
+  const lastEdited = obj?.lastEdited !== undefined ? new Date(obj?.lastEdited) : new Date();
+  const result = (title ? title : '') + (channelName ? ` - ${channelName}` : (channelId ? ` - ${channelId}` : '')) + (videoId ? ` - ${videoId}` : '');
+  if (!result) {
+    return lastEdited.toISOString();
+  }
+  return filenamifyPath(result, {replacement: '_'});
 };
 
 export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
