@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "YtcFilter",
+  "name": "YtcFilter - YouTube Chat Filter",
   "homepage_url": "https://livetl.app/ytcfilter/",
-  "description": "YouTube Chat Filter",
+  "description": "The most powerful and intuitive YouTube chat filter extension.",
   "version": "0.3.0",
   "permissions": [
     "storage",
