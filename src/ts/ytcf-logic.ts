@@ -5,7 +5,7 @@ import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
 import { YTCF_MESSAGEDUMPINFOS_KEY, isLiveTL } from './chat-constants';
-import { filenamifyPath } from 'filenamify';
+import sanitize from 'sanitize-filename';
 
 const browserObject = chrome;
 
@@ -620,11 +620,21 @@ const getTitle = (obj: YtcF.MessageDumpExportItem | undefined): string => {
   const videoId = obj?.info?.video?.videoId;
   const channelId = obj?.info?.channel?.channelId;
   const lastEdited = obj?.lastEdited !== undefined ? new Date(obj?.lastEdited) : new Date();
-  const result = (title ? title : '') + (channelName ? ` - ${channelName}` : (channelId ? ` - ${channelId}` : '')) + (videoId ? ` - ${videoId}` : '');
+  // const result = (title ? title : '') + (channelName ? ` - ${channelName}` : (channelId ? ` - ${channelId}` : '')) + (videoId ? ` - ${videoId}` : '');
+  let result = title;
+  if (videoId) {
+    result += `${result ? ' - ' : ''}${videoId}`;
+  }
+  if (channelName) {
+    result += `${result ? ' _ ' : ''}${channelName}`;
+  }
+  if (channelId) {
+    result += `${result ? ' - ' : ''}${channelId}`;
+  }
   if (!result) {
     return lastEdited.toISOString();
   }
-  return filenamifyPath(result, {replacement: '_'});
+  return sanitize(result);
 };
 
 export const downloadAsJson = async (item: YtcF.MessageDumpInfoItem): Promise<void> => {
