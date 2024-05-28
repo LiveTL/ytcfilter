@@ -36,7 +36,7 @@
     <br />
     <strong>v{version}:</strong>
     <span>
-      auto-open, filenames, + more.
+      auto-open setting + UI tweaks.
     </span>
   </p>
 </div>
