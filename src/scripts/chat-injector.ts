@@ -154,7 +154,7 @@ const chatLoaded = async (): Promise<void> => {
       }
       return;
     }
-    activatorText.textContent = 'Un-Embed';
+    activatorText.textContent = 'Hide';
     activatorIcon.textContent = 'cancel_presentation';
     ytcfilterElement.style.display = 'block';
     resizeBar.style.display = 'flex';
