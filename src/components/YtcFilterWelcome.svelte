@@ -12,15 +12,15 @@
   <p style="text-align: center;">
     <span style="margin-bottom: 0.5rem;">Filtered messages will appear here.</span>
     <br />
-    <strong>Preset:</strong>
+    <!-- <strong>Preset:</strong> -->
     <span class="trimmed">
       {$currentFilterPreset?.nickname}
     </span>
     <span>
       ({$currentFilterPreset?.filters.filter(f => f.enabled).length} filters)
-    </span>
-    <br />
-    <strong>Video:</strong>
+    </span>,
+    <!-- <br /> -->
+    <!-- <strong>Video:</strong> -->
     {#if $videoInfo}
       {#if $videoInfo?.video?.title}
         <span class="trimmed">{$videoInfo?.video?.title || 'Unknown'}</span>
@@ -31,12 +31,12 @@
         <span>{$videoInfo.video.videoId || 'Unknown'}</span>
       {/if}
     {:else}
-      <span>Unknown</span>
+      <span>Unknown Video</span>
     {/if}
     <br />
     <strong>v{version}:</strong>
     <span>
-      auto-open setting + UI tweaks.
+      new auto-open setting + UI tweaks.
     </span>
   </p>
 </div>
