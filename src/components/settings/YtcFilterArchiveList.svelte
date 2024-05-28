@@ -209,7 +209,7 @@
       </tr>
       {#each data.slice(startIndex, startIndex + 10) as item, i (item.key)}
         <tr class="hover-highlight" style="padding: 0x 5px;" on:click={isArchiveLoadSelection ? loadArchiveEntry(item) : undefined}>
-          <td>{item.info?.video.videoId}</td>
+          <td style="white-space: nowrap;">{item.info?.video.videoId}</td>
           <td style="width: 100%;">
             {computeName(item)}
           </td>

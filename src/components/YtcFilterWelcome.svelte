@@ -36,7 +36,7 @@
     <br />
     <strong>v{version}:</strong>
     <span>
-      new auto-open setting + UI tweaks.
+      new auto-open setting, UI tweaks, minor fixes.
     </span>
   </p>
 </div>

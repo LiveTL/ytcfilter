@@ -59,12 +59,14 @@ export function shouldFilterMessage(action: Chat.MessageAction): boolean {
             break;
           }
         } else {
-          const regex = parseRegex(condition.value);
-          const result = regex.test(compStr);
           if (!condition.value) {
             numValidFilters--;
-          } else if (result === condition.invert) {
-            break;
+          } else {
+            const regex = parseRegex(condition.value);
+            const result = regex.test(compStr);
+            if (result === condition.invert) {
+              break;
+            }
           }
         }
         numSatisfied++;
@@ -105,8 +107,12 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVide
       if (result) return true;
     } else {
       const regex = parseRegex(trigger.value);
-      const result = regex.test(compStr);
-      if (result) return true;
+      try {
+        const result = regex.test(compStr);
+        if (result) return true;
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
   return false;
