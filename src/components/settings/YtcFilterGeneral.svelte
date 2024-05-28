@@ -135,6 +135,11 @@
         livetl.app
       </a>
     </div>
+    <div>
+      <strong>Source Code:</strong> <a href="https://github.com/LiveTL/ytcfilter" style="color: #3ba7ff;" target="_blank">
+        github.com/LiveTL/ytcfilter
+      </a>
+    </div>
   </div>
 </div>
 
