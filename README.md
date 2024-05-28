@@ -9,6 +9,13 @@
 [![Commit Activity](https://img.shields.io/github/commit-activity/w/LiveTL/HyperChat)](https://github.com/LiveTL/HyperChat/commits/)
 [![Discord](https://img.shields.io/discord/780938154437640232.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/uJrV3tmthg) -->
 
+## Installation
+
+[Chrome Web Store](https://chrome.google.com/webstore/detail/ytcfilter/mnldnbhgfocmkehnlkeanlhfmopepnko)
+<!-- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/ytcfilter/) -->
+
+Release packages are also available [on GitHub](https://github.com/LiveTL/ytcfilter/releases).
+
 ## Building from Source
 
 > Note: The repo expects a Linux or Unix-like environment. If you are on Windows, use WSL.
