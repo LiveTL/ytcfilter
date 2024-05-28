@@ -23,7 +23,8 @@
     component: YtcFilterArchives as any,
     props: {
       isArchiveLoadSelection
-    }
+    },
+    freeScale: true
   }, {
     name: 'Other',
     component: YtcFilterGeneral
@@ -58,7 +59,7 @@
   style="scrollbar-width: thin; scrollbar-color: #888 transparent; user-select: none; {isArchiveLoadSelection ? '' : 'padding-top: 42px;'}"
   data-theme={$dataTheme}
 >
-  <div class="settings-card" use:exioComponent>
+  <div class="settings-card" use:exioComponent style={tabs[tabIndex].freeScale ? 'max-width: unset !important;' : ''}>
     <svelte:component this={tabs[tabIndex].component} {...(tabs[tabIndex].props || {})} />
   </div>
 </div>
