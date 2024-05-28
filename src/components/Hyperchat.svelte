@@ -552,6 +552,7 @@
   const exportScreenshot = async () => {
     const clonedNode = screenshotElement?.cloneNode(true) as HTMLDivElement;
     clonedNode.id = 'screenshot-element';
+    clonedNode.dataset.theme = $dataTheme;
     hiddenElement?.appendChild(clonedNode);
     let style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
     if (!style) {
@@ -572,6 +573,12 @@
     bottomNode.appendChild(spanNode);
     bottomNode.appendChild(hrefNode);
     style.innerHTML = `
+      #screenshot-element {
+        color: black;
+      }
+      #screenshot-element[data-theme="dark"] {
+        color: white;
+      }
       #screenshot-element img {
         transform: translateY(35%);
       }
