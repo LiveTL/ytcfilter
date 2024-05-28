@@ -100,8 +100,8 @@
       <span class="static-logo-text">YtcFilter</span>
     </div>
     <button use:exioButton class="activator ytcf-launch-button">
-      <span>Embed</span>
-      <div use:exioIcon class="shifted-icon top-bar-icon">
+      <span class="activator-text">Embed</span>
+      <div use:exioIcon class="shifted-icon top-bar-icon activator-icon">
         expand
       </div>
     </button>

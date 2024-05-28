@@ -134,6 +134,8 @@ const chatLoaded = async (): Promise<void> => {
     return;
   }
   const activatorButton = document.querySelector('.ytcf-launch-button') as HTMLButtonElement;
+  const activatorText = activatorButton.querySelector('.activator-text') as HTMLSpanElement;
+  const activatorIcon = activatorButton.querySelector('.activator-icon') as HTMLSpanElement;
   const popoutButton = document.querySelector('.ytcf-popout-button') as HTMLButtonElement;
   const settingsButton = document.querySelector('.ytcf-settings-button') as HTMLButtonElement;
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -142,6 +144,8 @@ const chatLoaded = async (): Promise<void> => {
     const frame = ytcfilterElement.querySelector('iframe');
     const resizeBar = document.querySelector('.ytcf-resize-bar') as HTMLDivElement;
     if (forceClose || ytcfilterElement.style.display === 'block') {
+      activatorText.textContent = 'Embed';
+      activatorIcon.textContent = 'expand';
       ytcfilterElement.style.display = 'none';
       resizeBar.style.display = 'none';
       ytcfilterElement.style.display = 'none';
@@ -150,6 +154,8 @@ const chatLoaded = async (): Promise<void> => {
       }
       return;
     }
+    activatorText.textContent = 'Un-Embed';
+    activatorIcon.textContent = 'cancel_presentation';
     ytcfilterElement.style.display = 'block';
     resizeBar.style.display = 'flex';
     if (frame && frame.src !== source) {

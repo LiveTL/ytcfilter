@@ -817,7 +817,7 @@
         </button>
       {:else}
         <button use:exioButton on:click={toggleTopBar} class="inline-flex gap-1 items-center">
-          {topBarVisible ? 'Less' : 'More'}
+          Menu
           <div use:exioIcon class="inline-block" style="color: inherit;">
             unfold_{topBarVisible ? 'less' : 'more'}_double
           </div>
