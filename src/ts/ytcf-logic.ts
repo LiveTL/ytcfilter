@@ -62,9 +62,14 @@ export function shouldFilterMessage(action: Chat.MessageAction): boolean {
           if (!condition.value) {
             numValidFilters--;
           } else {
-            const regex = parseRegex(condition.value);
-            const result = regex.test(compStr);
-            if (result === condition.invert) {
+            try {
+              const regex = parseRegex(condition.value);
+              const result = regex.test(compStr);
+              if (result === condition.invert) {
+                break;
+              }
+            } catch (e) {
+              console.error(e);
               break;
             }
           }
