@@ -62,14 +62,18 @@ export function shouldFilterMessage(action: Chat.MessageAction): boolean {
           if (!condition.value) {
             numValidFilters--;
           } else {
-            try {
-              const regex = parseRegex(condition.value);
-              const result = regex.test(compStr);
-              if (result === condition.invert) {
-                break;
-              }
-            } catch (e) {
-              console.error(e);
+            // try {
+            //   const regex = parseRegex(condition.value);
+            //   const result = regex.test(compStr);
+            //   if (result === condition.invert) {
+            //     break;
+            //   }
+            // } catch (e) {
+            //   console.error(e);
+            //   break;
+            // }
+            const { result, error } = testRegex(condition.value, compStr);
+            if (error || result === condition.invert) {
               break;
             }
           }
@@ -82,6 +86,22 @@ export function shouldFilterMessage(action: Chat.MessageAction): boolean {
     }
   }
   return false;
+}
+
+export const testRegex = (expression: string, value: string): { result: boolean; error: Error | false; } => {
+  try {
+    const regex = parseRegex(expression);
+    return {
+      result: regex.test(value),
+      error: false
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      result: false,
+      error: e as Error
+    };
+  }
 }
 
 export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVideoInfo): boolean {
@@ -111,13 +131,15 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVide
       const result = s1[trigger.type](s2);
       if (result) return true;
     } else {
-      try {
-        const regex = parseRegex(trigger.value);
-        const result = regex.test(compStr);
-        if (result) return true;
-      } catch (e) {
-        console.error(e);
-      }
+      // try {
+      //   const regex = parseRegex(trigger.value);
+      //   const result = regex.test(compStr);
+      //   if (result) return true;
+      // } catch (e) {
+      //   console.error(e);
+      // }
+      const { result } = testRegex(trigger.value, compStr);
+      if (result) return true;
     }
   }
   return false;
