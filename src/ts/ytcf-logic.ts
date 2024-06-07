@@ -111,8 +111,8 @@ export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVide
       const result = s1[trigger.type](s2);
       if (result) return true;
     } else {
-      const regex = parseRegex(trigger.value);
       try {
+        const regex = parseRegex(trigger.value);
         const result = regex.test(compStr);
         if (result) return true;
       } catch (e) {
