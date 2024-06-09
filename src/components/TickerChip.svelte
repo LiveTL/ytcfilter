@@ -25,7 +25,8 @@
 >
   {#if $showProfileIcons}
     <img
-      class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
+      class="h-5 w-5 inline align-middle rounded-full flex-none whitespace-nowrap overflow-hidden mr-1"
+      style="text-indent: 100%; max-width: 1.25rem;"
       src={item.author.profileIcon.src}
       alt={item.author.profileIcon.alt}
     />

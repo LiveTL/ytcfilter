@@ -146,6 +146,7 @@ const chatLoaded = async (): Promise<void> => {
     if (forceClose || ytcfilterElement.style.display === 'block') {
       activatorText.textContent = 'Embed';
       activatorIcon.textContent = 'expand';
+      // activatorButton.disabled = false;
       ytcfilterElement.style.display = 'none';
       resizeBar.style.display = 'none';
       ytcfilterElement.style.display = 'none';
@@ -156,6 +157,7 @@ const chatLoaded = async (): Promise<void> => {
     }
     activatorText.textContent = 'Hide';
     activatorIcon.textContent = 'cancel_presentation';
+    // activatorButton.disabled = true;
     ytcfilterElement.style.display = 'block';
     resizeBar.style.display = 'flex';
     if (frame && frame.src !== source) {

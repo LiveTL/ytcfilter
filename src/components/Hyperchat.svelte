@@ -519,6 +519,27 @@
     el.value = 'export';
   };
 
+  const sortMessagesByShowtime = () => {
+    messageActions = messageActions.sort((a, b) => {
+      if (isWelcome(a)) return -1;
+      if (isWelcome(b)) return 1;
+      return a.message.showtime - b.message.showtime;
+    });
+  };
+
+  const executeActions = (e: any) => {
+    const el = (e.target as HTMLSelectElement);
+    switch (el.value) {
+      case 'sort':
+        sortMessagesByShowtime();
+        break;
+      case 'clear':
+        clearMessages();
+        break;
+    }
+    el.value = 'actions';
+  };
+
   let archiveEmbedFrame = '';
 
   const executeImport = async (e: any) => {
@@ -639,18 +660,20 @@
   $: showWelcome = $initialized && (messageActions.length === 0 && !paramsArchiveKey);
 
   const clearMessages = () => {
-    $confirmDialog = {
-      action: {
-        callback: () => {
-          messageKeys.clear();
-          messageActions = [];
-        },
-        text: 'Clear'
-      },
-      message: UNDONE_MSG,
-      title: 'Clear Messages?'
-    };
-    scrollToBottom();
+    // $confirmDialog = {
+    //   action: {
+    //     callback: () => {
+    //       messageKeys.clear();
+    //       messageActions = [];
+    //     },
+    //     text: 'Clear'
+    //   },
+    //   message: UNDONE_MSG,
+    //   title: 'Clear Messages?'
+    // };
+    // scrollToBottom();
+    messageKeys.clear();
+    messageActions = [];
   };
   let key = '';
   const initMessageStorage = async () => {
@@ -802,12 +825,17 @@
         <option value="textfile">TXT</option>
         <option value="jsondump">JSON</option>
       </select>
-      <button use:exioButton on:click={clearMessages} class="whitespace-nowrap" disabled={showWelcome}>
+      <select use:exioDropdown style="width: 74px;" on:change={executeActions}>
+        <option selected disabled value="actions">Actions</option>
+        <option value="sort">Sort Time</option>
+        <option value="clear">Clear All</option>
+      </select>
+      <!-- <button use:exioButton on:click={clearMessages} class="whitespace-nowrap" disabled={showWelcome}>
         Clear
         <div use:exioIcon class="shifted-icon inline-block" style="color: inherit;">
           close
         </div>
-      </button>
+      </button> -->
       {#if isPopout}
         <button use:exioButton on:click={openSettings} class="inline-flex gap-1 items-center">
           Settings
@@ -815,13 +843,18 @@
             settings
           </div>
         </button>
-      {:else}
+      {:else if !paramsArchiveKey}
         <button use:exioButton on:click={toggleTopBar} class="inline-flex gap-1 items-center">
           Menu
           <div use:exioIcon class="inline-block" style="color: inherit;">
             unfold_{topBarVisible ? 'less' : 'more'}_double
           </div>
         </button>
+        <!-- <button use:exioButton on:click={toggleTopBar} class="inline-flex gap-1 items-center">
+          <div use:exioIcon class="inline-block text-error-500 dark:text-error-200">
+            close
+          </div>
+        </button> -->
       {/if}
     </div>
   </div>
