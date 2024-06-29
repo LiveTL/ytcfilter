@@ -37,6 +37,7 @@
     <strong>v{version}:</strong>
     <span>
       new auto-open setting, UI tweaks, minor fixes.
+      timestamp re-sorting, regex validator, UI tweaks.
     </span>
   </p>
 </div>
