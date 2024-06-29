@@ -104,6 +104,15 @@ export const testRegex = (expression: string, value: string): { result: boolean;
   }
 }
 
+export const isValidRegex = (expression: string): boolean => {
+  try {
+    parseRegex(expression);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function shouldActivatePreset(preset: YtcF.FilterPreset, info: SimpleVideoInfo): boolean {
   for (const trigger of preset.triggers) {
     let compStr = '';

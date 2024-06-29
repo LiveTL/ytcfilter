@@ -1,6 +1,7 @@
 <script lang="ts">
   import { exioIcon } from 'exio/svelte';
   import { languageNameCode } from '../../ts/tl-tag-detect';
+  import { isValidRegex } from '../../ts/ytcf-logic';
   export let filter: YtcF.ChatFilter;
   export let isTextFilter: (filter: YtcF.FilterCondition) => filter is YtcF.StringCondition;
   export let compact = false;
@@ -38,13 +39,15 @@
       const value = condition.type === 'tltag' ? languageNameCode[condition.value].selectionName : condition.value;
       const trueFalse = condition.invert ? falses[condition.type] : trues[condition.type];
       const suffix = ['includes', 'startsWith', 'endsWith', 'equals'].includes(condition.type) && condition.caseSensitive ? '(case sensitive)' : '';
+      const valid = condition.type === 'regex' ? isValidRegex(value) : Boolean(value);
       return [{
         type: 'string',
         value: `${prefix} ${trueFalse}`
       }, {
         type: 'literal',
         value,
-        suffix
+        suffix,
+        valid
       }];
     } else {
       const prefix = propertyMap[condition.property];
@@ -66,8 +69,8 @@
         <span>{index === index1 && index === 0 ? (run.value.charAt(0).toUpperCase() + run.value.slice(1)) : run.value}</span>
       {:else if run.type === 'literal'}
         &nbsp;"<code class:compact={compact}>{run.value}</code><span>"</span>
-        {#if !run.value}
-          <span use:exioIcon style="vertical-align: -3px; color: #ff9800;">warning</span>
+        {#if !run.valid}
+          <span use:exioIcon style="vertical-align: -3px; color: #ff9800;" title="Warning: invalid condition!">warning</span>
         {/if}
         {#if run.suffix}
           <span>{run.suffix}</span>
