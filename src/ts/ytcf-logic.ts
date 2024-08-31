@@ -619,7 +619,8 @@ export const deleteSavedMessageActions = async (key: string): Promise<void> => {
 
 export const findSavedMessageActionKey = async (
   continuation: string | null,
-  info: SimpleVideoInfo | null
+  info: SimpleVideoInfo | null,
+  clearOldItems = false
 ): Promise<string | null> => {
   // return await new Promise((resolve) => {
   //   chrome.storage.local.get(null, (s) => {
