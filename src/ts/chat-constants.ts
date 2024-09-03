@@ -73,6 +73,13 @@ export enum ChatReportUserOptions {
   MISINFORMATION = 'MISINFORMATION',
 }
 
+export enum TimeUnit {
+  HOURS = 'HOURS',
+  DAYS = 'DAYS',
+  WEEKS = 'WEEKS',
+  MONTHS = 'MONTHS'
+}
+
 export const chatReportUserOptions = [
   { value: ChatReportUserOptions.UNWANTED_SPAM, label: 'Unwanted commercial content or spam' },
   { value: ChatReportUserOptions.PORN_OR_SEX, label: 'Pornography or sexually explicit material' },

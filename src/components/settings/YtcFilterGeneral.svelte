@@ -1,13 +1,15 @@
 <script lang="ts">
   import { Theme } from '../../ts/chat-constants';
-  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground, initialSetupDone, autoOpenFilterPanel } from '../../ts/storage';
-  import { exioButton, exioCheckbox, exioDropdown, exioIcon } from 'exio/svelte';
+  import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground, initialSetupDone, autoOpenFilterPanel, autoClear } from '../../ts/storage';
+  import { exioButton, exioCheckbox, exioDropdown, exioIcon, exioTextbox } from 'exio/svelte';
   import { forceReloadAll } from '../../ts/ytcf-logic';
+  import { TimeUnit } from '../../ts/chat-constants';
   import '../../stylesheets/ui.css';
   import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
   import LoadingBar from '../common/LoadingBar.svelte';
   import { version } from '../../manifest.json';
+  import { onMount, tick } from 'svelte';
   let loading: false | string = false;
   const importData = async () => {
     const data = await readFromJson();
@@ -61,6 +63,30 @@
   } else {
     $inputDialog = null;
   }
+
+  let waitingForStore = true;
+  let boolAutoClear = false;
+  let numberAutoClear = 2;
+  let unitAutoClear = TimeUnit.WEEKS;
+
+  onMount(async () => {
+    await autoClear.ready();
+    boolAutoClear = $autoClear.enabled;
+    numberAutoClear = $autoClear.duration;
+    unitAutoClear = $autoClear.unit;
+    await tick();
+    await tick();
+    waitingForStore = false;
+  });
+
+  const updateAutoClear = () => {
+    if (waitingForStore) return;
+    $autoClear = {
+      enabled: boolAutoClear,
+      duration: numberAutoClear,
+      unit: unitAutoClear
+    };
+  };
 </script>
 
 <YtcFilterErrorDialog />
@@ -120,6 +146,40 @@
     <input class="check" type="checkbox" use:exioCheckbox bind:checked={$filterInBackground} id="silently-filter" />
     <label for="silently-filter">Silently begin filtering messages in the background on load</label>
   </div>
+  <div class="setting-item" style="margin-bottom: 5px;">
+    <input
+      class="check"
+      type="checkbox"
+      use:exioCheckbox
+      bind:checked={boolAutoClear}
+      id="clear-auto"
+      on:change={updateAutoClear}
+      style="transform: translateY(-0.4em);"
+    />
+    <label for="clear-auto">
+      Automatically delete stale archives after
+      <input
+        type="number"
+        min="1"
+        disabled={!boolAutoClear}
+        on:change={updateAutoClear}
+        bind:value={numberAutoClear}
+        use:exioTextbox
+        style="width: 4em;"
+      />
+      <select
+        use:exioDropdown
+        disabled={!boolAutoClear}
+        bind:value={unitAutoClear}
+        on:change={updateAutoClear}
+      >
+        <option value={TimeUnit.HOURS}>Hours</option>
+        <option value={TimeUnit.DAYS}>Days</option>
+        <option value={TimeUnit.WEEKS}>Weeks</option>
+        <option value={TimeUnit.MONTHS}>Months</option>
+      </select>
+    </label>    
+  </div>
 </div>
 <div class="settings-title big-text">About</div>
 <div class="settings-content">
@@ -152,5 +212,8 @@
     display: inline-block;
     vertical-align: bottom;
     margin: 0px 10px;
+  }
+  input[type=number]::-webkit-inner-spin-button {
+    opacity: 1;
   }
 </style>

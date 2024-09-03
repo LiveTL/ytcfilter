@@ -3,7 +3,7 @@ import { derived, readable, writable } from 'svelte/store';
 import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
-import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
+import { ChatReportUserOptions, Theme, TimeUnit, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
 
 const INITIAL_PRESET_ID = 'initial-preset-id'; // all other ids will be random
 
@@ -228,3 +228,8 @@ export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | nul
 export const bytesUsed = stores.addSyncStore('hc.bytes.used', 0);
 export const filterInBackground = stores.addSyncStore('ytcf.startFilteringInBackground', true);
 export const autoOpenFilterPanel = stores.addSyncStore('ytcf.autoOpenFilterPanel', false);
+export const autoClear = stores.addSyncStore('ytcf.autoClear', {
+  unit: TimeUnit.WEEKS,
+  duration: 2,
+  enabled: true
+} as YtcF.AutoClearDurationObject);

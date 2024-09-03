@@ -37,6 +37,11 @@ declare namespace YtcF {
     triggers: PresetTrigger[];
     activation: 'manual' | 'auto';
   }
+  interface AutoClearDurationObject {
+    enabled: boolean;
+    duration: number;
+    unit: TimeUnit.WEEKS;
+  };
   interface MessageDumpInfoItem {
     nickname: string;
     continuation: string[];

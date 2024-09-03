@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 import { currentFilterPreset, chatFilterPresets, defaultFilterPresetId, currentStorageVersion, initialSetupDone, forceReload, showProfileIcons, showTimestamps } from './storage';
-import { stringifyRuns, download } from './ytcf-utils';
+import { stringifyRuns, download, convertDurationObjectToMs } from './ytcf-utils';
 import { getRandomString } from './chat-utils';
 import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
@@ -620,7 +620,7 @@ export const deleteSavedMessageActions = async (key: string): Promise<void> => {
 export const findSavedMessageActionKey = async (
   continuation: string | null,
   info: SimpleVideoInfo | null,
-  clearOldItems = false
+  autoClearDurationObject: YtcF.AutoClearDurationObject
 ): Promise<string | null> => {
   // return await new Promise((resolve) => {
   //   chrome.storage.local.get(null, (s) => {
@@ -637,13 +637,21 @@ export const findSavedMessageActionKey = async (
   //   });
   // });
   const allInfoDumps = await getAllMessageDumpInfoItems();
+  let returnValue = null;
   for (const dump of allInfoDumps) {
-    if ((continuation != null && continuation && dump.continuation.includes(continuation)) ||
+    if (
+      autoClearDurationObject.enabled &&
+      dump.lastEdited < Date.now() - convertDurationObjectToMs(autoClearDurationObject)
+    ) {
+      await deleteSavedMessageActions(dump.key);
+    } else if ((continuation != null && continuation && dump.continuation.includes(continuation)) ||
       (info?.video != null && dump.info?.video?.videoId === info.video.videoId && info.video.videoId)) {
-      return dump.key;
+      // return dump.key;
+      returnValue = dump.key;
     }
   }
-  return null;
+  // return null;
+  return returnValue;
 };
 
 export const getAllMessageDumpInfoItems = async (): Promise<YtcF.MessageDumpInfoItem[]> => {

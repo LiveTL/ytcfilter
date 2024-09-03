@@ -65,7 +65,8 @@
     ytDark,
     confirmDialog,
     initialSetupDone,
-    defaultFilterPresetId
+    defaultFilterPresetId,
+    autoClear
   } from '../ts/storage';
   import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump, mergeVideoInfoObjs } from '../ts/ytcf-logic';
@@ -677,7 +678,7 @@
   };
   let key = '';
   const initMessageStorage = async () => {
-    let tempKey = paramsArchiveKey || await findSavedMessageActionKey(paramsContinuation, $videoInfo, true);
+    let tempKey = paramsArchiveKey || await findSavedMessageActionKey(paramsContinuation, $videoInfo, $autoClear);
     tempKey = tempKey === null ? getRandomString() : tempKey;
     const newMsgs = await getSavedMessageDumpActions(tempKey);
     if (newMsgs?.length) {
