@@ -157,7 +157,7 @@
       style="transform: translateY(-0.4em);"
     />
     <label for="clear-auto">
-      Automatically delete stale archives after
+      Periodically delete stale archives older than
       <input
         type="number"
         min="1"

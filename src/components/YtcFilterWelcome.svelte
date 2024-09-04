@@ -36,7 +36,7 @@
     <br />
     <strong>v{version}:</strong>
     <span>
-      timestamp re-sorting, regex validator, UI tweaks.
+      auto-delete stale archives (default 2 weeks)
     </span>
   </p>
 </div>
