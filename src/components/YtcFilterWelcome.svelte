@@ -36,7 +36,7 @@
     <br />
     <strong>v{version}:</strong>
     <span>
-      auto-delete stale archives (default 2 weeks)
+      fixed broken chat rules dialog
     </span>
   </p>
 </div>
