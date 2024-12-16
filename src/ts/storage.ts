@@ -47,10 +47,11 @@ export const translatorClient = readable(null as (null | IframeTranslatorClient)
 });
 export const refreshScroll = writable(false);
 export const theme = stores.addSyncStore('ytcf.theme', Theme.YOUTUBE);
-export const showProfileIcons = stores.addSyncStore('ytcf.messages.showProfileIcons', true);
+export const showProfileIcons = stores.addSyncStore('ytcf.messages.showProfileIcons', false);
 export const showUsernames = stores.addSyncStore('ytcf.messages.showUsernames', true);
 export const showTimestamps = stores.addSyncStore('ytcf.messages.showTimestamps', false);
 export const showUserBadges = stores.addSyncStore('ytcf.messages.showUserBadges', true);
+export const showChatSummary = stores.addSyncStore('ytcf.messages.showChatSummary', true);
 export const lastClosedVersion = stores.addSyncStore('ytcf.lastClosedVersion', '');
 export const showOnlyMemberChat = stores.addSyncStore('ytcf.showOnlyMemberChat', false);
 export const emojiRenderMode = stores.addSyncStore('ytcf.emojiRenderMode', YoutubeEmojiRenderMode.SHOW_ALL);
@@ -225,7 +226,7 @@ export const getPresetById = async (id: string): Promise<YtcF.FilterPreset | nul
   return presets.find(preset => preset.id === id) ?? null;
 };
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-export const bytesUsed = stores.addSyncStore('hc.bytes.used', 0);
+export const bytesUsed = stores.addSyncStore('ytcf.bytes.used', 0);
 export const filterInBackground = stores.addSyncStore('ytcf.startFilteringInBackground', true);
 export const autoOpenFilterPanel = stores.addSyncStore('ytcf.autoOpenFilterPanel', false);
 export const autoClear = stores.addSyncStore('ytcf.autoClear', {

@@ -11,6 +11,7 @@
   import WelcomeMessage from './YtcFilterWelcome.svelte';
   import Message from './Message.svelte';
   // import PinnedMessage from './PinnedMessage.svelte';
+  // import ChatSummary from './ChatSummary.svelte';
   import PaidMessage from './PaidMessage.svelte';
   import MembershipItem from './MembershipItem.svelte';
   import ReportBanDialog from './ReportBanDialog.svelte';
@@ -44,6 +45,7 @@
     showUsernames,
     showTimestamps,
     showUserBadges,
+    // showChatSummary,
     refreshScroll,
     emojiRenderMode,
     useSystemEmojis,
@@ -99,6 +101,7 @@
   let overrideActions: (Chat.MessageAction | Welcome)[] = [];
   const messageKeys = new Set<string>();
   let pinned: Ytc.ParsedPinned | null;
+  let summary: Ytc.ParsedSummary | null;
   let div: HTMLElement;
   let isAtBottom = true;
   // let truncateInterval: number;
@@ -280,6 +283,9 @@
         if (overrideActions.length > 0) {
           setOverride();
         }
+        break;
+      case 'summary':
+        summary = action;
         break;
       case 'pin':
         pinned = action;
