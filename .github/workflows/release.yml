@@ -1,21 +1,25 @@
 name: Latest Release Build
+
 on:
   release:
     types:
       - published
+
 jobs:
   build:
     env:
       ADDON_ID: "{20f2dcdf-6f8d-4aeb-862b-b13174475d9c}"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with: 
-          submodules: 'recursive'
-      - uses: c-hive/gha-yarn-cache@v1
-      - uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: '22'
+          cache: 'yarn'
+
       - name: Install modules
         run: |
           sudo apt install jq
@@ -23,10 +27,14 @@ jobs:
           VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
           jq --arg version $VERSION '.version = $version' src/manifest.json > src/manifest.json.tmp
           mv src/manifest.json.tmp src/manifest.json
+
       - name: Build Chrome
         run: |
-          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//') yarn build:chrome
+          # Extract version number from the tag
+          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
+          yarn build:chrome
           yarn package
+
       - name: Upload Chrome package to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -35,10 +43,14 @@ jobs:
           asset_name: YtcFilter-Chrome.zip
           tag: ${{ github.ref }}
           overwrite: true
+
       - name: Build Firefox
         run: |
-          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//') yarn build:firefox
+          # Extract version number from the tag
+          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
+          yarn build:firefox
           yarn package
+
       - name: Upload Firefox package to release
         uses: svenstaro/upload-release-action@v2
         with:

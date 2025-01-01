@@ -1,13 +1,15 @@
-import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, createPopup } from '../ts/chat-utils';
+import HcButton from '../components/HyperchatButton.svelte';
+import { getFrameInfoAsync, isValidFrameInfo, frameIsReplay, checkInjected, createPopup } from '../ts/chat-utils';
 import { detectForceReload } from '../ts/ytcf-logic';
-import { isLiveTL, isAndroid } from '../ts/chat-constants';
+import { isLiveTL } from '../ts/chat-constants';
 import {
-  // hcEnabled,
+  hcEnabled,
   autoLiveChat,
   filterInBackground,
   initialSetupDone,
   autoOpenFilterPanel
 } from '../ts/storage';
+
 import {
   initInterceptor,
   processMessageChunk,
@@ -228,13 +230,6 @@ const chatLoaded = async (): Promise<void> => {
   // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
   // @ts-ignore
   ytcTicker.remove();
-
-  // Hide input panel on android
-  if (isAndroid) {
-    const inputPanel = document.querySelector('#input-panel');
-    if (!inputPanel) return;
-    (inputPanel as HTMLElement).style.display = 'none';
-  }
 
   if (await autoLiveChat.get()) {
     const live = document.querySelector<HTMLElement>('tp-yt-paper-listbox#menu > :nth-child(2)');
