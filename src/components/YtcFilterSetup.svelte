@@ -4,7 +4,6 @@
   import '../stylesheets/ui.css';
   import '../stylesheets/line.css';
   import { exioButton, exioComponent, exioIcon, exioZoomInAnimation } from 'exio/svelte';
-  import { getBrowser, Browser } from '../ts/chat-constants';
   import { onMount } from 'svelte';
   import ExioRadios from './common/ExioRadios.svelte';
   import { downloadV2Data, getV2Storage, migrateV2toV3, readFromJson } from '../ts/ytcf-logic';
@@ -23,7 +22,7 @@
   let v2BackupSkipped = false;
   onMount(async () => {
     if (paramsTabId != null && paramsFrameId != null && paramsTabId.length >= 1 && paramsFrameId.length >= 1) {
-      if (getBrowser() === Browser.FIREFOX) {
+      if (__BROWSER__ === 'firefox') {
         const frameInfo = {
           tabId: parseInt(paramsTabId),
           frameId: parseInt(paramsFrameId)

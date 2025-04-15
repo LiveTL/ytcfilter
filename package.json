@@ -64,6 +64,5 @@
     "vite": "2.9.16",
     "vite-plugin-web-extension": "^1.4.0",
     "vite-plugin-zip-pack": "1.0.7"
-  },
-  "dependencies": {}
+  }
 }
