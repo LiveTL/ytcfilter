@@ -18,22 +18,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'yarn'
 
-      - name: Install modules
-        run: |
-          sudo apt install jq
-          yarn
-          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
-          jq --arg version $VERSION '.version = $version' src/manifest.json > src/manifest.json.tmp
-          mv src/manifest.json.tmp src/manifest.json
+      - run: |
+          npm install
+          npm run lint:check
 
-      - name: Build Chrome
-        run: |
           # Extract version number from the tag
           VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
-          yarn build:chrome
-          yarn package
+
+          npm run build
 
       - name: Upload Chrome package to release
         uses: svenstaro/upload-release-action@v2
@@ -43,13 +36,6 @@ jobs:
           asset_name: YtcFilter-Chrome.zip
           tag: ${{ github.ref }}
           overwrite: true
-
-      - name: Build Firefox
-        run: |
-          # Extract version number from the tag
-          VERSION=$(echo -n "${{ github.ref }}" | sed 's/[refs\/tagv]//g' | sed 's/-.*//')
-          yarn build:firefox
-          yarn package
 
       - name: Upload Firefox package to release
         uses: svenstaro/upload-release-action@v2

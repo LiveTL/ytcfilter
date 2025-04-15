@@ -23,9 +23,10 @@
   const backgroundColor = `background-color: #${membershipBackground}`;
 </script>
 
-{#if membership || membershipGift}
-  <div class={classes}>
-    <!-- <div
+{#if membership ?? membershipGift}
+  <div class={classes} style="background-color: #{membershipBackground};">
+    <!--
+    <div
       class="p-2"
       style="{isMilestoneChat ? `background-color: #${milestoneChatBackground};` : ''}"
     >

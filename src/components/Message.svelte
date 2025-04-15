@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { mdiGift } from '@mdi/js';
   import MessageRun from './MessageRuns.svelte';
   import Icon from './common/Icon.svelte';
   import Menu from './common/Menu.svelte';
@@ -15,6 +16,7 @@
   import { useBanHammer } from '../ts/chat-actions';
   import { mdiGift } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import type { Chat } from '../ts/typings/chat';
   const dispatch = createEventDispatcher();
 
   export let message: Ytc.ParsedMessage;
@@ -63,7 +65,7 @@
 
   $: showUserMargin = $showProfileIcons || $showUsernames || $showTimestamps ||
     ($showUserBadges && (moderator || verified || member));
-  
+
   export let forceTLColor: Theme = Theme.YOUTUBE;
 
   const menuItems = [
@@ -85,7 +87,7 @@
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-<div 
+<div
   class="inline-flex flex-row gap-2 break-words w-full overflow-visible"
 >
   {#if !hideName && $showProfileIcons}

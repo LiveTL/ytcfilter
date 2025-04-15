@@ -5,29 +5,25 @@
   import Icon from 'smelte/src/components/Icon';
   import { Theme } from '../ts/chat-constants';
   import { createEventDispatcher } from 'svelte';
+  import { showProfileIcons } from '../ts/storage';
+  import ProgressLinear from 'smelte/src/components/ProgressLinear';
 
-  export let summary: Ytc.ParsedSummary;
+  export let poll: Ytc.ParsedPoll;
 
   let dismissed = false;
   let shorten = false;
-  let autoHideTimeout: NodeJS.Timeout | null = null;
+  let prevId: string | null = null;
   const classes = 'rounded inline-flex flex-col overflow-visible ' +
    'bg-secondary-900 p-2 w-full text-white z-10 shadow';
 
   const onShorten = () => {
     shorten = !shorten;
-    if (autoHideTimeout) {
-      clearTimeout(autoHideTimeout);
-      autoHideTimeout = null;
-    }
   };
-
-  $: if (summary) {
+  
+  $: if (poll.actionId !== prevId) {
     dismissed = false;
     shorten = false;
-    if (summary.showtime) {
-      autoHideTimeout = setTimeout(() => { shorten = true; }, summary.showtime);
-    }
+    prevId = poll.actionId;
   }
 
   const dispatch = createEventDispatcher();
@@ -50,7 +46,14 @@
             {/if}
           </Icon>
         </span>
-        {#each summary.item.header as run}
+        {#if $showProfileIcons}
+          <img
+            class="h-5 w-5 inline align-middle rounded-full flex-none"
+            src={poll.item.profileIcon.src}
+            alt={poll.item.profileIcon.alt}
+          />
+        {/if}
+        {#each poll.item.header as run}
           {#if run.type === 'text'}
             <span class="align-middle">{run.text}</span>
           {/if}
@@ -70,12 +73,18 @@
       </div>
     </div>
     {#if !shorten && !dismissed}
-      <div class="mt-1 whitespace-pre-line" transition:slide|local={{ duration: 300 }}>
-        <MessageRun runs={summary.item.subheader} deleted forceDark forceTLColor={Theme.DARK}/>
+      <div class="mt-1 inline-flex flex-row gap-2 break-words w-full overflow-visible" transition:slide|local={{ duration: 300 }}>
+        <MessageRun runs={poll.item.question} forceDark forceTLColor={Theme.DARK}/>
       </div>
-      <div class="mt-1 whitespace-pre-line" transition:slide|local={{ duration: 300 }}>
-        <MessageRun runs={summary.item.message} forceDark forceTLColor={Theme.DARK}/>
-      </div>
+      {#each poll.item.choices as choice}
+        <div class="mt-1 w-full whitespace-pre-line flex justify-start items-end" transition:slide|global={{ duration: 300 }}>
+          <MessageRun runs={choice.text} forceDark forceTLColor={Theme.DARK} />
+          <span class="ml-auto" transition:slide|global={{ duration: 300 }}>
+            {choice.percentage}
+          </span>
+        </div>
+        <ProgressLinear progress={(choice.ratio || 0.001) * 100} color="gray"/>
+      {/each}
     {/if}
   </div>
 {/if}
