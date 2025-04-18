@@ -36,7 +36,7 @@
     <br />
     <strong>v{version}:</strong>
     <span>
-      fixed broken chat rules dialog
+      reduced message delay
     </span>
   </p>
 </div>
