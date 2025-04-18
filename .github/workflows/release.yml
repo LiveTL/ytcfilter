@@ -32,7 +32,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/YtcFilter-Chrome.zip
+          file: build/YtcFilter-chrome.zip
           asset_name: YtcFilter-Chrome.zip
           tag: ${{ github.ref }}
           overwrite: true
@@ -41,7 +41,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/YtcFilter-Firefox.zip
+          file: build/YtcFilter-firefox.zip
           asset_name: YtcFilter-Firefox.zip
           tag: ${{ github.ref }}
           overwrite: true
