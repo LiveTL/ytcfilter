@@ -9,8 +9,8 @@
     (isLiveTL ? 'hyperchat' : 'assets') + '/logo.png'
   );
   const reviewLink = __BROWSER__ === 'firefox'
-    ? 'https://addons.mozilla.org/en-US/firefox/addon/hyperchat/'
-    : 'https://chrome.google.com/webstore/detail/hyperchat-optimized-youtu/naipgebhooiiccifflecbffmnjbabdbh';
+    ? 'https://addons.mozilla.org/en-US/firefox/addon/ytcfilter/'
+    : 'https://chromewebstore.google.com/detail/ytcfilter-youtube-chat-fi/mnldnbhgfocmkehnlkeanlhfmopepnko';
   const classes = 'p-2 rounded inline-flex flex-col overflow-hidden ' +
    'bg-secondary-50 dark:bg-secondary-600 w-full';
 

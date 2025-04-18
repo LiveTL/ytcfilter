@@ -75,7 +75,7 @@ export default defineConfig({
     zipPack({
       inDir: buildDir,
       outDir: 'build',
-      outFileName: `HyperChat-${browser}.zip`
+      outFileName: `YtcFilter-${browser}.zip`
     })
   ]
 });
