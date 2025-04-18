@@ -42,7 +42,7 @@ Open the repository and npm install:
 
 ```bash
 cd ytcfilter
-yarn # install dependencies
+npm install --force # install dependencies
 ```
 
 Serve the extension for local development:

@@ -92,12 +92,6 @@ module.exports = {
     ],
   },
   settings: {
-    'svelte3/typescript': () => require('typescript')
-  },
-  globals: {
-    Ytc: 'readonly',
-    Chat: 'readonly',
-    YtcF: 'readonly',
     'svelte3/typescript': () => require('typescript'),
     'svelte3/ignore-warnings': (warning) => {
       if (warning.code === 'a11y-click-events-have-key-events') {
@@ -110,5 +104,10 @@ module.exports = {
 
       return false;
     },
+  },
+  globals: {
+    Ytc: 'readonly',
+    Chat: 'readonly',
+    YtcF: 'readonly'
   },
 };
