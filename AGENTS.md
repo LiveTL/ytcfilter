@@ -124,6 +124,8 @@
 ## Runtime Validation
 
 - A fresh profile will redirect into setup until `ytcf.initialSetupDone` is true.
+- Preset/filter edits are not expected to hot-patch an already mounted filtered panel.
+- After changing filters in settings, reload/remount the panel before judging runtime behavior.
 - Useful extension pages:
   - `setup.html`
   - `options.html`
@@ -198,6 +200,7 @@ xvfb-run -a /snap/bin/chromium \
    - options page
    - filtered panel / popout
    - native chat button bar
+   - after filter edits, reload/remount and then retest the mounted panel
 9. Commit the merge with a short subject.
 
 ## Release Notes Style

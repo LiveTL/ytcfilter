@@ -85,6 +85,7 @@ Recommended spot checks after a shared HC bump:
 - `hyperchat.html` still renders the filtered panel UI
 - native YouTube chat still gets the YTCF button bar
 - block/report actions still route through the shared HC plumbing
+- filter edits should be retested only after reloading/remounting the panel; mounted sessions do not live-patch by design
 
 ## Versioning
 
