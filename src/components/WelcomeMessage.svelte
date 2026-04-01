@@ -24,7 +24,7 @@
     },
     {
       name: 'GitHub',
-      href: 'https://github.com/LiveTL/HyperChat/'
+      href: 'https://github.com/LiveTL/ytcfilter/'
     },
     {
       name: 'Discord',
