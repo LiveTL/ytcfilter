@@ -7,6 +7,12 @@ const MOUNT_ROOT_ID = 'hyperchat-mount-root';
 const FONT_LINK_ID = 'hyperchat-font-link';
 const TAILWIND_STYLE_ID = 'hyperchat-tailwind-style';
 
+const hasExioClass = (element: Element): boolean =>
+  Array.from(element.classList).some((className) => className.startsWith('exio-'));
+
+const shouldKeepBodyChild = (child: Element, root: HTMLDivElement): boolean =>
+  child === root || hasExioClass(child);
+
 const stripEmbedArtifacts = (): void => {
   for (const selector of ['#player', '.player-unavailable', 'yt-live-chat-app', 'ytd-app', 'ytm-app']) {
     document.querySelector(selector)?.remove();
@@ -36,7 +42,7 @@ const ensureHeadAssets = (): void => {
 
 const retainOnlyMountRoot = (root: HTMLDivElement): void => {
   for (const child of Array.from(document.body.children)) {
-    if (child !== root) {
+    if (!shouldKeepBodyChild(child, root)) {
       child.remove();
     }
   }
@@ -52,7 +58,7 @@ const ensureMountRoot = (): HTMLDivElement => {
     root.id = MOUNT_ROOT_ID;
   }
 
-  root.style.cssText = 'position: fixed; inset: 0; overflow: hidden; z-index: 2147483647;';
+  root.style.cssText = 'position: fixed; inset: 0; overflow: hidden; z-index: 1;';
   retainOnlyMountRoot(root);
 
   return root;
@@ -77,7 +83,10 @@ const mount = (): void => {
 
   new MutationObserver(() => {
     stripEmbedArtifacts();
-    if (!document.body.contains(mountRoot) || document.body.children.length !== 1) {
+    if (
+      !document.body.contains(mountRoot) ||
+      Array.from(document.body.children).some((child) => !shouldKeepBodyChild(child, mountRoot))
+    ) {
       retainOnlyMountRoot(mountRoot);
     }
   }).observe(document.body, {
