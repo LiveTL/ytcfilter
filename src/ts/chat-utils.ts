@@ -8,6 +8,7 @@ export const getFrameInfoAsync = async (): Promise<Chat.UncheckedFrameInfo> => {
 };
 
 const youtubePlayerStylesSelector = 'link[name="www-player"], link[href*="www-player.css"]';
+const youtubePlayerShellSelectors = ['#player', '#player-controls', '.player-unavailable', 'yt-live-chat-app', 'ytd-app', 'ytm-app'];
 
 export const createPopup = (url: string): void => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -104,6 +105,12 @@ export const stripYoutubePlayerStyles = (): void => {
   if (document.head == null) return;
   for (const link of Array.from(document.head.querySelectorAll<HTMLLinkElement>(youtubePlayerStylesSelector))) {
     link.remove();
+  }
+};
+
+export const stripYoutubePlayerShell = (): void => {
+  for (const selector of youtubePlayerShellSelectors) {
+    document.querySelector(selector)?.remove();
   }
 };
 

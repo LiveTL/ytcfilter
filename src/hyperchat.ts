@@ -1,8 +1,9 @@
 import { detectForceReload } from './ts/ytcf-logic';
 import Hyperchat from './components/Hyperchat.svelte';
 import 'smelte/src/tailwind.css';
-import { stripYoutubePlayerStyles } from './ts/chat-utils';
+import { stripYoutubePlayerShell, stripYoutubePlayerStyles } from './ts/chat-utils';
 
+stripYoutubePlayerShell();
 stripYoutubePlayerStyles();
 
 (window as any).useYtTheme = true;
