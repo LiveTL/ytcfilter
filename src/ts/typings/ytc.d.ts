@@ -288,19 +288,19 @@ declare namespace Ytc {
         webCommandMetadata?: {
           apiUrl?: string;
           sendPost?: boolean;
-        }
-      }
+        };
+      };
       liveChatActionEndpoint?: {
         params: string;
-      }
+      };
       urlEndpoint?: {
         url: string;
         target: string;
-      }
+      };
       watchEndpoint?: {
         videoId: string;
-      }
-    }
+      };
+    };
   }
 
   interface PollRenderer {
@@ -312,8 +312,8 @@ declare namespace Ytc {
         thumbnail: Thumbnails;
         metadataText: RunsObj;
         liveChatPollType: string;
-      }
-    }
+      };
+    };
     displayVoteResults?: boolean;
     button?: ButtonRenderer;
   }
@@ -520,7 +520,7 @@ declare namespace Ytc {
         ratio?: number;
         percentage?: string;
       }>;
-    }
+    };
     // TODO add 'action' for ending poll button
   }
 

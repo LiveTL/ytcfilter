@@ -39,7 +39,7 @@
         />
       {/if}
       <span class="font-bold tracking-wide align-middle mr-3">
-        {message.author.name}
+        {displayAuthorName}
       </span>
       {#if primaryText && primaryText.length > 0}
         <MessageRun
@@ -87,4 +87,3 @@
     vertical-align: middle;
   }
 </style>
-

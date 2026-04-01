@@ -6,6 +6,7 @@ import parseRegex from 'regex-parser';
 import { isLangMatch, parseTranslation } from './tl-tag-detect';
 import { YTCF_MESSAGEDUMPINFOS_KEY, isLiveTL } from './chat-constants';
 import sanitize from 'sanitize-filename';
+import type { Chat } from './typings/chat';
 
 const browserObject = chrome;
 

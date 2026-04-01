@@ -7,6 +7,8 @@ export const getFrameInfoAsync = async (): Promise<Chat.UncheckedFrameInfo> => {
   );
 };
 
+const youtubePlayerStylesSelector = 'link[name="www-player"], link[href*="www-player.css"]';
+
 export const createPopup = (url: string): void => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   chrome.runtime.sendMessage({ type: 'createPopup', url });
@@ -69,9 +71,22 @@ export const isPrivileged = (types: string[]): boolean =>
 export const isChatMessage = (a: Chat.MessageAction): boolean =>
   !a.message.superChat && !a.message.superSticker && !a.message.membership;
 
+const OBSOLETE_MEMBER_EMOJI_PLACEHOLDER = '\u25A1';
+
+export const textIsObsoleteMemberEmoji = (text: string): boolean => {
+  const nonWhitespace = text.replace(/\s/g, '');
+  return nonWhitespace.length > 0 &&
+    [...nonWhitespace].every(char => char === OBSOLETE_MEMBER_EMOJI_PLACEHOLDER);
+};
+
 export const isAllEmoji = (a: Chat.MessageAction): boolean =>
   a.message.message.length !== 0 &&
-  a.message.message.every(m => m.type === 'emoji' || (m.type === 'text' && m.text.trim() === ''));
+  a.message.message.every(m => m.type === 'emoji' || (
+    m.type === 'text' && (
+      m.text.trim() === '' ||
+      textIsObsoleteMemberEmoji(m.text)
+    )
+  ));
 
 export const checkInjected = (error: string): boolean => {
   if (document.querySelector('#hc-buttons')) {
@@ -81,24 +96,37 @@ export const checkInjected = (error: string): boolean => {
   return false;
 };
 
-export const useReconnect = <T extends Chat.Port>(connect: () => T): T & { destroy: () => void } => {
-  let actualPort = connect();
-  const onDisconnect = (): void => {
-    actualPort = connect();
-    actualPort.onDisconnect.addListener(onDisconnect);
+type ReconnectingPort<T extends Chat.Port> =
+  Partial<Pick<T, 'name' | 'disconnect' | 'postMessage' | 'onMessage' | 'onDisconnect'>> &
+  { destroy: () => void };
+
+export const stripYoutubePlayerStyles = (): void => {
+  if (document.head == null) return;
+  for (const link of Array.from(document.head.querySelectorAll<HTMLLinkElement>(youtubePlayerStylesSelector))) {
+    link.remove();
+  }
+};
+
+export const useReconnect = <T extends Chat.Port>(connect: () => Promise<T>): ReconnectingPort<T> => {
+  let actualPort: T | null = null;
+
+  const doConnect = async (): Promise<void> => {
+    actualPort = await connect();
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    actualPort.onDisconnect.addListener(doConnect);
   };
-  actualPort.onDisconnect.addListener(onDisconnect);
+  void doConnect();
 
   return {
-    ...actualPort,
-    get name() { return actualPort.name; },
-    disconnect(...args) { return actualPort.disconnect(...args); },
-    postMessage(...args) { return actualPort.postMessage(...args); },
-    get onMessage() { return actualPort.onMessage; },
-    get onDisconnect() { return actualPort.onDisconnect; },
+    get name() { return actualPort?.name; },
+    disconnect(...args) { return actualPort?.disconnect(...args); },
+    postMessage(...args) { return actualPort?.postMessage(...args); },
+    get onMessage() { return actualPort?.onMessage; },
+    get onDisconnect() { return actualPort?.onDisconnect; },
     destroy: () => {
-      actualPort.onDisconnect.removeListener(onDisconnect);
-      actualPort.disconnect();
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      actualPort?.onDisconnect.removeListener(doConnect);
+      actualPort?.disconnect();
     }
   };
 };

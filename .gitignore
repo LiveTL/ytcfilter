@@ -1,7 +1,6 @@
 .DS_Store
 node_modules
 build
-package-lock.json
 .eslintcache
 
 # local env files
@@ -19,3 +18,6 @@ npm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+.codex-runtime/
+.codex-profile/

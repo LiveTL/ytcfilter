@@ -31,13 +31,20 @@ import YtcFilterButtons from '../components/YtcFilterButtons.svelte';
 //   'Having multiple instances of the same scripts running WILL cause ' +
 //   'problems such as chat messages not loading.';
 
+const getScriptURL = (path: string): string => {
+  if (isLiveTL) {
+    return chrome.runtime.getURL('submodules/chat/src/scripts/' + path);
+  }
+  return chrome.runtime.getURL('scripts/' + path);
+};
+
 const chatLoaded = async (): Promise<void> => {
   detectForceReload();
 
   // if (!isLiveTL && checkInjected(hcWarning)) return;
 
   const metagetter = document.createElement('script');
-  metagetter.src = chrome.runtime.getURL('scripts/chat-metagetter.js');
+  metagetter.src = getScriptURL('chat-metagetter.js');
   const ytcfg: any = await new Promise((resolve) => {
     window.addEventListener('fetchMeta', (event) => {
       resolve(JSON.parse((event as any).detail as string));
@@ -54,7 +61,7 @@ const chatLoaded = async (): Promise<void> => {
     processSentMessage((d as CustomEvent).detail);
   });
   const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('scripts/chat-interceptor.js');
+  script.src = getScriptURL('chat-interceptor.js');
   document.body.appendChild(script);
 
   // Handle initial data

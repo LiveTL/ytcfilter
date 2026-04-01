@@ -1,0 +1,129 @@
+# YtcFilter Release Process
+
+YTCF ships from a single active line.
+
+## Branch And Sync Order
+
+1. Work on `master`.
+2. `git fetch hc`
+3. If shared HC behavior changed upstream, merge `hc/main` into `master` first.
+4. Resolve conflicts in YTCF terms.
+5. Validate locally.
+6. Push `master`.
+7. Tag and publish the release from `master`.
+
+YTCF is MV3-only. There is no internal `mv2 -> mv3` ladder here.
+
+## Local Validation
+
+Clean reinstall if Node or dependencies look stale:
+
+```bash
+rm -rf node_modules
+n exec 22.21.1 npm install --force
+```
+
+Build both targets:
+
+```bash
+n exec 22.21.1 npm run build:chrome
+n exec 22.21.1 npm run build:firefox
+```
+
+Optional combined build:
+
+```bash
+n exec 22.21.1 npm run build
+```
+
+Runtime smoke in Chromium:
+
+```bash
+CHROME_BIN=/snap/bin/chromium bash scripts/codex-dev.sh go-test
+```
+
+If the helper is flaky under snap Chromium, use the direct manual smoke command:
+
+```bash
+rm -rf /tmp/ytcf-manual-profile
+xvfb-run -a /snap/bin/chromium \
+  --disable-gpu \
+  --ozone-platform=headless \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/ytcf-manual-profile \
+  --disable-extensions-except="$PWD/build" \
+  --load-extension="$PWD/build" \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-background-timer-throttling \
+  --disable-renderer-backgrounding \
+  --disable-dev-shm-usage \
+  --disable-features=IsolateOrigins,site-per-process,TranslateUI \
+  --disable-web-security \
+  --allow-running-insecure-content \
+  --allow-insecure-localhost \
+  --no-sandbox \
+  --disable-setuid-sandbox \
+  --noerrdialogs \
+  --disable-notifications \
+  --disable-translate \
+  --disable-infobars \
+  --autoplay-policy=no-user-gesture-required \
+  "https://www.youtube.com/watch?v=jfKfPfyJRdk"
+```
+
+Build output layout:
+
+- Chrome unpacked extension: `build/`
+- Firefox unpacked extension: `build/firefox/`
+- release ZIPs: `build/YtcFilter-chrome.zip` and `build/YtcFilter-firefox.zip`
+
+Recommended spot checks after a shared HC bump:
+
+- setup flow still opens
+- options page still renders filters / archives / other tabs
+- `hyperchat.html` still renders the filtered panel UI
+- native YouTube chat still gets the YTCF button bar
+- block/report actions still route through the shared HC plumbing
+
+## Versioning
+
+- Release version is driven by the tag.
+- The release workflow strips the leading `v` and passes the result as `VERSION`.
+- `vite.config.ts` writes that `VERSION` into the built extension manifest.
+- Practical rule:
+  - tag `v3.0.7` builds extension version `3.0.7`
+
+`package.json` is not the authoritative release number for published builds here.
+
+## Release Workflow
+
+- Workflow: `.github/workflows/release.yml`
+- Trigger:
+  - GitHub release event `published`
+  - optional `workflow_dispatch` with a `tag` input for rebuilds
+- Assets uploaded:
+  - `YtcFilter-Chrome.zip`
+  - `YtcFilter-Firefox.zip`
+
+## Recommended Publish Flow
+
+1. Make sure `master` contains the intended YTCF changes and the latest needed HC merge.
+2. Run the local validation commands above.
+3. Push `master`.
+4. Create and push the release tag:
+   - `git tag vX.Y.Z`
+   - `git push origin vX.Y.Z`
+5. Publish the GitHub release for that tag.
+6. Confirm the release workflow uploads both ZIP assets.
+
+## Rebuild Existing Release Tag
+
+If the tag already exists and you only need to rebuild assets:
+
+1. Ensure the tag points at the intended commit.
+2. Use the `Latest Release Build` workflow with `workflow_dispatch`.
+3. Pass the existing tag name, for example:
+   - `v3.0.7`
+
+The workflow checks out that tag and replaces the uploaded assets.

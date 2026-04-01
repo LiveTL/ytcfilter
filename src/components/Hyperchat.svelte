@@ -13,7 +13,6 @@
   import PinnedMessage from './PinnedMessage.svelte';
   import ChatSummary from './ChatSummary.svelte';
   import RedirectBanner from './RedirectBanner.svelte';
-  import PollResults from './PollResults.svelte';
   import PaidMessage from './PaidMessage.svelte';
   import MembershipItem from './MembershipItem.svelte';
   import ReportBanDialog from './ReportBanDialog.svelte';
@@ -290,9 +289,6 @@
           setOverride();
         }
         break;
-      case 'poll':
-        poll = action;
-        break;
       case 'summary':
         summary = action;
         break;
@@ -309,22 +305,7 @@
         }, false, false);
         break;
       case 'unpin':
-        if (action.targetActionId) {
-          if (action.targetActionId === pinned?.actionId) {
-            pinned = null;
-          }
-          if (action.targetActionId === summary?.actionId) {
-            summary = null;
-          }
-          if (action.targetActionId === poll?.actionId) {
-            poll = null;
-          }
-          if (action.targetActionId === redirect?.actionId) {
-            redirect = null;
-          }
-        } else {
-          pinned = null;
-        }
+        pinned = null;
         break;
       case 'playerProgress':
         $currentProgress = action.playerProgress;

@@ -4,6 +4,7 @@ import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
 import { ChatReportUserOptions, Theme, TimeUnit, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
+import type { Chat } from './typings/chat';
 
 const INITIAL_PRESET_ID = 'initial-preset-id'; // all other ids will be random
 

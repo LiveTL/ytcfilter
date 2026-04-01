@@ -2,33 +2,34 @@
 
 ## Scope
 
-- YtcFilter is an MV3-only extension repo.
+- YTCF is an MV3-only extension repo.
 - `master` is the shipping branch.
 - This repo does not use HyperChat as a submodule.
-- Instead, it tracks HyperChat through the `hc` git remote and merges upstream chat/runtime changes into this tree.
+- Shared HC changes come in by merging `hc/main` into `master`.
 
 ## Repo Model
 
-- HC is the upstream shared chat machinery.
-- LTL consumes HC as a submodule.
-- YTCF is a fork-style HC consumer with a large in-tree YTCF layer.
-- Do not treat YTCF like LiveTL. There is no `develop -> mv3-fr -> release` ladder here.
-- Do not assume any `mv2 -> mv3` branch choreography inside this repo. YTCF is MV3-only now.
+- HC is the upstream shared chat backbone.
+- LTL embeds HC as a submodule.
+- YTCF is an HC-based codebase with a large in-tree YTCF layer.
+- Do not treat YTCF like LTL. There is no `develop -> mv3-fr -> release` ladder here.
+- Do not invent an HC-style `mv2 -> mv3` ladder here. YTCF is MV3-only.
 
 ## Branch Discipline
 
 - Work on `master` unless the user explicitly asks for something else.
-- The local `mv3` branch is historical. Do not use it as the normal source branch.
 - Keep `master` in sync with `origin/master`.
+- The old local `mv3` branch is historical. Do not use it as the normal source branch.
 
 ## Sync Model (Mandatory)
 
-- Shared HC fixes should be landed in HyperChat first when they truly belong upstream.
-- After the HC side is ready, pull those changes into YTCF by merging:
+- If a fix belongs in shared HC behavior, land it in HC first.
+- Then pull it into YTCF by merging:
   - `hc/main` -> `master`
-- Do not hand-copy large HC changes into YTCF when the real relationship is an upstream merge.
-- Do not invent a submodule-style bump process here. The sync mechanism is git merge from the `hc` remote.
-- When merging `hc/main`, preserve YTCF-owned behavior and resolve conflicts in favor of the repo's actual product model.
+- Prefer a proper merge over hand-copying many HC commits.
+- Resolve merge conflicts in YTCF terms:
+  - keep YTCF filters, presets, triggers, archives, setup, and panel UI
+  - take HC backbone fixes in shared parsing, rendering, messaging, and runtime plumbing
 
 ## Code Boundaries
 
@@ -43,19 +44,19 @@
   - presets
   - preset triggers / auto-activation
   - archive persistence / import / export
-  - setup / migration flow
+  - setup / migration
   - YTCF settings UI
   - YTCF button bar and panel behavior
 
 ## Runtime Model
 
-- On YouTube chat pages, `src/scripts/chat-injector.ts` installs the interception path and mounts the YTCF button bar.
-- The panel/popup UI mounts through `src/scripts/chat-mounter.ts` into `https://www.youtube.com/embed/ytcfilter_embed?...`.
+- `src/scripts/chat-injector.ts` installs the interception path on native YouTube chat pages and mounts the YTCF button bar.
+- `src/scripts/chat-mounter.ts` mounts the main YTCF panel into `https://www.youtube.com/embed/ytcfilter_embed?...`.
 - `src/ts/chat-parser.ts` normalizes YT actions.
-- `src/ts/queue.ts` handles live/replay timing and incremental delivery.
-- `src/ts/messaging.ts` bridges the injected side and mounted UI side.
+- `src/ts/queue.ts` handles live/replay timing.
+- `src/ts/messaging.ts` bridges the injected side and the mounted UI side.
 - `src/ts/ytcf-logic.ts` is the main YTCF behavior layer.
-- The rendered chat is not the raw chat feed. Messages are shown only if they match the active preset.
+- The rendered chat is not the raw feed. Messages are shown only if they match the active preset.
 
 ## Main UI Surfaces
 
@@ -75,52 +76,134 @@
   - filters inside a preset are OR
   - a message is shown if it matches an enabled filter
 - Presets can auto-activate from channel/video metadata.
-- Archives are first-class YTCF data, not incidental debug output.
+- Archives are real YTCF data, not incidental debug output.
 - `Block user` and `Report user` are YouTube-side actions.
-- `Delete` in the message menu is only local YTCF-side removal from the current rendered/archive view.
+- `Delete` in the message menu is local YTCF-side removal from the current rendered/archive view.
 
 ## House Style
 
-- Commit subjects should stay short, direct, and easy to scan.
+- Commit subjects should be short, direct, and easy to scan in `git log --oneline`.
 - Prefer active voice and plain wording:
   - `merge hc main`
   - `fix archive import`
-  - `tweak preset ui`
+  - `agent map`
 - Avoid padded scopes, issue-number prefixes, and long explanatory subjects.
 - Mildly funny is fine if the subject is still immediately clear.
-- Prefer proper merges for upstream HC syncs instead of manually replaying many commits.
+
+## Shared HC Patterns To Preserve
+
+- Keep author/channel identity data untouched and apply display-only formatting at render edges.
+- Use `src/ts/component-utils.ts` for author-name formatting.
+- Do not assume fixed YouTube menu indices for block/report behavior.
+- Keep proxy fetch request/response events correlated by request id.
+- Prefer fixing shared parser/messaging/util code before patching several UI surfaces by hand.
 
 ## Build And Tooling
 
 - Use `npm`, not `yarn`, in this repo.
-- Install dependencies with:
-  - `npm install --force`
+- If the local install looks stale or Node changed, do a clean reinstall:
+  - `rm -rf node_modules`
+  - `n exec 22.21.1 npm install --force`
 - Main commands:
   - `npm run build`
   - `npm run build:chrome`
   - `npm run build:firefox`
   - `npm run dev:chrome`
-- `npm run dev:firefox`
-- `npm run start:chrome`
-- `npm run start:firefox`
-- CI currently uses Node 22.
-- Local builds can fail in misleading ways if `node_modules` was installed under an incompatible or mixed Node environment.
-- If a local build behaves strangely:
-  - remove `node_modules`
-  - reinstall with `npm install --force` under a stable Node line
-  - then retry the build
+  - `npm run dev:firefox`
+  - `npm run start:chrome`
+  - `npm run start:firefox`
 - Verified locally on 2026-04-01:
-  - clean reinstall under Node `16.20.2`
-  - `npm run build:chrome` succeeds
-  - `npm run build:firefox` succeeds
-  - after that clean reinstall, the same builds also succeed under Node `22.21.1`
-- `npm ci` is not the reliable path here at the moment because the committed lockfile is not cleanly in sync with the current package manifest.
+  - clean reinstall under Node `16.20.2` works
+  - after that, `build:chrome` and `build:firefox` also work under Node `22.21.1`
+- CI uses Node `22`.
+- Unpacked output layout:
+  - Chrome build lives at `build/`
+  - Firefox build lives at `build/firefox/`
+  - zip artifacts land in `build/`
 
-## Validation Notes
+## Runtime Validation
 
 - A fresh profile will redirect into setup until `ytcf.initialSetupDone` is true.
-- Useful surfaces to inspect when validating behavior:
-  - `options.html`
+- Useful extension pages:
   - `setup.html`
+  - `options.html`
   - `hyperchat.html`
-- For runtime debugging, remember that the button bar lives in the native YouTube chat page while the main filtered view lives in the YTCF iframe/popout.
+- Convenience helper:
+  - `CHROME_BIN=/snap/bin/chromium bash scripts/codex-dev.sh go-test`
+- The helper auto-detects whether the unpacked MV3 build lives at `build/` or `build/chrome/`.
+- In this environment, the most reliable Chromium smoke path is still the direct manual command:
+
+```bash
+rm -rf /tmp/ytcf-manual-profile
+xvfb-run -a /snap/bin/chromium \
+  --disable-gpu \
+  --ozone-platform=headless \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/ytcf-manual-profile \
+  --disable-extensions-except="$PWD/build" \
+  --load-extension="$PWD/build" \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-background-timer-throttling \
+  --disable-renderer-backgrounding \
+  --disable-dev-shm-usage \
+  --disable-features=IsolateOrigins,site-per-process,TranslateUI \
+  --disable-web-security \
+  --allow-running-insecure-content \
+  --allow-insecure-localhost \
+  --no-sandbox \
+  --disable-setuid-sandbox \
+  --noerrdialogs \
+  --disable-notifications \
+  --disable-translate \
+  --disable-infobars \
+  --autoplay-policy=no-user-gesture-required \
+  "https://www.youtube.com/watch?v=jfKfPfyJRdk"
+```
+- That manual path was the one verified on 2026-04-01 for:
+  - injected YTCF button bar
+  - embedded `ytcfilter_embed` iframe
+  - setup page and options page rendering
+- Useful helper commands:
+  - `bash scripts/codex-dev.sh watch`
+  - `bash scripts/codex-dev.sh reload`
+  - `bash scripts/codex-dev.sh status`
+  - `bash scripts/codex-dev.sh stop`
+- Default testbed URL comes from `vite.config.ts`:
+  - `https://www.youtube.com/watch?v=jfKfPfyJRdk`
+- Treat `reload` as the default after significant runtime changes to:
+  - `src/scripts/**`
+  - `src/components/**`
+  - `src/ts/**`
+  - `src/manifest.json`
+  - `vite.config.ts`
+
+## Bump Checklist
+
+1. `git fetch hc`
+2. `git checkout master`
+3. `git merge --no-ff hc/main`
+4. Resolve conflicts by keeping YTCF-owned behavior and taking HC backbone fixes.
+5. Clean reinstall if needed:
+   - `rm -rf node_modules`
+   - `n exec 22.21.1 npm install --force`
+6. Rebuild:
+   - `n exec 22.21.1 npm run build:chrome`
+   - `n exec 22.21.1 npm run build:firefox`
+7. Run MV3 runtime smoke:
+   - `CHROME_BIN=/snap/bin/chromium bash scripts/codex-dev.sh go-test`
+   - if the helper is flaky under snap Chromium, use the manual `xvfb-run` command from the Runtime Validation section
+8. Spot-check:
+   - setup page
+   - options page
+   - filtered panel / popout
+   - native chat button bar
+9. Commit the merge with a short subject.
+
+## Release Notes Style
+
+- Keep bullets short and user-facing.
+- Prefer active voice:
+  - `Fix block/report actions`
+  - `Hide leading @ in names`
+- Avoid passive voice, filler, and overly technical wording unless the note is for maintainers.

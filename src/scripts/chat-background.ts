@@ -1,6 +1,6 @@
 import { isLiveTL } from '../ts/chat-constants';
 import { popoutDims } from '../ts/storage';
-const noUpdateKeys = new Set(['hc.bytes.used', 'hc.bytes.update']);
+const noUpdateKeys = new Set(['ytcf.bytes.used', 'ytcf.bytes.update']);
 const oneDay = 1000 * 60 * 60 * 24;
 
 const storageget = (key: string): any => chrome.storage.local.get(key).then(r => r[key]);
@@ -38,22 +38,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.onConnect.addListener(hc => {
-  // frameId and tabId should be int
-  const { frameId, tabId } = JSON.parse(hc.name);
+  const { frameId, tabId } = JSON.parse(hc.name) as { frameId: number, tabId: number };
   const interceptorPort = chrome.tabs.connect(tabId, { frameId });
-  hc.onDisconnect.addListener(() => {
-    interceptorPort.disconnect();
-  });
-  interceptorPort.onMessage.addListener(msg => {
+
+  const onInterceptorMessage = (msg: any): void => {
     hc.postMessage(msg);
+  };
+  interceptorPort.onMessage.addListener(onInterceptorMessage);
+  interceptorPort.onDisconnect.addListener(() => {
+    interceptorPort.onMessage.removeListener(onInterceptorMessage);
+    hc.onMessage.removeListener(onHcMessage);
+    try {
+      hc.disconnect();
+    } catch (error) {
+    }
   });
-  hc.onMessage.addListener(msg => {
+
+  const onHcMessage = (msg: any): void => {
     interceptorPort.postMessage(msg);
+  };
+  hc.onMessage.addListener(onHcMessage);
+  hc.onDisconnect.addListener(() => {
+    hc.onMessage.removeListener(onHcMessage);
+    interceptorPort.onMessage.removeListener(onInterceptorMessage);
+    try {
+      interceptorPort.disconnect();
+    } catch (error) {
+    }
   });
 });
 
 // see https://i.imgur.com/cGciqrX.png
-chrome.storage.local.onChanged.addListener(changes => {
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return;
+
   let delta = 0;
   for (const key of Object.keys(changes)) {
     if (noUpdateKeys.has(key)) continue;
@@ -69,8 +87,8 @@ chrome.storage.local.onChanged.addListener(changes => {
   (async () => {
     const toWrite: Record<string, any> = {};
     const data = await Promise.all([
-      storageget('hc.bytes.used'),
-      storageget('hc.bytes.lastupdate')
+      storageget('ytcf.bytes.used'),
+      storageget('ytcf.bytes.lastupdate')
     ]);
     let bytesused = defaultTo0(data[0]);
     const lastupdate = defaultTo0(data[1]);
@@ -85,11 +103,11 @@ chrome.storage.local.onChanged.addListener(changes => {
           .map(([key, value]) => key + JSON.stringify(value))
           .join('')
       ).length;
-      toWrite['hc.bytes.lastupdate'] = now;
+      toWrite['ytcf.bytes.lastupdate'] = now;
     }
 
     // storage transaction with 2 awaits -> potential data race???
-    toWrite['hc.bytes.used'] = bytesused + delta;
+    toWrite['ytcf.bytes.used'] = bytesused + delta;
     await chrome.storage.local.set(toWrite);
   })();
   return true;
