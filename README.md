@@ -26,7 +26,9 @@ See https://livetl.app/hyperchat/install -->
 
 <!-- ### ⚠️ WARNING ⚠️ -->
 
-For legacy reasons, we have a `mv2` branch used by [the LiveTL extension](https://github.com/LiveTL/LiveTL)'s Manifest V2 Firefox variant, while the `main` branch houses the main Manifest V3 version that's published to stores.
+~~For legacy reasons, we have a `mv2` branch used by [the LiveTL extension](https://github.com/LiveTL/LiveTL)'s Manifest V2 Firefox variant, while the `main` branch houses the main Manifest V3 version that's published to stores.~~
+
+YtcFilter is MV3-only now. `master` is the shipping branch, and shared HyperChat changes are pulled in by merging `hc/main` into `master`.
 
 ### Development
 
