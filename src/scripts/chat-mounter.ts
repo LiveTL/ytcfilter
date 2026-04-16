@@ -64,16 +64,14 @@ const ensureMountRoot = (): HTMLDivElement => {
 
 const mount = (): void => {
   console.log('[HyperChat] mounting hyperchat in embed frame');
+  const mountRoot = ensureMountRoot();
   stripEmbedArtifacts();
   stripYoutubePlayerStyles();
   document.documentElement.style.cssText = 'background-color: transparent !important;';
   document.body.style.cssText = 'margin: 0 !important; background-color: transparent !important; overflow: hidden !important;';
 
   ensureHeadAssets();
-  const mountRoot = ensureMountRoot();
-
   if (mountRoot.querySelector('.hyperchat-root') === null) {
-    // Create a dedicated root so YouTube cannot reinsert player artifacts under the UI.
     console.log(new Hyperchat({
       target: mountRoot
     }));

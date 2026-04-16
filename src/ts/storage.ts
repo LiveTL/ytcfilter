@@ -4,6 +4,7 @@ import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
 import { ChatReportUserOptions, Theme, TimeUnit, YoutubeEmojiRenderMode, isLiveTL } from './chat-constants';
+import { createLiveTLTranslatorClient, shouldUseLiveTLTranslatorBridge } from './ltl-translation';
 import type { Chat } from './typings/chat';
 
 const INITIAL_PRESET_ID = 'initial-preset-id'; // all other ids will be random
@@ -28,7 +29,9 @@ export const translatorClient = readable(null as (null | IframeTranslatorClient)
       return;
     }
     if (client) return;
-    client = await getClient();
+    client = shouldUseLiveTLTranslatorBridge()
+      ? createLiveTLTranslatorClient()
+      : await getClient();
     set(client);
   });
   translateTargetLanguage.ready().then(() => {

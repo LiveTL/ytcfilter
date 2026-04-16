@@ -527,30 +527,22 @@ declare namespace Ytc {
     timestamp?: string;
   }
 
-  interface ParsedPoll {
-    type: 'poll';
-    actionId: string;
-    item: {
-<<<<<<< HEAD
-      header: ParsedRun[];
-      profileIcon: ParsedImage;
-=======
-      profileIcon: ParsedImage;
-      header: ParsedRun[];
->>>>>>> hc/main
-      question: ParsedRun[];
-      choices: Array<{
-        text: ParsedRun[];
-        selected: boolean;
-        ratio?: number;
-        percentage?: string;
-      }>;
-    };
-<<<<<<< HEAD
-    // TODO add 'action' for ending poll button
-=======
->>>>>>> hc/main
-  }
+	  interface ParsedPoll {
+	    type: 'poll';
+	    actionId: string;
+	    item: {
+	      profileIcon: ParsedImage;
+	      header: ParsedRun[];
+	      question: ParsedRun[];
+	      choices: Array<{
+	        text: ParsedRun[];
+	        selected: boolean;
+	        ratio?: number;
+	        percentage?: string;
+	      }>;
+	    };
+	    // TODO add 'action' for ending poll button
+	  }
 
   interface ParsedRemoveBanner {
     type: 'unpin';

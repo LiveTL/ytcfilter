@@ -208,6 +208,17 @@ xvfb-run -a /snap/bin/chromium \
 
 - Keep bullets short and user-facing.
 - Prefer active voice:
-  - `Fix block/report actions`
-  - `Hide leading @ in names`
+  - `Fix filter edits`
+  - `Fix archive import`
 - Avoid passive voice, filler, and overly technical wording unless the note is for maintainers.
+
+## Emoji Placeholder Handling
+
+- Treat legacy member emoji placeholders (`U+25A1`, rendered as `□`) as emoji-equivalent for filtering.
+- In `HIDE_ALL` mode, do not render these placeholders in `MessageRuns.svelte`.
+- For emoji-only spam detection, count placeholder-only text runs as emoji in `isAllEmoji`.
+
+## Embed 404 Notes
+
+- The embed fallback page (`/embed/ytcfilter_embed`) can render a centered YouTube logo/error artifact if page elements are not fully removed.
+- In `src/scripts/chat-mounter.ts`, treat the YTCF mount root as the only allowed direct `body` child and aggressively remove fallback embed artifacts.
