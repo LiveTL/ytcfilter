@@ -4,7 +4,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 STATE_DIR="$REPO_ROOT/.codex-runtime"
-PROFILE_DIR="${USER_DATA_DIR:-$REPO_ROOT/.codex-profile}"
+DEFAULT_PROFILE_DIR="/tmp/$(basename "$REPO_ROOT")-codex-profile"
+PROFILE_DIR="${USER_DATA_DIR:-$DEFAULT_PROFILE_DIR}"
 REMOTE_DEBUGGING_PORT="${REMOTE_DEBUGGING_PORT:-9222}"
 CHROME_BIN="${CHROME_BIN:-google-chrome}"
 TEST_URL="${TEST_URL:-}"
@@ -42,8 +43,9 @@ detect_repo_scripts() {
   ); then
     WATCH_NPM_SCRIPT="dev:chrome"
     BUILD_NPM_SCRIPT="build:chrome"
-    EXT_PATH="$REPO_ROOT/build/chrome"
+    EXT_PATH=""
     resolve_ext_path || true
+    EXT_PATH="${EXT_PATH:-$REPO_ROOT/build}"
     MODE_LABEL="mv3"
     DEFAULT_TEST_URL="https://www.youtube.com/watch?v=jfKfPfyJRdk"
     return 0
@@ -191,9 +193,11 @@ start_browser() {
     --enable-automation
   )
   local launcher=()
+  # Prefer Xvfb when available so Chromium stays alive and debuggable in CI/SSH
+  # environments. This is "headless" (no real display) without relying on
+  # Chromium's headless implementation, which can be flaky across builds.
   if command -v xvfb-run >/dev/null 2>&1; then
     launcher=(xvfb-run -a)
-    browser_args+=(--ozone-platform=headless)
   else
     browser_args+=(--headless=new)
   fi
