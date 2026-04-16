@@ -204,9 +204,9 @@ xvfb-run -a /snap/bin/chromium \
    - after filter edits, reload/remount and then retest the mounted panel
 9. Commit the merge with a short subject.
 
-## Release Notes Style
+## Release Notes And Changelog Style
 
-## In-Product Changelog Style (Mandatory)
+### In-Product Changelog Style (Mandatory)
 
 - The in-product changelog is a single plain-text line:
   - `src/components/changelog/YtcFilterChangelog.svelte`
@@ -218,7 +218,7 @@ xvfb-run -a /snap/bin/chromium \
 - Example:
   - `fix visual conflicts w/ YT`
 
-## GitHub Release Notes Style (Mandatory)
+### GitHub Release Notes Style (Mandatory)
 
 - Match the historical release format:
 
