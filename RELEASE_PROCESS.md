@@ -107,6 +107,22 @@ Recommended spot checks after a shared HC bump:
   - `YtcFilter-Chrome.zip`
   - `YtcFilter-Firefox.zip`
 
+## Release Notes And Changelog Style (Mandatory)
+
+- In-product changelog (`src/components/changelog/YtcFilterChangelog.svelte`):
+  - single line, plain text only (no HTML, no lists)
+  - user-facing only
+  - extremely short (one clause)
+  - start with lowercase unless a proper noun forces capitalization
+  - do not use `/` separators
+  - example: `fix visual conflicts w/ YT`
+- GitHub release notes must match the historical format:
+
+```md
+## Here's what's new in vX.Y.Z:
+- fix visual conflicts w/ YT
+```
+
 ## Recommended Publish Flow
 
 1. Make sure `master` contains the intended YTCF changes and the latest needed HC merge.
@@ -128,3 +144,28 @@ If the tag already exists and you only need to rebuild assets:
    - `v3.0.7`
 
 The workflow checks out that tag and replaces the uploaded assets.
+
+## Overwrite A Bad Pre-release (Delete And Recreate)
+
+Use this when the notes/changelog were wrong and you want a clean rebuild.
+
+1. Delete the GitHub release and delete the tag:
+
+```bash
+gh release delete vX.Y.Z-betaN --cleanup-tag -y
+```
+
+2. Recreate the tag at the intended commit and push it:
+
+```bash
+git tag -f vX.Y.Z-betaN <commit>
+git push -f origin vX.Y.Z-betaN
+```
+
+3. Recreate the pre-release with the correct notes (tag must exist first):
+
+```bash
+gh release create vX.Y.Z-betaN --title vX.Y.Z-betaN --prerelease --notes "## Here's what's new in vX.Y.Z-betaN:\n- fix visual conflicts w/ YT\n"
+```
+
+4. Confirm the `Latest Release Build` workflow uploads both ZIP assets.

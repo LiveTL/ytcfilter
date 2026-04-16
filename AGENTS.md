@@ -206,11 +206,29 @@ xvfb-run -a /snap/bin/chromium \
 
 ## Release Notes Style
 
-- Keep bullets short and user-facing.
-- Prefer active voice:
-  - `Fix filter edits`
-  - `Fix archive import`
-- Avoid passive voice, filler, and overly technical wording unless the note is for maintainers.
+## In-Product Changelog Style (Mandatory)
+
+- The in-product changelog is a single plain-text line:
+  - `src/components/changelog/YtcFilterChangelog.svelte`
+- It must be user-facing only.
+- It must be extremely short (aim for one clause, no extra framing).
+- Start with lowercase unless a proper noun forces capitalization.
+- Do not use HTML, lists, or multiple lines.
+- Do not use `/` or other shorthand separators.
+- Example:
+  - `fix visual conflicts w/ YT`
+
+## GitHub Release Notes Style (Mandatory)
+
+- Match the historical release format:
+
+```md
+## Here's what's new in vX.Y.Z:
+- fix visual conflicts w/ YT
+```
+
+- Keep it to one bullet unless the user explicitly asks for more.
+- The bullet must be user-facing only (no maintainer/internal plumbing notes).
 
 ## Emoji Placeholder Handling
 
