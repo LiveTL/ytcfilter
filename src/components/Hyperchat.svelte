@@ -77,7 +77,7 @@
   import FullFrame from './FullFrame.svelte';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
   import { writable } from 'svelte/store';
-  import html2canvas from 'html2canvas';
+  import { toBlob as domToBlob, toPng as domToPng } from 'html-to-image';
   import type { Chat } from '../ts/typings/chat';
 
   const welcome = { welcome: true, message: { messageId: 'welcome' } };
@@ -647,43 +647,48 @@
         z-index: 100;
       }
     `;
-    html2canvas(clonedNode, {
-      useCORS: true,
-      backgroundColor: $dataTheme === 'dark' ? '#0f0f0f' : 'white',
-      width: screenshotElement?.clientWidth,
-      scale: 2,
-      allowTaint: true
-    }).then((canvas: HTMLCanvasElement) => {
-      const downloadName = `chat-${new Date().toISOString()}.png`;
-      const a = document.createElement('a');
-      a.download = downloadName;
+    const downloadName = `chat-${new Date().toISOString()}.png`;
+    const a = document.createElement('a');
+    a.download = downloadName;
 
-      // Prefer a Blob URL: YouTube CSP / modern Chromium can block `data:` navigation/downloads.
-      const toBlobP = () => new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
-          else reject(new Error('canvas.toBlob returned null'));
-        }, 'image/png');
-      });
+    const withTimeout = async <T,>(p: Promise<T>, ms: number): Promise<T> => {
+      return await Promise.race([
+        p,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error('PNG export timed out')), ms))
+      ]);
+    };
 
-      void toBlobP().then((blob) => {
-        const url = URL.createObjectURL(blob);
-        a.href = url;
-        a.click();
-        // Give the browser a moment to start the download before revoking.
-        setTimeout(() => URL.revokeObjectURL(url), 10_000);
-      }).catch(() => {
-        // Fallback: keep the old path for browsers that don't support toBlob() here.
-        a.href = canvas.toDataURL('image/png');
-        a.click();
-      });
-      style.innerHTML = '';
-      clonedNode.remove();
-    }).catch((err: any) => {
+    try {
+      // html2canvas has started hanging on some YouTube embed DOM changes. Prefer html-to-image,
+      // which uses a different rendering strategy and tends to fail fast instead of hanging forever.
+      let blob = await withTimeout(domToBlob(clonedNode, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: $dataTheme === 'dark' ? '#0f0f0f' : 'white'
+      }), 15_000);
+      if (!blob) {
+        const dataUrl = await withTimeout(domToPng(clonedNode, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: $dataTheme === 'dark' ? '#0f0f0f' : 'white'
+        }), 15_000);
+        blob = await (await fetch(dataUrl)).blob();
+      }
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (err: any) {
       console.error(err);
+      $alertDialog = {
+        title: 'PNG export failed',
+        message: String(err?.message ?? err),
+        color: 'error'
+      };
+    } finally {
       style.innerHTML = '';
       clonedNode.remove();
-    });
+    }
   };
   const exportTextFile = async () => {
     downloadAsTxt(await getSavedMessageDumpInfo(key));
