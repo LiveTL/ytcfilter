@@ -1,1 +1,1 @@
-Fix embed visuals / Hide leading @ in names
+fix visual conflicts w/ YT
