@@ -10,8 +10,11 @@ const TAILWIND_STYLE_ID = 'hyperchat-tailwind-style';
 const hasExioClass = (element: Element): boolean =>
   Array.from(element.classList).some((className) => className.startsWith('exio-'));
 
+const isHtml2CanvasContainer = (element: Element): boolean =>
+  element.classList.contains('html2canvas-container');
+
 const shouldKeepBodyChild = (child: Element, root: HTMLDivElement): boolean =>
-  child === root || hasExioClass(child);
+  child === root || hasExioClass(child) || isHtml2CanvasContainer(child);
 
 const stripEmbedArtifacts = (): void => {
   stripYoutubePlayerShell();
