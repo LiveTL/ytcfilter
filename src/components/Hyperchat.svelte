@@ -654,10 +654,29 @@
       scale: 2,
       allowTaint: true
     }).then((canvas: HTMLCanvasElement) => {
+      const downloadName = `chat-${new Date().toISOString()}.png`;
       const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = `chat-${new Date().toISOString()}.png`;
-      a.click();
+      a.download = downloadName;
+
+      // Prefer a Blob URL: YouTube CSP / modern Chromium can block `data:` navigation/downloads.
+      const toBlobP = () => new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('canvas.toBlob returned null'));
+        }, 'image/png');
+      });
+
+      void toBlobP().then((blob) => {
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.click();
+        // Give the browser a moment to start the download before revoking.
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      }).catch(() => {
+        // Fallback: keep the old path for browsers that don't support toBlob() here.
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      });
       style.innerHTML = '';
       clonedNode.remove();
     }).catch((err: any) => {
