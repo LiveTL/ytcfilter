@@ -36,7 +36,7 @@
     <br />
     <strong>v{appVersion}:</strong>
     <span>
-      reduced message delay
+      fix visual conflicts w/ YT
     </span>
   </p>
 </div>
