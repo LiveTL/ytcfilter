@@ -2,7 +2,6 @@
   import { lastClosedVersion, refreshScroll } from '../ts/storage';
   import { isLiveTL } from '../ts/chat-constants';
   import Changelog from './changelog/YtcFilterChangelog.svelte';
-  import { version } from '../manifest.json';
   import Icon from './common/Icon.svelte';
 
   const logo = chrome.runtime.getURL(

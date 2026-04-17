@@ -71,7 +71,6 @@
     defaultFilterPresetId,
     autoClear
   } from '../ts/storage';
-  import { version } from '../manifest.json';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump, mergeVideoInfoObjs } from '../ts/ytcf-logic';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import FullFrame from './FullFrame.svelte';

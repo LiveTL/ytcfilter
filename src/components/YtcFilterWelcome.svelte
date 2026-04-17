@@ -3,7 +3,7 @@
     currentFilterPreset,
     videoInfo
   } from '../ts/storage';
-  import { version } from '../manifest.json';
+  const appVersion = __VERSION__;
   const classes = 'p-2 rounded inline-flex flex-col overflow-hidden pointer-events-none touch-none select-none';
 </script>
 
@@ -34,7 +34,7 @@
       <span>Unknown Video</span>
     {/if}
     <br />
-    <strong>v{version}:</strong>
+    <strong>v{appVersion}:</strong>
     <span>
       reduced message delay
     </span>

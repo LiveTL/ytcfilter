@@ -8,8 +8,8 @@
   import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
   import LoadingBar from '../common/LoadingBar.svelte';
-  import { version } from '../../manifest.json';
   import { onMount, tick } from 'svelte';
+  const appVersion = __VERSION__;
   let loading: false | string = false;
   const importData = async () => {
     const data = await readFromJson();
@@ -184,7 +184,7 @@
 <div class="settings-title big-text">About</div>
 <div class="settings-content">
   <div class="setting-item" style="margin-top: 0px;">
-    <div><strong>YtcFilter v{version}</strong></div>
+    <div><strong>YtcFilter v{appVersion}</strong></div>
     <div>
       <strong>Support:</strong> via <a href="https://discord.com/invite/uJrV3tmthg" style="color: #3ba7ff;" target="_blank">
         Discord
