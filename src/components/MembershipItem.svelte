@@ -7,7 +7,7 @@
 
   export let message: Ytc.ParsedMessage;
 
-  const classes = 'inline-flex flex-col rounded break-words overflow-hidden w-full text-white';
+  const classes = 'relative inline-flex flex-col rounded break-words overflow-hidden w-full text-white';
 
   $: membership = message.membership;
   $: membershipGift = message.membershipGiftPurchase;
@@ -22,8 +22,16 @@
 
 {#if membership || membershipGift}
   <div class={classes} style="background-color: #{membershipBackground};">
+    {#if membershipGift}
+      <img
+        class="absolute inset-y-0 right-0 h-full w-auto pointer-events-none select-none z-0"
+        style="opacity: 0.4;"
+        src={membershipGift.image.src}
+        alt=""
+        aria-hidden="true" />
+    {/if}
     <div
-      class="p-2"
+      class="p-2 relative z-10"
       style="{isMilestoneChat ? `background-color: #${milestoneChatBackground};` : ''}"
     >
       <div>
@@ -40,13 +48,6 @@
         <span class="font-bold tracking-wide align-middle">
           {displayAuthorName}
         </span>
-        {#if membershipGift}
-          <img
-            class="h-10 w-10 float-right"
-            src={membershipGift.image.src}
-            alt={membershipGift.image.alt}
-            title={membershipGift.image.alt} />
-        {/if}
         {#if membership}
           <MessageRun class="float-right align-middle ml-2" runs={membership.headerSubtext} />
         {/if}
@@ -56,7 +57,7 @@
       {/if}
     </div>
     {#if isMilestoneChat}
-      <div class="p-2">
+      <div class="p-2 relative z-10">
         <Message message={message} hideName />
       </div>
     {/if}
