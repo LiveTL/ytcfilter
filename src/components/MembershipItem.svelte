@@ -34,24 +34,22 @@
       class="p-2 relative z-10"
       style="{isMilestoneChat ? `background-color: #${milestoneChatBackground};` : ''}"
     >
-      <div>
-        {#if $showProfileIcons}
-          <img
-            class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
-            src={message.author.profileIcon.src}
-            alt={message.author.profileIcon.alt}
-          />
-        {/if}
-        {#if $showTimestamps}
-          <span class="mr-1 text-xs opacity-75 align-middle">{message.timestamp}</span>
-        {/if}
-        <span class="font-bold tracking-wide align-middle">
-          {displayAuthorName}
-        </span>
-        {#if membership}
-          <MessageRun class="float-right align-middle ml-2" runs={membership.headerSubtext} />
-        {/if}
-      </div>
+      {#if $showProfileIcons}
+        <img
+          class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
+          src={message.author.profileIcon.src}
+          alt={message.author.profileIcon.alt}
+        />
+      {/if}
+      {#if $showTimestamps}
+        <span class="mr-1 text-xs opacity-75 align-middle">{message.timestamp}</span>
+      {/if}
+      <span class="font-bold tracking-wide align-middle">
+        {displayAuthorName}
+      </span>
+      {#if membership}
+        <MessageRun class="float-right align-middle ml-2" runs={membership.headerSubtext} />
+      {/if}
       {#if primaryText && primaryText.length > 0}
         <MessageRun class="font-medium block clear-both" runs={primaryText} />
       {/if}
