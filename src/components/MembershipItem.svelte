@@ -2,7 +2,7 @@
   import Message from './Message.svelte';
   import MessageRun from './MessageRuns.svelte';
   import { formatAuthorName } from '../ts/component-utils';
-  import { showProfileIcons } from '../ts/storage';
+  import { showProfileIcons, showTimestamps } from '../ts/storage';
   import { membershipBackground, milestoneChatBackground } from '../ts/chat-constants';
 
   export let message: Ytc.ParsedMessage;
@@ -26,31 +26,33 @@
       class="p-2"
       style="{isMilestoneChat ? `background-color: #${milestoneChatBackground};` : ''}"
     >
-      {#if $showProfileIcons}
-        <img
-          class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
-          src={message.author.profileIcon.src}
-          alt={message.author.profileIcon.alt}
-        />
-      {/if}
-      <span class="font-bold tracking-wide align-middle mr-3">
-        {displayAuthorName}
-      </span>
+      <div>
+        {#if $showProfileIcons}
+          <img
+            class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
+            src={message.author.profileIcon.src}
+            alt={message.author.profileIcon.alt}
+          />
+        {/if}
+        {#if $showTimestamps}
+          <span class="mr-1 text-xs opacity-75 align-middle">{message.timestamp}</span>
+        {/if}
+        <span class="font-bold tracking-wide align-middle">
+          {displayAuthorName}
+        </span>
+        {#if membershipGift}
+          <img
+            class="h-10 w-10 float-right"
+            src={membershipGift.image.src}
+            alt={membershipGift.image.alt}
+            title={membershipGift.image.alt} />
+        {/if}
+        {#if membership}
+          <MessageRun class="float-right align-middle ml-2" runs={membership.headerSubtext} />
+        {/if}
+      </div>
       {#if primaryText && primaryText.length > 0}
-        <MessageRun
-          class="font-medium mr-3"
-          runs={primaryText}
-        />
-      {/if}
-      {#if membership}
-        <MessageRun runs={membership.headerSubtext} />
-      {/if}
-      {#if membershipGift}
-        <img
-          class="h-10 w-10 float-right"
-          src={membershipGift.image.src}
-          alt={membershipGift.image.alt}
-          title={membershipGift.image.alt} />
+        <MessageRun class="font-medium block clear-both" runs={primaryText} />
       {/if}
     </div>
     {#if isMilestoneChat}
