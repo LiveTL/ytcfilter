@@ -2,6 +2,7 @@
   import '../stylesheets/scrollbar.css';
   import { onDestroy, afterUpdate, tick } from 'svelte';
   import { fade } from 'svelte/transition';
+  import { get } from 'svelte/store';
   import dark from 'smelte/src/dark';
   import WelcomeMessage from './WelcomeMessage.svelte';
   import Message from './Message.svelte';
@@ -24,6 +25,7 @@
     ChatUserActions
   } from '../ts/chat-constants';
   import { isAllEmoji, isChatMessage, isPrivileged, responseIsAction } from '../ts/chat-utils';
+  import { handleReplyThreadResponse } from '../ts/chat-actions';
   import Button from 'smelte/src/components/Button';
   import {
     theme,
@@ -41,6 +43,9 @@
     selfChannel,
     alertDialog,
     stickySuperchats,
+    activeReplyThreadId,
+    liveReplyBuffer,
+    liveLikeCounts,
     currentProgress,
     enableStickySuperchatBar,
     lastOpenedVersion,
@@ -141,6 +146,31 @@
     piledMessages = [];
   }
 
+  const stickyLikeKeys = (sticky: Ytc.ParsedTicker[]): Set<string> => {
+    const keys = new Set<string>();
+    sticky.forEach(sc => {
+      if (sc.likeCountEntityKey) keys.add(sc.likeCountEntityKey);
+    });
+    return keys;
+  };
+
+  const pruneLikeCounts = (sticky: Ytc.ParsedTicker[]) => {
+    const current = get(liveLikeCounts);
+    if (current.size === 0) return;
+    const keep = stickyLikeKeys(sticky);
+    let mutated = false;
+    const next = new Map(current);
+    next.forEach((_, k) => {
+      if (!keep.has(k)) {
+        next.delete(k);
+        mutated = true;
+      }
+    });
+    if (mutated) liveLikeCounts.set(next);
+  };
+
+  $: pruneLikeCounts($stickySuperchats);
+
 
   const onBonk = (bonk: Ytc.ParsedBonk) => {
     messageActions.forEach((action) => {
@@ -151,21 +181,36 @@
     });
   };
 
+  const LIVE_REPLY_BUFFER_LIMIT = 200;
+
   const filterTickers = (items: Chat.MessageAction[]): Chat.MessageAction[] => {
     const keep: Chat.MessageAction[] = [];
     const discard: Ytc.ParsedTicker[] = [];
+    const newLiveReplies: Ytc.ParsedMessage[] = [];
+    const trackedThreadId = $activeReplyThreadId;
     items.forEach(item => {
       if ('tickerDuration' in item.message) {
         if (!$stickySuperchats.some(sc => sc.messageId === item.message.messageId)) {
           discard.push(item.message);
         }
-      } else keep.push(item);
+      } else {
+        keep.push(item);
+        if (trackedThreadId && item.message.replyToSuperchat?.threadId === trackedThreadId) {
+          newLiveReplies.push(item.message);
+        }
+      }
     });
     if ($enableStickySuperchatBar && discard.length) {
       $stickySuperchats = [
         ...discard,
         ...$stickySuperchats
       ];
+    }
+    if (newLiveReplies.length > 0) {
+      const combined = [...$liveReplyBuffer, ...newLiveReplies];
+      $liveReplyBuffer = combined.length > LIVE_REPLY_BUFFER_LIMIT
+        ? combined.slice(combined.length - LIVE_REPLY_BUFFER_LIMIT)
+        : combined;
     }
     return keep;
   };
@@ -232,6 +277,19 @@
           messageActions = [...messageActions, welcome];
         }
         break;
+      case 'likeCounts': {
+        const knownKeys = stickyLikeKeys($stickySuperchats);
+        if (knownKeys.size === 0) break;
+        let next: Map<string, number> | null = null;
+        for (const [key, count] of Object.entries(action.counts)) {
+          if (knownKeys.has(key) && $liveLikeCounts.get(key) !== count) {
+            if (!next) next = new Map($liveLikeCounts);
+            next.set(key, count);
+          }
+        }
+        if (next) $liveLikeCounts = next;
+        break;
+      }
     }
   };
 
@@ -289,6 +347,9 @@
         }
         break;
       case 'registerClientResponse':
+        break;
+      case 'replyThreadResponse':
+        handleReplyThreadResponse(response);
         break;
       default:
         console.error('Unknown payload type', { port, response });
