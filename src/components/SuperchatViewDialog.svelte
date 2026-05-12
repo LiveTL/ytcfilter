@@ -87,7 +87,7 @@
     class="rounded-md overflow-hidden w-full sc-stack bg-white dark:bg-dark-800 text-gray-900 dark:text-white flex flex-col"
     style={borderStyle}
   >
-    {#if sc.superChat || sc.superSticker}
+    {#if sc.superChat ?? sc.superSticker}
       <PaidMessage message={sc} />
     {:else}
       <MembershipItem message={sc} />
