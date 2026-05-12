@@ -22,7 +22,8 @@
     headerStyle = '';
   }
 
-  const classes = 'inline-flex flex-col rounded break-words overflow-hidden w-full';
+  const classes = 'inline-flex flex-col rounded break-words w-full';
+  $: hasBody = message.message.length > 0;
   $: displayAuthorName = formatAuthorName(message.author.name);
 
   $: if (!paid) {
@@ -36,7 +37,7 @@
 
 {#if paid}
   <div class={classes} style={backgroundColor + textColor}>
-    <div class="p-2" style={headerStyle}>
+    <div class="p-2 {hasBody ? 'rounded-t' : 'rounded'}" style={headerStyle}>
       {#if $showProfileIcons}
         <img
           class="h-5 w-5 inline align-middle rounded-full flex-none mr-1"
