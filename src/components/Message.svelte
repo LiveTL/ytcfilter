@@ -195,7 +195,7 @@
           runs={showOriginal ? hideOriginalRuns : deleted.viewOriginalText}
           {forceDark}
           {forceTLColor}
-          class="underline"
+          class="underline cursor-pointer"
         />
       </button>
     {/if}
