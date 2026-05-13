@@ -4,6 +4,7 @@ import type { Writable } from 'svelte/store';
 import { getClient, AvailableLanguages } from 'iframe-translator';
 import type { IframeTranslatorClient, AvailableLanguageCodes } from 'iframe-translator';
 import { ChatReportUserOptions, Theme, YoutubeEmojiRenderMode } from './chat-constants';
+import { createLiveTLTranslatorClient, shouldUseLiveTLTranslatorBridge } from './ltl-translation';
 
 export const stores = webExtStores();
 
@@ -25,7 +26,9 @@ export const translatorClient = readable(null as (null | IframeTranslatorClient)
       return;
     }
     if (client) return;
-    client = await getClient();
+    client = shouldUseLiveTLTranslatorBridge()
+      ? createLiveTLTranslatorClient()
+      : await getClient();
     set(client);
   });
   translateTargetLanguage.ready().then(() => {
@@ -71,6 +74,9 @@ export const alertDialog = writable(null as null | {
   color: string;
 });
 export const stickySuperchats = writable([] as Ytc.ParsedTicker[]);
+export const activeReplyThreadId = writable<string | null>(null);
+export const liveReplyBuffer = writable<Ytc.ParsedMessage[]>([]);
+export const liveLikeCounts = writable(new Map<string, number>());
 export const isDark = derived(theme, ($theme) => {
   return $theme === Theme.DARK || (
     $theme === Theme.YOUTUBE && window.location.search.includes('dark')
@@ -80,4 +86,5 @@ export const ytDark = writable(false);
 export const currentProgress = writable(null as null | number);
 export const enableStickySuperchatBar = stores.addSyncStore('hc.enableStickySuperchatBar', true);
 export const enableHighlightedMentions = stores.addSyncStore('hc.enableHighlightedMentions', true);
+export const showSuperchatReplyIndicators = stores.addSyncStore('hc.showSuperchatReplyIndicators', true);
 export const lastOpenedVersion = stores.addSyncStore('hc.lastOpenedVersion', '');

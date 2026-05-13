@@ -49,6 +49,7 @@ export const emojiRenderItems = [
 export enum ChatUserActions {
   BLOCK = 'BLOCK',
   REPORT_USER = 'REPORT_USER',
+  DELETE_MESSAGE = 'DELETE_MESSAGE',
 }
 
 export enum ChatReportUserOptions {
@@ -91,9 +92,19 @@ export const chatUserActionsItems = [
       success: 'The user has been reported for review by YouTube staff.',
       error: 'There was an error reporting the user. Please try again later.'
     }
+  },
+  {
+    value: ChatUserActions.DELETE_MESSAGE,
+    text: 'Delete message',
+    icon: 'delete',
+    messages: {
+      success: 'Your message has been deleted.',
+      error: 'There was an error deleting your message. Please try again later.'
+    }
   }
 ];
 
 export const membershipBackground = '0f9d58';
 export const milestoneChatBackground = '107516';
+export const replyThreadPanelTag = 'PAreply_thread';
 export const currentDomain = location.protocol.includes('youtube') ? (location.protocol + '//' + location.host) : 'https://www.youtube.com';
