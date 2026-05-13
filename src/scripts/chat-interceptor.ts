@@ -1,6 +1,7 @@
 import { fixLeaks } from '../ts/ytc-fix-memleaks';
 import { frameIsReplay as isReplay, checkInjected } from '../ts/chat-utils';
-import { chatReportUserOptions, ChatUserActions, isLiveTL } from '../ts/chat-constants';
+import { chatReportUserOptions, ChatUserActions, isLiveTL, replyThreadPanelTag } from '../ts/chat-constants';
+import { parseChatResponse } from '../ts/chat-parser';
 import sha1 from 'sha-1';
 
 function injectedFunction(): void {
@@ -121,25 +122,9 @@ const chatLoaded = async (): Promise<void> => {
         return '';
       };
 
-      if (msg.type !== 'executeChatAction') return;
-      const message = msg.message;
-      const debugAction = msg.action === ChatUserActions.DELETE_MESSAGE;
-      let success = true;
-      if (message.params == null) {
-        success = false;
-      }
-      try {
-        if (message.params == null) {
-          throw new Error('Missing context menu params for message');
-        }
-        const currentDomain = (location.protocol + '//' + location.host);
-        const apiKey = ytcfg.data_.INNERTUBE_API_KEY;
-        const contextMenuUrl = `${currentDomain}/youtubei/v1/live_chat/get_item_context_menu?params=` +
-          `${encodeURIComponent(message.params)}&pbj=1&key=${apiKey}&prettyPrint=false`;
-        const baseContext = ytcfg.data_.INNERTUBE_CONTEXT;
-        // Do not override Innertube headers like X-Goog-Visitor-Id here. Those can differ from
-        // ytcfg.context.client.visitorData in subtle ways and cause YT to treat the request as logged out.
-        // Instead, let the page-side proxy merge the latest headers from real YT requests.
+      const currentDomain = (location.protocol + '//' + location.host);
+      const baseContext = ytcfg.data_.INNERTUBE_CONTEXT;
+      const buildInnertubeHeaders = () => {
         const time = Math.floor(Date.now() / 1000);
         const sapisid = getCookie('__Secure-3PAPISID') || getCookie('SAPISID');
         const auth = sapisid ? `SAPISIDHASH ${time}_${sha1(`${time} ${sapisid} ${currentDomain}`)}` : null;
@@ -148,7 +133,7 @@ const chatLoaded = async (): Promise<void> => {
         const clientName = (ytcfg as any)?.data_?.INNERTUBE_CLIENT_NAME;
         const clientVersion = (ytcfg as any)?.data_?.INNERTUBE_CLIENT_VERSION;
         const pageId = (ytcfg as any)?.data_?.DELEGATED_SESSION_ID;
-        const heads = {
+        return {
           headers: {
             'Content-Type': 'application/json',
             Accept: '*/*',
@@ -163,6 +148,70 @@ const chatLoaded = async (): Promise<void> => {
           method: 'POST' as const,
           mode: 'same-origin' as const
         };
+      };
+
+      if (msg.type === 'fetchReplyThread') {
+        try {
+          const panelRes = await fetcher(
+            `${currentDomain}/youtubei/v1/get_panel?prettyPrint=false`,
+            {
+              ...buildInnertubeHeaders(),
+              body: JSON.stringify({
+                context: baseContext,
+                panelId: replyThreadPanelTag,
+                params: msg.params
+              })
+            }
+          );
+          const items: any[] = panelRes?.content?.engagementPanelSectionListRenderer
+            ?.content?.sectionListRenderer?.contents?.[0]
+            ?.liveChatItemDisplayListRenderer?.items ?? [];
+          // Reuse parseChatResponse so replies come out shaped identically to live chat messages.
+          const fakeChunk = JSON.stringify({
+            continuationContents: {
+              liveChatContinuation: {
+                continuations: [{ timedContinuationData: { timeoutMs: 0 } }],
+                actions: items.map((item: any) => ({ addChatItemAction: { item } }))
+              }
+            }
+          });
+          const chunk = parseChatResponse(fakeChunk, isReplay());
+          port.postMessage({
+            type: 'replyThreadResponse',
+            requestId: msg.requestId,
+            success: true,
+            replies: (chunk?.messages ?? []) as Ytc.ParsedMessage[]
+          });
+        } catch (e) {
+          port.postMessage({
+            type: 'replyThreadResponse',
+            requestId: msg.requestId,
+            success: false,
+            replies: [],
+            error: String(e)
+          });
+        }
+        return;
+      }
+
+      if (msg.type !== 'executeChatAction') return;
+      const message = msg.message;
+      const debugAction = msg.action === ChatUserActions.DELETE_MESSAGE;
+      let success = true;
+      if (message.params == null) {
+        success = false;
+      }
+      try {
+        if (message.params == null) {
+          throw new Error('Missing context menu params for message');
+        }
+        const apiKey = ytcfg.data_.INNERTUBE_API_KEY;
+        const contextMenuUrl = `${currentDomain}/youtubei/v1/live_chat/get_item_context_menu?params=` +
+          `${encodeURIComponent(message.params)}&pbj=1&key=${apiKey}&prettyPrint=false`;
+        // Do not override Innertube headers like X-Goog-Visitor-Id here. Those can differ from
+        // ytcfg.context.client.visitorData in subtle ways and cause YT to treat the request as logged out.
+        // Instead, let the page-side proxy merge the latest headers from real YT requests.
+        const heads = buildInnertubeHeaders();
         const contextMenuContext = JSON.parse(JSON.stringify(baseContext));
         if (debugAction) {
           console.debug('[hc] delete: get_item_context_menu', {
