@@ -268,8 +268,17 @@ declare namespace Ytc {
     icon?: string;
     accessibility?: AccessibilityObj;
     isDisabled?: boolean;
-    text?: RunsObj;
+    text?: RunsObj; // | SimpleTextObj;
     command: {
+      commandMetadata?: {
+        webCommandMetadata?: {
+          apiUrl?: string;
+          sendPost?: boolean;
+        }
+      }
+      liveChatActionEndpoint?: {
+        params: string;
+      }
       urlEndpoint?: {
         url: string;
         target: string;
@@ -277,6 +286,19 @@ declare namespace Ytc {
       watchEndpoint?: {
         videoId: string;
       }
+    }
+  }
+
+  interface EngagementMessageRenderer {
+    message: RunsObj[];
+    id: string;
+    timestampUsec?: IntString;
+    icon?: {
+      /** Unlocalized string */
+      iconType: string;
+    };
+    actionButton?: {
+      buttonRenderer: ButtonRenderer;
     }
   }
 
@@ -292,14 +314,19 @@ declare namespace Ytc {
         pollQuestion: RunsObj;
         metadataText: RunsObj;
         thumbnail?: Thumbnails;
+        liveChatPollType?: string;
       };
     };
-    choices: Array<{
-      text: RunsObj;
-      selected: boolean;
-      voteRatio?: number;
-      votePercentage?: SimpleTextObj;
-    }>;
+    choices: PollChoice[];
+    displayVoteResults?: boolean;
+    button?: ButtonRenderer;
+  }
+
+  interface PollChoice {
+    text: RunsObj;
+    selected: boolean;
+    voteRatio?: number;
+    votePercentage?: SimpleTextObj;
   }
 
   type Renderers = TextMessageRenderer | PaidMessageRenderer |
@@ -324,8 +351,10 @@ declare namespace Ytc {
     liveChatBannerRedirectRenderer?: RedirectRenderer;
     /** ??? */
     liveChatPlaceholderItemRenderer?: PlaceholderRenderer;
-    /** Poll */
+    /** Poll start */
     pollRenderer?: PollRenderer;
+    /** Poll end + other in-chat announcements TODO */
+    liveChatViewerEngagementMessageRenderer?: EngagementMessageRenderer;
   }
 
   interface TickerRenderer { // Doesn't have a timestamp but ID is always a paid message id
@@ -491,6 +520,7 @@ declare namespace Ytc {
         percentage?: string;
       }>;
     };
+    // TODO add 'action' for ending poll button
   }
 
   interface ParsedRemoveBanner {
