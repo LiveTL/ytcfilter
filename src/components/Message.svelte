@@ -95,12 +95,12 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div
-  class="inline-flex flex-row gap-2 break-words w-full overflow-visible {deleted != null ? 'opacity-50' : ''}"
+  class="inline-flex flex-row gap-2 break-words w-full overflow-visible"
 >
   {#if !hideName && $showProfileIcons}
     <a
       href={message.author.url}
-      class="flex-shrink-0 {message.author.url ? 'cursor-pointer' : 'cursor-auto'}"
+      class="flex-shrink-0 {message.author.url ? 'cursor-pointer' : 'cursor-auto'} {deleted != null ? 'opacity-50' : ''}"
       target="_blank"
     >
       <img
@@ -110,7 +110,7 @@
       />
     </a>
   {/if}
-  <div>
+  <div class={deleted != null ? 'opacity-50' : ''}>
     {#if !hideName}
       <span
         class="text-xs mr-1 text-gray-700 dark:text-gray-600 align-middle"
