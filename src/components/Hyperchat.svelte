@@ -8,6 +8,7 @@
   import PinnedMessage from './PinnedMessage.svelte';
   import ChatSummary from './ChatSummary.svelte';
   import RedirectBanner from './RedirectBanner.svelte';
+  import PollResults from './PollResults.svelte';
   import PaidMessage from './PaidMessage.svelte';
   import MembershipItem from './MembershipItem.svelte';
   import ReportBanDialog from './ReportBanDialog.svelte';
@@ -64,6 +65,7 @@
   const TRUNCATE_SIZE = 20;
   let messageActions: Array<Chat.MessageAction | Welcome> = [];
   const messageKeys = new Set<string>();
+  let poll: Ytc.ParsedPoll | null;
   let pinned: Ytc.ParsedPinned | null;
   let summary: Ytc.ParsedSummary | null;
   let redirect: Ytc.ParsedRedirect | null;
@@ -92,7 +94,7 @@
   //   },
   //   showtime: 5000,
   // };
-  $: hasBanner = Boolean(pinned ?? redirect ?? (summary != null && $showChatSummary));
+  $: hasBanner = Boolean(poll ?? pinned ?? redirect ?? (summary != null && $showChatSummary));
   let div: HTMLElement;
   let isAtBottom = true;
   let truncateInterval: number | undefined;
@@ -223,6 +225,9 @@
       case 'delete':
         onDelete(action.deletion);
         break;
+      case 'poll':
+        poll = action;
+        break;
       case 'summary':
         summary = action;
         break;
@@ -233,7 +238,22 @@
         pinned = action;
         break;
       case 'unpin':
-        pinned = null;
+        if (action.targetActionId) {
+          if (action.targetActionId === pinned?.actionId) {
+            pinned = null;
+          }
+          if (action.targetActionId === summary?.actionId) {
+            summary = null;
+          }
+          if (action.targetActionId === poll?.actionId) {
+            poll = null;
+          }
+          if (action.targetActionId === redirect?.actionId) {
+            redirect = null;
+          }
+        } else {
+          pinned = null;
+        }
         break;
       case 'playerProgress':
         $currentProgress = action.playerProgress;
@@ -409,7 +429,7 @@
       }
     }, 350);
   };
-  $: $enableStickySuperchatBar, pinned, topBarResized();
+  $: $enableStickySuperchatBar, hasBanner, topBarResized();
 
   const isMention = (msg: Ytc.ParsedMessage) => {
     return $selfChannelName && msg.message.map(run => {
@@ -465,6 +485,11 @@
     </div>
     {#if hasBanner}
       <div class="absolute top-0 w-full" bind:this={topBar}>
+        {#if poll}
+          <div class="mx-1.5 mt-1.5">
+            <PollResults poll={poll} on:resize={topBarResized} />
+          </div>
+        {/if}
         {#if summary && $showChatSummary}
           <div class="mx-1.5 mt-1.5">
             <ChatSummary summary={summary} on:resize={topBarResized} />
