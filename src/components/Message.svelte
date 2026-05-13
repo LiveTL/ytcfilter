@@ -61,9 +61,16 @@
 
   let showOriginal = false;
   $: displayRuns = deleted != null && !showOriginal ? deleted.replace : message.message;
-  $: hideOriginalRuns = deleted?.viewOriginalText?.slice(0, 1).map(
-    (r) => r.type === 'text' ? { ...r, text: 'Hide deleted message' } : r
-  );
+  // If showing original text, swap the first text run to 'hide'.
+  let toggleLabelRuns: Ytc.ParsedRun[] | undefined;
+  $: {
+    let swapped = !showOriginal;
+    toggleLabelRuns = deleted?.viewOriginalText?.map((r) => {
+      if (swapped || r.type !== 'text') return r;
+      swapped = true;
+      return { ...r, text: 'Hide deleted message' };
+    });
+  }
   $: displayAuthorName = formatAuthorName(message.author.name);
 
   $: showUserMargin = $showProfileIcons || $showUsernames || $showTimestamps ||
@@ -192,7 +199,7 @@
         class="ml-1 align-middle text-xs cursor-pointer text-deleted-light dark:text-deleted-dark bg-transparent border-0 p-0"
       >
         <MessageRun
-          runs={showOriginal ? hideOriginalRuns : deleted.viewOriginalText}
+          runs={toggleLabelRuns}
           {forceDark}
           {forceTLColor}
           class="underline cursor-pointer"
