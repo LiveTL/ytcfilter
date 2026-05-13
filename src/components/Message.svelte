@@ -55,9 +55,11 @@
   });
   $: nameColorClass = generateNameColorClass(member, moderator, owner, forceDark);
 
-  $: if (deleted != null) {
-    message.message = deleted.replace;
-  }
+  let showOriginal = false;
+  $: displayRuns = deleted != null && !showOriginal ? deleted.replace : message.message;
+  $: hideOriginalRuns = deleted?.viewOriginalText?.slice(0, 1).map(
+    (r) => r.type === 'text' ? { ...r, text: 'Hide deleted message' } : r
+  );
   $: displayAuthorName = formatAuthorName(message.author.name);
 
   $: showUserMargin = $showProfileIcons || $showUsernames || $showTimestamps ||
@@ -67,10 +69,10 @@
 
   $: isSelf = message.author.id === $selfChannelId;
   $: visibleActions = chatUserActionsItems.filter((d) => {
-    if (isSelf) {
-      return d.value === ChatUserActions.DELETE_MESSAGE && message.params != null;
+    if (d.value === ChatUserActions.DELETE_MESSAGE) {
+      return (isSelf || message.canDelete) && message.params != null && deleted == null;
     }
-    return d.value !== ChatUserActions.DELETE_MESSAGE;
+    return !isSelf;
   });
   $: menuItems = visibleActions.map((d) => ({
     icon: d.icon,
@@ -81,8 +83,8 @@
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-<div 
-  class="inline-flex flex-row gap-2 break-words w-full overflow-visible"
+<div
+  class="inline-flex flex-row gap-2 break-words w-full overflow-visible {deleted != null ? 'opacity-50' : ''}"
 >
   {#if !hideName && $showProfileIcons}
     <a
@@ -142,12 +144,26 @@
       <span class="mr-1.5" class:hidden={!showUserMargin} />
     {/if}
     <MessageRun
-      runs={message.message}
+      runs={displayRuns}
       {forceDark}
       deleted={deleted != null}
       {forceTLColor}
-      class={message.membershipGiftRedeem ? 'text-gray-700 dark:text-gray-600 italic font-medium' : ''}
+      class="{message.membershipGiftRedeem ? 'text-gray-700 dark:text-gray-600 italic font-medium' : ''} {deleted?.pending || showOriginal ? 'line-through' : ''}"
     />
+    {#if deleted?.viewOriginalText}
+      <button
+        type="button"
+        on:click={() => (showOriginal = !showOriginal)}
+        class="ml-1 align-middle text-xs cursor-pointer text-deleted-light dark:text-deleted-dark bg-transparent border-0 p-0"
+      >
+        <MessageRun
+          runs={showOriginal ? hideOriginalRuns : deleted.viewOriginalText}
+          {forceDark}
+          {forceTLColor}
+          class="underline"
+        />
+      </button>
+    {/if}
     {#if message.membershipGiftRedeem}
       <svg
         height="1em"
