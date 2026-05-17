@@ -80,7 +80,7 @@
     icon: d.icon,
     text: d.text,
     value: d.value.toString(),
-    onClick: () => useBanHammer(message, d.value, $port)
+    onClick: () => { useBanHammer(message, d.value, $port); }
   }));
 
   const openReplyTargetSuperchat = () => {
