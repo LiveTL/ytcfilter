@@ -80,7 +80,7 @@
     icon: d.icon,
     text: d.text,
     value: d.value.toString(),
-    onClick: () => useBanHammer(message, d.value, $port)
+    onClick: () => { useBanHammer(message, d.value, $port); }
   }));
 
   const openReplyTargetSuperchat = () => {
@@ -157,7 +157,7 @@
       <span
         class="inline-flex items-center justify-center align-middle cursor-pointer rounded"
         style={
-          `width: 1.6em; height: 1.6em;` +
+          'width: 1.6em; height: 1.6em;' +
           (message.replyToSuperchat.bgColor ? ` background-color: #${message.replyToSuperchat.bgColor};` : '') +
           (message.replyToSuperchat.fgColor ? ` color: #${message.replyToSuperchat.fgColor};` : ' color: inherit;')
         }

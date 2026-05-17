@@ -18,6 +18,12 @@ module.exports = {
   ],
   overrides: [
     {
+      files: ['*.js', 'utils/*.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      }
+    },
+    {
       files: ['*.svelte'],
       processor: 'svelte3/svelte3',
       rules: {
@@ -31,12 +37,20 @@ module.exports = {
         '@typescript-eslint/prefer-nullish-coalescing': 'off',
         // Causes false positives with reactive and auto subscriptions
         '@typescript-eslint/strict-boolean-expressions': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
         'no-sequences': 'off',
         'no-unused-expressions': 'off',
       }
     }
   ],
   rules: {
+    // TODO: probably want to enable some of these
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-confusing-void-expression': 'off',
+    '@typescript-eslint/no-floating-promises': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unused-expressions': 'off',
+
     'linebreak-style': [
       'error',
       'unix'
@@ -91,7 +105,14 @@ module.exports = {
     ],
   },
   settings: {
-    'svelte3/typescript': () => require('typescript')
+    'svelte3/typescript': () => require('typescript'),
+    'svelte3/ignore-warnings': (warning) => {
+      if (warning.code === 'a11y-click-events-have-key-events') {
+        return true;
+      }
+
+      return false;
+    },
   },
   globals: {
     Ytc: 'readonly',
