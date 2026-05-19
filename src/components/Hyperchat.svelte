@@ -60,7 +60,7 @@
 
   const CHAT_HISTORY_SIZE = 150;
   const TRUNCATE_SIZE = 20;
-  let messageActions: (Chat.MessageAction | Welcome)[] = [];
+  let messageActions: Array<Chat.MessageAction | Welcome> = [];
   const messageKeys = new Set<string>();
   let poll: Ytc.ParsedPoll | null;
   let pinned: Ytc.ParsedPinned | null;
@@ -408,7 +408,7 @@
 
   $: updateTheme($theme, $ytDark);
   // Scroll to bottom when any of these settings change
-  $: ((..._a: any[]) => scrollToBottom())(
+  $: ((..._a: any[]) => { scrollToBottom(); })(
     $showProfileIcons, $showUsernames, $showTimestamps, $showUserBadges
   );
 
@@ -474,10 +474,10 @@
           class:flex = {!isWelcome(action)}
           class:mention = {$enableHighlightedMentions && isMessage(action) && isMention(action.message)}
           class:mention-light = {!$smelteDark}
-          on:mouseover={() => setHover(action)}
-          on:focus={() => setHover(action)}
-          on:mouseout={() => setHover(null)}
-          on:blur={() => setHover(null)}
+          on:mouseover={() => { setHover(action); }}
+          on:focus={() => { setHover(action); }}
+          on:mouseout={() => { setHover(null); }}
+          on:blur={() => { setHover(null); }}
         >
           {#if isWelcome(action)}
             <WelcomeMessage />
