@@ -11,7 +11,7 @@
     Delete messages (sent or mod)
   </li>
   <li class="ml-3.5">
-    Reply to superchats
+    View superchat replies
   </li>
   <li class="ml-3.5">
     Fix visual formatting
