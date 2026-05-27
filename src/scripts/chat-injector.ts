@@ -118,9 +118,9 @@ const chatLoaded = async (): Promise<void> => {
   // const hyperChatEnabled = await hcEnabled.get();
 
   // Inject HC button
-  const ytcPrimaryContent = document.querySelector('#chat-messages') ?? document.querySelector('#primary-content');
+  const ytcPrimaryContent = document.querySelector('#chat-messages');
   if (!ytcPrimaryContent) {
-    console.error('Failed to find YTCF button mount target');
+    console.error('Failed to find #chat-messages');
     return;
   }
   const immediateChild = document.createElement('div');
