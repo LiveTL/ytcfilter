@@ -12,6 +12,18 @@ declare namespace Ytc {
     contents?: {
       liveChatRenderer: BaseData;
     };
+    frameworkUpdates?: {
+      entityBatchUpdate?: {
+        mutations?: Array<{
+          payload?: {
+            likeCountEntity?: {
+              key?: string;
+              likeCountIfIndifferentNumber?: string;
+            };
+          };
+        }>;
+      };
+    };
   }
 
   interface BaseData {
@@ -46,6 +58,7 @@ declare namespace Ytc {
     replayChatItemAction?: ReplayChatItemAction;
     markChatItemsByAuthorAsDeletedAction?: AuthorBonkedAction;
     markChatItemAsDeletedAction?: MessageDeletedAction;
+    removeChatItemAction?: RemoveChatItemAction;
   }
 
   /*
@@ -71,6 +84,11 @@ declare namespace Ytc {
   interface AuthorBonkedAction extends IDeleted {
     /** ID of channel that was bonked */
     externalChannelId: string;
+  }
+
+  /** YTC removeChatItemAction object */
+  interface RemoveChatItemAction {
+    targetItemId: string;
   }
 
   /** YTC markChatItemAsDeletedAction object. */
@@ -132,6 +150,9 @@ declare namespace Ytc {
               liveChatPaidMessageRenderer: PaidMessageRenderer;
             };
           };
+        };
+        openEngagementPanelCommand?: {
+          showEngagementPanelEndpoint?: ShowEngagementPanelEndpoint;
         };
       };
     };
@@ -210,6 +231,51 @@ declare namespace Ytc {
         params: string;
       };
     };
+    /** Mod-only quick-action buttons (Remove/Timeout/Hide). */
+    inlineActionButtons?: Array<{
+      buttonRenderer?: {
+        icon?: { iconType?: string };
+      };
+    }>;
+    /** Reply-to-superchat button on normal text messages. */
+    beforeContentButtons?: Array<{
+      buttonViewModel?: ReplyButtonViewModel;
+    }>;
+    /** Reply-thread entry button on SC paid renderers. */
+    replyButton?: {
+      pdgReplyButtonViewModel?: {
+        replyButton?: {
+          buttonViewModel?: ReplyButtonViewModel;
+        };
+        replyCountEntityKey?: string;
+      };
+    };
+    /** Like button entity key on SC paid renderers; resolved against likeCountEntity mutations. */
+    pdgLikeButton?: {
+      pdgLikeViewModel?: {
+        likeCountEntityKey?: string;
+      };
+    };
+  }
+
+  interface ShowEngagementPanelEndpoint {
+    identifier?: {
+      tag?: string;
+    };
+    globalConfiguration?: {
+      params?: string;
+    };
+  }
+
+  interface ReplyButtonViewModel {
+    title?: string;
+    onTap?: {
+      innertubeCommand?: {
+        showEngagementPanelEndpoint?: ShowEngagementPanelEndpoint;
+      };
+    };
+    customBackgroundColor?: number;
+    customFontColor?: number;
   }
 
   interface IPaidRenderer extends TextMessageRenderer {
@@ -326,6 +392,19 @@ declare namespace Ytc {
     votePercentage?: SimpleTextObj;
   }
 
+  interface EngagementMessageRenderer {
+    message: RunsObj[];
+    id: string;
+    timestampUsec?: IntString;
+    icon?: {
+      /** Unlocalized string */
+      iconType: string;
+    };
+    actionButton?: {
+      buttonRenderer: ButtonRenderer;
+    }
+  }
+
   interface PlaceholderRenderer { // No idea what the purpose of this is
     id: string;
     timestampUsec: IntString;
@@ -338,14 +417,19 @@ declare namespace Ytc {
         pollQuestion: RunsObj;
         metadataText: RunsObj;
         thumbnail?: Thumbnails;
+        liveChatPollType?: string;
       };
     };
-    choices: Array<{
-      text: RunsObj;
-      selected: boolean;
-      voteRatio?: number;
-      votePercentage?: SimpleTextObj;
-    }>;
+    choices: PollChoice[];
+    displayVoteResults?: boolean;
+    button?: ButtonRenderer;
+  }
+
+  interface PollChoice {
+    text: RunsObj;
+    selected: boolean;
+    voteRatio?: number;
+    votePercentage?: SimpleTextObj;
   }
 
   type Renderers = TextMessageRenderer | PaidMessageRenderer |
@@ -374,8 +458,10 @@ declare namespace Ytc {
     liveChatViewerEngagementMessageRenderer?: EngagementMessageRenderer;
     /** ??? */
     liveChatPlaceholderItemRenderer?: PlaceholderRenderer;
-    /** Poll */
+    /** Poll start */
     pollRenderer?: PollRenderer;
+    /** Poll end + other in-chat announcements TODO */
+    liveChatViewerEngagementMessageRenderer?: EngagementMessageRenderer;
   }
 
   interface TickerRenderer { // Doesn't have a timestamp but ID is always a paid message id
@@ -389,6 +475,8 @@ declare namespace Ytc {
   interface IDeleted {
     /** Message to replace deleted messages. */
     deletedStateMessage: RunsObj;
+    /** Mod-only "View deleted message" affordance. */
+    showOriginalContentMessage?: RunsObj;
   }
 
   /** Integer formatted as string for whatever reason */
@@ -478,6 +566,28 @@ declare namespace Ytc {
     params?: string;
     membershipGiftPurchase?: ParsedMembershipGiftPurchase;
     membershipGiftRedeem?: boolean;
+    canDelete?: boolean;
+    /** Reply context when this message is a reply to a Super Chat. */
+    replyToSuperchat?: ParsedReplyToSuperchat;
+    /** Opaque get_panel params for fetching this message's own reply thread (set on SCs). */
+    replyThreadParams?: string;
+    /** Entity key for resolving live like counts (set on SCs). */
+    likeCountEntityKey?: string;
+    /** SC discussion thread id; shared between SC entity keys and reply chip params. */
+    threadId?: string;
+  }
+
+  interface ParsedReplyToSuperchat {
+    /** Display name shown in the reply chip on YouTube, e.g. "@Lethelmills". */
+    authorName: string;
+    /** Opaque get_panel params for fetching the SC's reply thread. */
+    params: string;
+    /** 35-byte SC discussion thread id extracted from the reply params, used to match against the SC. */
+    threadId?: string;
+    /** ARGB-derived hex of the SC reply-button background color. */
+    bgColor?: string;
+    /** ARGB-derived hex of the SC reply-button foreground color. */
+    fgColor?: string;
   }
 
   interface ParsedBonk {
@@ -488,6 +598,9 @@ declare namespace Ytc {
   interface ParsedDeleted {
     replacedMessage: ParsedRun[];
     messageId: string;
+    viewOriginalText?: ParsedRun[];
+    /** No replacement text from YT — keep original text and mark as awaiting retraction (line-through). */
+    pending?: boolean;
   }
 
   interface ParsedPinned {
@@ -527,22 +640,22 @@ declare namespace Ytc {
     timestamp?: string;
   }
 
-	  interface ParsedPoll {
-	    type: 'poll';
-	    actionId: string;
-	    item: {
-	      profileIcon: ParsedImage;
-	      header: ParsedRun[];
-	      question: ParsedRun[];
-	      choices: Array<{
-	        text: ParsedRun[];
-	        selected: boolean;
-	        ratio?: number;
-	        percentage?: string;
-	      }>;
-	    };
-	    // TODO add 'action' for ending poll button
-	  }
+  interface ParsedPoll {
+    type: 'poll';
+    actionId: string;
+    item: {
+      profileIcon: ParsedImage;
+      header: ParsedRun[];
+      question: ParsedRun[];
+      choices: Array<{
+        text: ParsedRun[];
+        selected: boolean;
+        ratio?: number;
+        percentage?: string;
+      }>;
+    };
+    // TODO add 'action' for ending poll button
+  }
 
   interface ParsedRemoveBanner {
     type: 'unpin';
@@ -568,5 +681,7 @@ declare namespace Ytc {
     miscActions: ParsedMisc[];
     isReplay: boolean;
     refresh: boolean;
+    /** entityKey → like count, sourced from frameworkUpdates.entityBatchUpdate mutations. */
+    likeCounts?: Record<string, number>;
   }
 }

@@ -4,6 +4,8 @@ import type { Unsubscriber, YtcQueue } from '../queue';
 declare namespace Chat {
   interface MessageDeletedObj {
     replace: Ytc.ParsedRun[];
+    viewOriginalText?: Ytc.ParsedRun[];
+    pending?: boolean;
   }
 
   interface MessageAction {
@@ -38,7 +40,12 @@ declare namespace Chat {
     showWelcome?: boolean;
   }
 
-  type Actions = MessagesAction | BonkAction | DeleteAction | Ytc.ParsedMisc | PlayerProgressAction | ForceUpdate;
+  interface LikeCountsAction {
+    type: 'likeCounts';
+    counts: Record<string, number>;
+  }
+
+  type Actions = MessagesAction | BonkAction | DeleteAction | Ytc.ParsedMisc | PlayerProgressAction | ForceUpdate | LikeCountsAction;
 
   interface UncheckedFrameInfo {
     tabId: number | undefined;
@@ -83,9 +90,24 @@ declare namespace Chat {
     success: boolean;
   }
 
+  interface fetchReplyThreadMsg {
+    type: 'fetchReplyThread';
+    requestId: string;
+    params: string;
+  }
+
+  interface replyThreadResponse {
+    type: 'replyThreadResponse';
+    requestId: string;
+    success: boolean;
+    replies: Ytc.ParsedMessage[];
+    error?: string;
+  }
+
   type BackgroundResponse =
     Actions | InitialData | ThemeUpdate | LtlMessageResponse |
-    registerClientResponse | executeChatActionMsg | chatUserActionResponse | Ping;
+    registerClientResponse | executeChatActionMsg | chatUserActionResponse | Ping |
+    replyThreadResponse;
 
   type InterceptorSource = 'ytc' | 'ltlMessage';
 
@@ -149,7 +171,8 @@ declare namespace Chat {
   type BackgroundMessage =
     RegisterInterceptorMsg | RegisterClientMsg | processJsonMsg |
     setInitialDataMsg | updatePlayerProgressMsg | setThemeMsg | getThemeMsg |
-    RegisterYtcInterceptorMsg | sendLtlMessageMsg | executeChatActionMsg | chatUserActionResponse | Ping;
+    RegisterYtcInterceptorMsg | sendLtlMessageMsg | executeChatActionMsg | chatUserActionResponse | Ping |
+    fetchReplyThreadMsg | replyThreadResponse;
 
   type Port = Omit<chrome.runtime.Port, 'postMessage' | 'onMessage'> & {
     postMessage: (message: BackgroundMessage | BackgroundResponse) => void;

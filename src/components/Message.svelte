@@ -9,12 +9,15 @@
     showUserBadges,
     hoveredItem,
     port,
-    selfChannelId
+    selfChannelId,
+    showSuperchatReplyIndicators,
+    stickySuperchats,
+    focusedSuperchat
   } from '../ts/storage';
-  import { chatUserActionsItems, Theme } from '../ts/chat-constants';
+  import { chatUserActionsItems, ChatUserActions, Theme } from '../ts/chat-constants';
   import { useBanHammer } from '../ts/chat-actions';
   import type { Chat } from '../ts/typings/chat';
-  import { mdiGift } from '@mdi/js';
+  import { mdiGift, mdiReply } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
   import { formatAuthorName } from '../ts/component-utils';
@@ -25,6 +28,7 @@
   export let hideName = false;
   export let hideDropdown = false;
   export let miniDropdown = false;
+  export let hideReplyIndicator = false;
 
   const nameClass = 'font-bold tracking-wide align-middle';
   const generateNameColorClass = (member: boolean, moderator: boolean, owner: boolean, forceDark: boolean) => {
@@ -59,8 +63,16 @@
   });
   $: nameColorClass = generateNameColorClass(member, moderator, owner, forceDark);
 
-  $: if (deleted != null) {
-    message.message = deleted.replace;
+  let showOriginal = false;
+  $: displayRuns = deleted != null && !showOriginal ? deleted.replace : message.message;
+  let toggleLabelRuns: Ytc.ParsedRun[] | undefined;
+  $: {
+    let swapped = !showOriginal;
+    toggleLabelRuns = deleted?.viewOriginalText?.map((r) => {
+      if (swapped || r.type !== 'text') return r;
+      swapped = true;
+      return { ...r, text: 'Hide deleted message' };
+    });
   }
   $: displayAuthorName = formatAuthorName(message.author.name);
 
@@ -69,8 +81,11 @@
 
   export let forceTLColor: Theme = Theme.YOUTUBE;
 
+  const visibleYtActions = chatUserActionsItems.filter((d) => (
+    !miniDropdown && d.value !== ChatUserActions.DELETE_MESSAGE
+  ));
   const menuItems = [
-    ...(miniDropdown ? [] : chatUserActionsItems).map((d) => ({
+    ...visibleYtActions.map((d) => ({
       icon: d.icon,
       text: d.text,
       value: d.value.toString(),
@@ -85,6 +100,13 @@
       }
     }
   ];
+
+  const openReplyTargetSuperchat = () => {
+    const threadId = message.replyToSuperchat?.threadId;
+    const match = threadId ? $stickySuperchats.find((s) => s.threadId === threadId) : undefined;
+    if (!threadId || !match) return;
+    $focusedSuperchat = match;
+  };
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -94,7 +116,7 @@
   {#if !hideName && $showProfileIcons}
     <a
       href={message.author.url}
-      class="flex-shrink-0 {message.author.url ? 'cursor-pointer' : 'cursor-auto'}"
+      class="flex-shrink-0 {message.author.url ? 'cursor-pointer' : 'cursor-auto'} {deleted != null ? 'opacity-50' : ''}"
       target="_blank"
     >
       <img
@@ -105,7 +127,7 @@
       />
     </a>
   {/if}
-  <div>
+  <div class={deleted != null ? 'opacity-50' : ''}>
     {#if !hideName}
       <span
         class="text-xs mr-1 text-gray-700 dark:text-gray-600 align-middle"
@@ -150,13 +172,51 @@
       <span class="mr-1.5" class:hidden={!showUserMargin} />
     {/if}
     <slot name="chip" />
+    {#if message.replyToSuperchat && $showSuperchatReplyIndicators && !hideReplyIndicator}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <span
+        class="inline-flex items-center justify-center align-middle cursor-pointer rounded"
+        style={
+          'width: 1.6em; height: 1.6em;' +
+          (message.replyToSuperchat.bgColor ? ` background-color: #${message.replyToSuperchat.bgColor};` : '') +
+          (message.replyToSuperchat.fgColor ? ` color: #${message.replyToSuperchat.fgColor};` : ' color: inherit;')
+        }
+        role="button"
+        tabindex="0"
+        aria-label={`Open Super Chat by ${message.replyToSuperchat.authorName}`}
+        title={`Open Super Chat by ${message.replyToSuperchat.authorName}`}
+        on:click|stopPropagation={openReplyTargetSuperchat}
+      >
+        <svg
+          height="1.2em"
+          width="1.2em"
+          viewBox="0 0 24 24"
+        >
+          <path d={mdiReply} fill="currentColor"/>
+        </svg>
+      </span>
+    {/if}
     <MessageRun
-      runs={message.message}
+      runs={displayRuns}
       {forceDark}
       deleted={deleted != null}
       {forceTLColor}
-      class={message.membershipGiftRedeem ? 'text-gray-700 dark:text-gray-600 italic font-medium' : ''}
+      class="{message.membershipGiftRedeem ? 'text-gray-700 dark:text-gray-600 italic font-medium' : ''} {deleted?.pending || showOriginal ? 'line-through' : ''}"
     />
+    {#if deleted?.viewOriginalText}
+      <button
+        type="button"
+        on:click={() => (showOriginal = !showOriginal)}
+        class="ml-1 align-middle text-xs cursor-pointer text-deleted-light dark:text-deleted-dark bg-transparent border-0 p-0"
+      >
+        <MessageRun
+          runs={toggleLabelRuns}
+          {forceDark}
+          {forceTLColor}
+          class="underline cursor-pointer"
+        />
+      </button>
+    {/if}
     {#if message.membershipGiftRedeem}
       <svg
         height="1em"

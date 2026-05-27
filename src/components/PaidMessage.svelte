@@ -2,8 +2,10 @@
   import Message from './Message.svelte';
   import isDarkColor from 'is-dark-color';
   import { Theme } from '../ts/chat-constants';
+  import type { Chat } from '../ts/typings/chat';
 
   export let message: Ytc.ParsedMessage;
+  export let deleted: Chat.MessageDeletedObj | null = null;
 
   let headerStyle = '';
 
@@ -33,7 +35,7 @@
 
 {#if paid}
   <div>
-    <Message message={message} forceTLColor={darkEval()} on:clientSideDelete>
+    <Message message={message} {deleted} forceTLColor={darkEval()} on:clientSideDelete>
       <span class="{classes} chip" style={backgroundColor + textColor} slot="chip">
         <span class="p-1" style={headerStyle}>
           <span class="underline font-bold">{amount}</span>

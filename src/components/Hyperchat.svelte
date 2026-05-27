@@ -25,11 +25,13 @@
     Theme,
     YoutubeEmojiRenderMode,
     chatUserActionsItems,
+    ChatUserActions,
     isLiveTL,
     UNDONE_MSG
   } from '../ts/chat-constants';
   import '../ts/resize-tracker';
   import {
+    buildDeletedObj,
     isAllEmoji,
     isChatMessage,
     isPrivileged,
@@ -55,6 +57,9 @@
     selfChannel,
     alertDialog,
     stickySuperchats,
+    activeReplyThreadId,
+    liveReplyBuffer,
+    liveLikeCounts,
     currentProgress,
     enableStickySuperchatBar,
     lastOpenedVersion,
@@ -72,10 +77,11 @@
     autoClear
   } from '../ts/storage';
   import { shouldFilterMessage, saveMessageActions, findSavedMessageActionKey, getSavedMessageDumpActions, getSavedMessageDumpInfo, getAutoActivatedPreset, downloadAsJson, downloadAsTxt, redirectIfInitialSetup, importJsonDump, mergeVideoInfoObjs } from '../ts/ytcf-logic';
+  import { handleReplyThreadResponse } from '../ts/chat-actions';
   import { exioButton, exioDropdown, exioIcon } from 'exio/svelte';
   import FullFrame from './FullFrame.svelte';
   import YtcFilterConfirmation from './YtcFilterConfirmation.svelte';
-  import { writable } from 'svelte/store';
+  import { get, writable } from 'svelte/store';
   import html2canvas from 'html2canvas';
   import type { Chat } from '../ts/typings/chat';
 
@@ -241,12 +247,19 @@
   const filterTickers = (items: Chat.MessageAction[]): Chat.MessageAction[] => {
     const keep: Chat.MessageAction[] = [];
     const discard: Ytc.ParsedTicker[] = [];
+    const newLiveReplies: Ytc.ParsedMessage[] = [];
+    const trackedThreadId = $activeReplyThreadId;
     items.forEach(item => {
       if ('tickerDuration' in item.message) {
         if (!$stickySuperchats.some(sc => sc.messageId === item.message.messageId)) {
           discard.push(item.message);
         }
-      } else keep.push(item);
+      } else {
+        keep.push(item);
+        if (trackedThreadId && item.message.replyToSuperchat?.threadId === trackedThreadId) {
+          newLiveReplies.push(item.message);
+        }
+      }
     });
     if ($enableStickySuperchatBar && discard.length) {
       $stickySuperchats = [
@@ -254,20 +267,53 @@
         ...$stickySuperchats
       ];
     }
+    if (newLiveReplies.length > 0) {
+      const combined = [...$liveReplyBuffer, ...newLiveReplies];
+      $liveReplyBuffer = combined.length > 200
+        ? combined.slice(combined.length - 200)
+        : combined;
+    }
     return keep;
   };
+
+  const stickyLikeKeys = (sticky: Ytc.ParsedTicker[]): Set<string> => {
+    const keys = new Set<string>();
+    sticky.forEach(sc => {
+      if (sc.likeCountEntityKey) keys.add(sc.likeCountEntityKey);
+    });
+    return keys;
+  };
+
+  const pruneLikeCounts = (sticky: Ytc.ParsedTicker[]) => {
+    const current = get(liveLikeCounts);
+    if (current.size === 0) return;
+    const keep = stickyLikeKeys(sticky);
+    let mutated = false;
+    const next = new Map(current);
+    next.forEach((_, k) => {
+      if (!keep.has(k)) {
+        next.delete(k);
+        mutated = true;
+      }
+    });
+    if (mutated) liveLikeCounts.set(next);
+  };
+
+  $: pruneLikeCounts($stickySuperchats);
 
   const onDelete = (deletion: Ytc.ParsedDeleted) => {
     const f = (action: typeof messageActions[number]) => {
       if (isWelcome(action)) return false;
       if (action.message.messageId === deletion.messageId) {
-        action.deleted = { replace: deletion.replacedMessage };
+        action.deleted = buildDeletedObj(deletion, action.message.message);
         return true;
       }
       return false;
     };
-    messageActions.some(f);
-    overrideActions.some(f);
+    const changed = messageActions.some(f);
+    const overrideChanged = overrideActions.some(f);
+    if (changed) messageActions = messageActions;
+    if (overrideChanged) overrideActions = overrideActions;
   };
 
   const onChatAction = (action: Chat.Actions, isInitial = false) => {
@@ -294,6 +340,9 @@
       case 'redirect':
         redirect = action;
         break;
+      case 'poll':
+        poll = action;
+        break;
       case 'pin':
         pinned = action;
         newMessages({
@@ -304,7 +353,22 @@
         }, false, false);
         break;
       case 'unpin':
-        pinned = null;
+        if (action.targetActionId) {
+          if (action.targetActionId === pinned?.actionId) {
+            pinned = null;
+          }
+          if (action.targetActionId === summary?.actionId) {
+            summary = null;
+          }
+          if (action.targetActionId === poll?.actionId) {
+            poll = null;
+          }
+          if (action.targetActionId === redirect?.actionId) {
+            redirect = null;
+          }
+        } else {
+          pinned = null;
+        }
         break;
       case 'playerProgress':
         $currentProgress = action.playerProgress;
@@ -317,6 +381,19 @@
         // }
         newMessages({ type: 'messages', messages: action.messages }, false);
         break;
+      case 'likeCounts': {
+        const knownKeys = stickyLikeKeys($stickySuperchats);
+        if (knownKeys.size === 0) break;
+        let next: Map<string, number> | null = null;
+        for (const [key, count] of Object.entries(action.counts)) {
+          if (knownKeys.has(key) && $liveLikeCounts.get(key) !== count) {
+            if (!next) next = new Map($liveLikeCounts);
+            next.set(key, count);
+          }
+        }
+        if (next) $liveLikeCounts = next;
+        break;
+      }
     }
   };
 
@@ -360,6 +437,14 @@
         $ytDark = response.dark;
         break;
       case 'chatUserActionResponse':
+        if (response.success && response.action === ChatUserActions.DELETE_MESSAGE) {
+          onDelete({
+            messageId: response.message.messageId,
+            replacedMessage: [],
+            pending: true
+          });
+          break;
+        }
         $alertDialog = {
           title: response.success ? 'Success!' : 'Error',
           message: chatUserActionsItems.find(v => v.value === response.action)
@@ -382,6 +467,9 @@
       case 'registerClientResponse':
         break;
       case 'ping':
+        break;
+      case 'replyThreadResponse':
+        handleReplyThreadResponse(response);
         break;
       default:
         console.error('Unknown payload type', { port, response });
@@ -919,9 +1007,9 @@
               {#if isWelcome(action)}
                 <WelcomeMessage />
               {:else if isSuperchat(action)}
-                <PaidMessage message={action.message} on:clientSideDelete={deleteMessageClientSide} />
+                <PaidMessage message={action.message} deleted={action.deleted} on:clientSideDelete={deleteMessageClientSide} />
               {:else if isMembership(action)}
-                <MembershipItem message={action.message} on:clientSideDelete={deleteMessageClientSide} />
+                <MembershipItem message={action.message} deleted={action.deleted} on:clientSideDelete={deleteMessageClientSide} />
               {:else if isMessage(action)}
                 <Message
                   message={action.message}

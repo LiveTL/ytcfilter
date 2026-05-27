@@ -2,8 +2,10 @@
   import Message from './Message.svelte';
   import MessageRun from './MessageRuns.svelte';
   import { membershipBackground } from '../ts/chat-constants';
+  import type { Chat } from '../ts/typings/chat';
 
   export let message: Ytc.ParsedMessage;
+  export let deleted: Chat.MessageDeletedObj | null = null;
 
   const classes = 'inline-flex flex-col rounded break-words overflow-visible w-full';
 
@@ -63,7 +65,7 @@
         <Message message={message} hideName />
       </div>
     {/if} -->
-    <Message message={message} on:clientSideDelete>
+    <Message message={message} {deleted} on:clientSideDelete>
       <span class="{classes} chip text-white" style={backgroundColor} slot="chip">
         <span class="p-1">
           <span class="font-bold">

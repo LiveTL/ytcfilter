@@ -1,10 +1,9 @@
 import type { Unsubscriber } from './queue';
 import { ytcQueue } from './queue';
-import sha1 from 'sha-1';
-import { chatReportUserOptions, ChatUserActions, ChatReportUserOptions } from '../ts/chat-constants';
+import { chatReportUserOptions, ChatUserActions, ChatReportUserOptions, replyThreadPanelTag, currentDomain } from '../ts/chat-constants';
+import { parseChatResponse } from './chat-parser';
 import type { Chat } from './typings/chat';
-
-const currentDomain = location.host.includes('youtube') ? (location.protocol + '//' + location.host) : 'https://www.youtube.com';
+import sha1 from 'sha-1';
 
 let interceptor: Chat.Interceptor = { clients: [] };
 
@@ -20,6 +19,70 @@ interface YtCfg {
     INNERTUBE_CONTEXT: any;
   };
 }
+
+const getCookie = (name: string): string => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return (parts.pop() ?? '').split(';').shift() ?? '';
+  return '';
+};
+
+const proxyFetch = async (...args: any[]): Promise<any> => {
+  return await new Promise((resolve, reject) => {
+    const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const encoded = JSON.stringify({ id, args });
+    let timeout = 0;
+    const onFetchResponse = (e: Event): void => {
+      const response = JSON.parse((e as CustomEvent).detail) as {
+        id: string;
+        response?: any;
+        error?: string;
+      };
+      if (response.id !== id) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener('proxyFetchResponse', onFetchResponse);
+      if (response.error != null) {
+        reject(new Error(response.error));
+        return;
+      }
+      resolve(response.response);
+    };
+    timeout = window.setTimeout(() => {
+      window.removeEventListener('proxyFetchResponse', onFetchResponse);
+      reject(new Error('proxy fetch timed out'));
+    }, 5000);
+    window.addEventListener('proxyFetchResponse', onFetchResponse);
+    window.dispatchEvent(new CustomEvent('proxyFetchRequest', {
+      detail: encoded
+    }));
+  });
+};
+
+const buildInnertubeHeaders = (ytcfg: YtCfg) => {
+  const time = Math.floor(Date.now() / 1000);
+  const sapisid = getCookie('__Secure-3PAPISID') || getCookie('SAPISID');
+  const auth = sapisid ? `SAPISIDHASH ${time}_${sha1(`${time} ${sapisid} ${currentDomain}`)}` : null;
+  const authuser = (ytcfg as any)?.data_?.SESSION_INDEX;
+  const visitorId = (ytcfg as any)?.data_?.VISITOR_DATA ?? ytcfg.data_.INNERTUBE_CONTEXT?.client?.visitorData;
+  const clientName = (ytcfg as any)?.data_?.INNERTUBE_CLIENT_NAME;
+  const clientVersion = (ytcfg as any)?.data_?.INNERTUBE_CLIENT_VERSION;
+  const pageId = (ytcfg as any)?.data_?.DELEGATED_SESSION_ID;
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: '*/*',
+      ...(authuser != null ? { 'X-Goog-AuthUser': String(authuser) } : {}),
+      ...(visitorId != null ? { 'X-Goog-Visitor-Id': String(visitorId) } : {}),
+      ...(clientName != null ? { 'X-Youtube-Client-Name': String(clientName) } : {}),
+      ...(clientVersion != null ? { 'X-Youtube-Client-Version': String(clientVersion) } : {}),
+      ...(pageId != null ? { 'X-Goog-PageId': String(pageId) } : {}),
+      'X-Origin': currentDomain,
+      ...(auth != null ? { Authorization: auth } : {})
+    },
+    method: 'POST' as const,
+    mode: 'same-origin' as const
+  };
+};
 
 /** Register a client to the interceptor. */
 const registerClient = (
@@ -198,31 +261,6 @@ const executeChatAction = async (
   action: ChatUserActions,
   reportOption?: ChatReportUserOptions
 ): Promise<void> => {
-  const fetcher = async (...args: any[]): Promise<any> => {
-    return await new Promise((resolve, reject) => {
-      const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      const encoded = JSON.stringify({ id, args });
-      const onFetchResponse = (e: Event): void => {
-        const response = JSON.parse((e as CustomEvent).detail) as {
-          id: string;
-          response?: any;
-          error?: string;
-        };
-        if (response.id !== id) return;
-        window.removeEventListener('proxyFetchResponse', onFetchResponse);
-        if (response.error != null) {
-          reject(new Error(response.error));
-          return;
-        }
-        resolve(response.response);
-      };
-      window.addEventListener('proxyFetchResponse', onFetchResponse);
-      window.dispatchEvent(new CustomEvent('proxyFetchRequest', {
-        detail: encoded
-      }));
-    });
-  };
-
   let success = true;
   if (message.params == null) {
     success = false;
@@ -235,27 +273,11 @@ const executeChatAction = async (
     const contextMenuUrl = `${currentDomain}/youtubei/v1/live_chat/get_item_context_menu?params=` +
       `${encodeURIComponent(message.params)}&pbj=1&key=${apiKey}&prettyPrint=false`;
     const baseContext = ytcfg.data_.INNERTUBE_CONTEXT;
-    function getCookie(name: string): string {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return (parts.pop() ?? '').split(';').shift() ?? '';
-      return '';
-    }
-    const time = Math.floor(Date.now() / 1000);
-    const SAPISID = getCookie('__Secure-3PAPISID');
-    const sha = sha1(`${time} ${SAPISID} ${currentDomain}`);
-    const auth = `SAPISIDHASH ${time}_${sha}`;
-    const heads = {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: '*/*',
-        Authorization: auth
-      },
-      method: 'POST'
-    };
-    const res = await fetcher(contextMenuUrl, {
+    const heads = buildInnertubeHeaders(ytcfg);
+    const contextMenuContext = JSON.parse(JSON.stringify(baseContext));
+    const res = await proxyFetch(contextMenuUrl, {
       ...heads,
-      body: JSON.stringify({ context: baseContext })
+      body: JSON.stringify({ context: contextMenuContext })
     });
     function findServiceEndpoint(root: any, prop: string): any | null {
       const queue = [root];
@@ -291,13 +313,67 @@ const executeChatAction = async (
         context: clonedContext
       };
     }
+    function findDeleteMessageEndpoint(root: any): any | null {
+      const queue = [root];
+      const visited = new Set<any>();
+      const candidates: Array<{ iconType?: string, label?: string, endpoint: any }> = [];
+      while (queue.length > 0) {
+        const current = queue.shift();
+        if (current == null || typeof current !== 'object' || visited.has(current)) continue;
+        visited.add(current);
+        const menu = current?.menuServiceItemRenderer;
+        const iconType = menu?.icon?.iconType;
+        const endpoint = menu?.serviceEndpoint;
+        const label = (
+          Array.isArray(menu?.text?.runs)
+            ? menu.text.runs.map((r: any) => r?.text).filter(Boolean).join('')
+            : menu?.text?.simpleText
+        ) as string | undefined;
+        // Prefer stable identifiers (DELETE icon + moderate endpoint) over localized label text.
+        if (typeof endpoint?.moderateLiveChatEndpoint?.params === 'string') {
+          candidates.push({ iconType, label, endpoint });
+        }
+        for (const value of Object.values(current)) {
+          if (value != null && typeof value === 'object') {
+            queue.push(value);
+          }
+        }
+      }
+      for (const c of candidates) {
+        if (c.iconType === 'DELETE') return c.endpoint;
+      }
+      for (const c of candidates) {
+        const l = (c.label ?? '').toLowerCase();
+        if (l.includes('remove') || l.includes('delete') || l.includes('retract') || l.includes('unsend')) {
+          return c.endpoint;
+        }
+      }
+      if (candidates.length === 1) return candidates[0].endpoint;
+      return null;
+    }
     if (action === ChatUserActions.BLOCK) {
       const serviceEndpoint = findServiceEndpoint(res, 'moderateLiveChatEndpoint');
       if (serviceEndpoint == null) {
         throw new Error('Could not find moderate endpoint in context menu');
       }
       const { params, context } = parseServiceEndpoint(serviceEndpoint, 'moderateLiveChatEndpoint');
-      const moderationResponse = await fetcher(`${currentDomain}/youtubei/v1/live_chat/moderate?key=${apiKey}&prettyPrint=false`, {
+      const moderationResponse = await proxyFetch(`${currentDomain}/youtubei/v1/live_chat/moderate?key=${apiKey}&prettyPrint=false`, {
+        ...heads,
+        body: JSON.stringify({
+          params,
+          context
+        })
+      });
+      if (moderationResponse?.error != null || moderationResponse?.success === false) {
+        throw new Error('Moderation request failed');
+      }
+    } else if (action === ChatUserActions.DELETE_MESSAGE) {
+      const serviceEndpoint = findDeleteMessageEndpoint(res);
+      if (serviceEndpoint == null) {
+        throw new Error('Could not find delete endpoint in context menu');
+      }
+      const { params, context } = parseServiceEndpoint(serviceEndpoint, 'moderateLiveChatEndpoint');
+      const moderationResponse = await proxyFetch(`${currentDomain}/youtubei/v1/live_chat/moderate?key=${apiKey}&prettyPrint=false`, {
         ...heads,
         body: JSON.stringify({
           params,
@@ -313,7 +389,7 @@ const executeChatAction = async (
         throw new Error('Could not find report endpoint in context menu');
       }
       const { params, context } = parseServiceEndpoint(serviceEndpoint, 'getReportFormEndpoint');
-      const modal = await fetcher(`${currentDomain}/youtubei/v1/flag/get_form?key=${apiKey}&prettyPrint=false`, {
+      const modal = await proxyFetch(`${currentDomain}/youtubei/v1/flag/get_form?key=${apiKey}&prettyPrint=false`, {
         ...heads,
         body: JSON.stringify({
           params,
@@ -339,7 +415,7 @@ const executeChatAction = async (
           clickTrackingParams
         };
       }
-      const flagResponse = await fetcher(`${currentDomain}/youtubei/v1/flag/flag?key=${apiKey}&prettyPrint=false`, {
+      const flagResponse = await proxyFetch(`${currentDomain}/youtubei/v1/flag/flag?key=${apiKey}&prettyPrint=false`, {
         ...heads,
         body: JSON.stringify({
           action: flagAction,
@@ -361,6 +437,59 @@ const executeChatAction = async (
       action: action,
       message,
       success
+    })
+  );
+};
+
+const fetchReplyThread = async (
+  requestId: string,
+  params: string,
+  ytcfg: YtCfg,
+  isReplay: boolean
+): Promise<void> => {
+  let success = true;
+  let replies: Ytc.ParsedMessage[] = [];
+  let error: string | undefined;
+  try {
+    const baseContext = ytcfg.data_.INNERTUBE_CONTEXT;
+    const heads = buildInnertubeHeaders(ytcfg);
+    const panelRes = await proxyFetch(
+      `${currentDomain}/youtubei/v1/get_panel?prettyPrint=false`,
+      {
+        ...heads,
+        body: JSON.stringify({
+          context: baseContext,
+          panelId: replyThreadPanelTag,
+          params
+        })
+      }
+    );
+    const items: any[] = panelRes?.content?.engagementPanelSectionListRenderer
+      ?.content?.sectionListRenderer?.contents?.[0]
+      ?.liveChatItemDisplayListRenderer?.items ?? [];
+    // Reuse parseChatResponse so replies come out shaped identically to live chat messages.
+    const fakeChunk = JSON.stringify({
+      continuationContents: {
+        liveChatContinuation: {
+          continuations: [{ timedContinuationData: { timeoutMs: 0 } }],
+          actions: items.map((item: any) => ({ addChatItemAction: { item } }))
+        }
+      }
+    });
+    const chunk = parseChatResponse(fakeChunk, isReplay);
+    replies = (chunk?.messages ?? []) as Ytc.ParsedMessage[];
+  } catch (e) {
+    success = false;
+    error = String(e);
+  }
+
+  interceptor.clients.forEach(
+    (clientPort) => clientPort.postMessage({
+      type: 'replyThreadResponse',
+      requestId,
+      success,
+      replies,
+      error
     })
   );
 };
@@ -403,6 +532,9 @@ export const initInterceptor = (
           break;
         case 'executeChatAction':
           executeChatAction(message.message, ytcfg, message.action, message.reportOption).catch(console.error);
+          break;
+        case 'fetchReplyThread':
+          fetchReplyThread(message.requestId, message.params, ytcfg, isReplay ?? false).catch(console.error);
           break;
         case 'ping':
           port.postMessage({ type: 'ping' });

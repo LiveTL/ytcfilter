@@ -1,5 +1,6 @@
 import { parseChatResponse } from './chat-parser';
 import type { Chat } from './typings/chat';
+import { buildDeletedObj } from './chat-utils';
 
 interface QueueItem<T> { data: T, next?: QueueItem<T> }
 export interface Queue<T> {
@@ -201,7 +202,7 @@ export function ytcQueue(isReplay = false): YtcQueue {
     }
     for (const d of deletions) {
       if (message.messageId !== d.messageId) continue;
-      messageAction.deleted = { replace: d.replacedMessage };
+      messageAction.deleted = buildDeletedObj(d, message.message);
       return;
     }
   };
@@ -249,6 +250,9 @@ export function ytcQueue(isReplay = false): YtcQueue {
     bonks.forEach((bonk) => latestAction.set({ type: 'bonk', bonk }));
     deletions.forEach((deletion) => latestAction.set({ type: 'delete', deletion }));
     misc.forEach((action) => latestAction.set(action));
+    if (chunk.likeCounts && Object.keys(chunk.likeCounts).length > 0) {
+      latestAction.set({ type: 'likeCounts', counts: chunk.likeCounts });
+    }
   };
 
   const addJsonToQueue = (
