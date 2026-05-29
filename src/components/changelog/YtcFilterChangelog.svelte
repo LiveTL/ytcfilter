@@ -1,1 +1,1 @@
-fix features broken by YT updates
+add new chat actions
