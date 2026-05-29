@@ -25,13 +25,13 @@
     }
   };
   $: setValue($inputDialog?.prompts.map(p => p.originalValue));
-  type PromptType = {
+  interface PromptType {
     originalValue: string;
     label: string;
-    hideLabel?: Boolean;
-    large?: Boolean;
-  };
-  let prompts: Array<PromptType> = [];
+    hideLabel?: boolean;
+    large?: boolean;
+  }
+  let prompts: PromptType[] = [];
   $: prompts = $inputDialog?.prompts ?? prompts;
   let message = '';
   $: message = $inputDialog?.component ? '' : ($inputDialog?.message ?? message);
@@ -60,7 +60,7 @@
   //   inputItem?.select();
   // };
   let inputItem: HTMLInputElement | HTMLTextAreaElement | null = null;
-  const zip = (prompts: Array<PromptType>, values: string[]) => {
+  const zip = (prompts: PromptType[], values: string[]) => {
     return prompts.map((p, i) => {
       return {
         ...p,

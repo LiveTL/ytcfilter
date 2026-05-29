@@ -94,7 +94,7 @@
               $initialSetupDone = true;
             } catch (e) {
               console.error(e);
-              cancelled(e as any);
+              cancelled(e);
             }
           },
           text: 'Import',
@@ -112,7 +112,7 @@
         $initialSetupDone = true;
       } catch (e) {
         console.error(e);
-        cancelled(e as any);
+        cancelled(e);
       }
       loading = false;
     }

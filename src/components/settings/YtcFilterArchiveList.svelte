@@ -146,7 +146,7 @@
     const year = date.getFullYear();
     const month = months[date.getMonth()];
     const day = date.getDate();
-    const hoursColonMinutes = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    const hoursColonMinutes = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     return `${month} ${day} ${year}, ${hoursColonMinutes}`;
   };
   const computeName = (item: YtcF.MessageDumpInfoItem) => {

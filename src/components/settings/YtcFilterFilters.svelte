@@ -12,7 +12,7 @@
   import YtcFilterTriggers from './YtcFilterTriggers.svelte';
 
   const getLastFilterItem = (id: string) => {
-    return document.querySelector(`.filter-item-${id}`) as HTMLDivElement;
+    return document.querySelector(`.filter-item-${id}`)!;
   };
 
   $currentEditingPreset = $currentFilterPreset;
@@ -40,7 +40,7 @@
     await tick();
     const lastFilterItem = getLastFilterItem(id);
     if (lastFilterItem) {
-      (lastFilterItem.querySelector('.filter-edit-button') as HTMLButtonElement).click();
+      (lastFilterItem.querySelector('.filter-edit-button')!).click();
       await tick();
       lastFilterItem.querySelectorAll('input')[2]?.select();
       lastFilterItem.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
@@ -125,7 +125,7 @@
       triggers: [],
       activation: 'manual'
     }];
-    $currentEditingPreset = await getPresetById(id) as YtcF.FilterPreset;
+    $currentEditingPreset = (await getPresetById(id))!;
     unsavedFilters = JSON.parse(JSON.stringify($currentEditingPreset.filters));
   };
   const newPreset = () => {
@@ -183,7 +183,7 @@
       unsavedFilters = [...unsavedFilters, ...JSON.parse(JSON.stringify(newItems))];
       $chatFilterPresets = $chatFilterPresets.map(x => x.id === $currentEditingPreset.id ? $currentEditingPreset : x);
     }
-    (target.querySelector('option') as HTMLOptionElement).selected = true;
+    (target.querySelector('option')!).selected = true;
   }) as any;
   const renameItemCallback = (item: YtcF.FilterPreset) => {
     const renameItem = (name: string[]) => {

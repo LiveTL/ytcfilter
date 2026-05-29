@@ -15,7 +15,7 @@
     owner: 'author',
     verified: 'author',
     superchat: 'item',
-    membershipItem: 'item',
+    membershipItem: 'item'
   };
   const trues = {
     includes: 'contains',
@@ -52,7 +52,7 @@
     } else {
       const prefix = propertyMap[condition.property];
       const trueFalse = condition.invert ? 'is not' : 'is';
-      const propertyName = condition.property === 'owner' ? 'channel owner' : (condition.property === 'membershipItem' ? 'membership message': condition.property);
+      const propertyName = condition.property === 'owner' ? 'channel owner' : (condition.property === 'membershipItem' ? 'membership message' : condition.property);
       return [{
         type: 'string',
         value: `${prefix} ${trueFalse} ${propertyName}`

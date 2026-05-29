@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { Theme } from '../../ts/chat-constants';
+  import { Theme, TimeUnit } from '../../ts/chat-constants';
   import { theme, showProfileIcons, showUsernames, showTimestamps, showUserBadges, errorDialog, confirmDialog, inputDialog, filterInBackground, initialSetupDone, autoOpenFilterPanel, autoClear } from '../../ts/storage';
   import { exioButton, exioCheckbox, exioDropdown, exioIcon, exioTextbox } from 'exio/svelte';
-  import { forceReloadAll } from '../../ts/ytcf-logic';
-  import { TimeUnit } from '../../ts/chat-constants';
+  import { forceReloadAll, readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import '../../stylesheets/ui.css';
-  import { readFromJson, exportSettingsAsJson, importSettingsFromJson } from '../../ts/ytcf-logic';
   import YtcFilterErrorDialog from '../YtcFilterErrorDialog.svelte';
   import LoadingBar from '../common/LoadingBar.svelte';
   import { onMount, tick } from 'svelte';
@@ -28,7 +26,7 @@
           }
         },
         title: 'Data Import Error',
-        message: (e as any).message
+        message: (e).message
       };
     }
   };

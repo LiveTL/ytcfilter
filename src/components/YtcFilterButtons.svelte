@@ -3,7 +3,7 @@
   import { exioButton, exioIcon } from 'exio/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { embedHeight } from '../ts/storage';
-  // @ts-ignore
+  // @ts-expect-error
   import inline from '../stylesheets/ui.css?inline';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');
@@ -85,7 +85,7 @@
   }
   $: if (loaded) toggleMouse(resizing);
   function toggleMouse(toggle: boolean) {
-    const elem = document.querySelector('#hyperchat') as HTMLIFrameElement | null;
+    const elem = document.querySelector('#hyperchat');
     if (elem) {
       elem.style.pointerEvents = toggle ? 'none' : 'auto';
       elem.style.touchAction = toggle ? 'none' : 'auto';

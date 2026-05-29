@@ -1,9 +1,9 @@
 <script lang="ts">
-  // @ts-ignore
+  // @ts-expect-error
   import inline1 from '../stylesheets/scrollbar.css?inline';
-  // @ts-ignore
+  // @ts-expect-error
   import inline2 from '../stylesheets/ui.css?inline';
-  // @ts-ignore
+  // @ts-expect-error
   import inline3 from '../stylesheets/line.css?inline';
   import { onDestroy, onMount, afterUpdate, tick } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -414,8 +414,8 @@
     const paramsClone = new URLSearchParams();
     paramsClone.set('archiveKey', key);
     paramsClone.set('ytDark', $ytDark.toString());
-    paramsClone.set('tabid', paramsTabId as string);
-    paramsClone.set('frameid', paramsFrameId as string);
+    paramsClone.set('tabid', paramsTabId!);
+    paramsClone.set('frameid', paramsFrameId!);
     archiveEmbedFrame = 'https://www.youtube.com/embed/ytcfilter_embed?' + paramsClone.toString();
   };
 
@@ -677,7 +677,7 @@
     clonedNode.id = 'screenshot-element';
     clonedNode.dataset.theme = $dataTheme;
     hiddenElement?.appendChild(clonedNode);
-    let style = document.querySelector('#shift-screenshot') as HTMLStyleElement;
+    let style = document.querySelector('#shift-screenshot')!;
     if (!style) {
       style = document.createElement('style');
       style.id = 'shift-screenshot';
@@ -746,7 +746,7 @@
       a.download = downloadName;
 
       // Prefer a Blob URL: YouTube CSP / modern Chromium can block `data:` navigation/downloads.
-      const toBlobP = () => new Promise<Blob>((resolve, reject) => {
+      const toBlobP = async () => await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((blob) => {
           if (blob) resolve(blob);
           else reject(new Error('canvas.toBlob returned null'));
@@ -885,9 +885,9 @@
 
   let topBarVisible = true;
   const toggleTopBar = () => {
-    const elem = window.parent.document.querySelector('.ytcf-button-wrapper') as HTMLDivElement;
+    const elem = window.parent.document.querySelector('.ytcf-button-wrapper')!;
     if (!elem) return;
-    const iframe = window.parent.document.querySelector('.ytcf-iframe') as HTMLDivElement;
+    const iframe = window.parent.document.querySelector('.ytcf-iframe')!;
     if (!iframe || (topBarVisible && iframe.style.display != 'block')) return;
     // elem.style.display = topBarVisible ? 'none' : 'flex';
     if (topBarVisible) elem.style.setProperty('display', 'none', 'important');
