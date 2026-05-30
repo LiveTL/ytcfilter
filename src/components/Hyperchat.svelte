@@ -888,7 +888,7 @@
     const elem = window.parent.document.querySelector('.ytcf-button-wrapper')!;
     if (!elem) return;
     const iframe = window.parent.document.querySelector('.ytcf-iframe')!;
-    if (!iframe || (topBarVisible && iframe.style.display != 'block')) return;
+    if (!iframe || (topBarVisible && iframe.style.display !== 'block')) return;
     // elem.style.display = topBarVisible ? 'none' : 'flex';
     if (topBarVisible) elem.style.setProperty('display', 'none', 'important');
     else elem.style.removeProperty('display');

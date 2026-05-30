@@ -140,7 +140,9 @@
         originalValue: 'Preset ' + ((($chatFilterPresets.filter(item => {
           return item.nickname?.startsWith('Preset ');
         }).map(item => parseInt((item?.nickname ?? '').replace(/\D/g, '')))
-          .filter(item => !isNaN(item)).sort().pop() ?? 0) + 1)),
+          .filter(item => !isNaN(item))
+          .sort((a, b) => (String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0))
+          .pop() ?? 0) + 1)),
         label: 'Preset Name',
         hideLabel: true
       }]
