@@ -21,4 +21,5 @@ jobs:
 
       - run: |
           npm install --force
+          npm run lint:check
           npm run build
