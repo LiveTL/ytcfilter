@@ -10,9 +10,6 @@
   import dark from 'smelte/src/dark';
   import WelcomeMessage from './YtcFilterWelcome.svelte';
   import Message from './Message.svelte';
-  import PinnedMessage from './PinnedMessage.svelte';
-  import ChatSummary from './ChatSummary.svelte';
-  import RedirectBanner from './RedirectBanner.svelte';
   import PaidMessage from './PaidMessage.svelte';
   import MembershipItem from './MembershipItem.svelte';
   import ReportBanDialog from './ReportBanDialog.svelte';
@@ -26,8 +23,7 @@
     YoutubeEmojiRenderMode,
     chatUserActionsItems,
     ChatUserActions,
-    isLiveTL,
-    UNDONE_MSG
+    isLiveTL
   } from '../ts/chat-constants';
   import '../ts/resize-tracker';
   import {
@@ -71,7 +67,6 @@
     videoInfo,
     overrideFilterPresetId,
     ytDark,
-    confirmDialog,
     initialSetupDone,
     defaultFilterPresetId,
     autoClear
