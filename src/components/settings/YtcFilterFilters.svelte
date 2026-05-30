@@ -67,7 +67,7 @@
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
-    saveTimeout = setTimeout(async () => {
+    saveTimeout = setTimeout(() => {
       $currentEditingPreset.filters = $currentEditingPreset.filters.map(x => x.id === filter?.id ? filter : x);
       if (filter && !$currentEditingPreset.filters.some(x => x.id === filter?.id)) {
         $currentEditingPreset.filters = [...$currentEditingPreset.filters, filter];

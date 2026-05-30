@@ -22,8 +22,8 @@
     loading = true;
     data = (await getAllMessageDumpInfoItems()).filter((item) => {
       const name = computeName(item);
-      const videoId = item.info?.video.videoId || '';
-      const channelId = item.info?.channel.channelId || '';
+      const videoId = item.info?.video.videoId ?? '';
+      const channelId = item.info?.channel.channelId ?? '';
       const date = dateConvert(item.lastEdited);
       return (
         name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,19 +76,19 @@
           originalValue: item.nickname || '',
           label: 'Archive Name'
         }, {
-          originalValue: item.info?.video.title || '',
+          originalValue: item.info?.video.title ?? '',
           label: 'Video Title'
         }, {
-          originalValue: item.info?.video.videoId || '',
+          originalValue: item.info?.video.videoId ?? '',
           label: 'Video ID'
         }, {
-          originalValue: item.info?.channel.name || '',
+          originalValue: item.info?.channel.name ?? '',
           label: 'Channel Name'
         }, {
-          originalValue: item.info?.channel.handle || '',
+          originalValue: item.info?.channel.handle ?? '',
           label: 'Channel Handle'
         }, {
-          originalValue: item.info?.channel.channelId || '',
+          originalValue: item.info?.channel.channelId ?? '',
           label: 'Channel ID'
         }]
       };
