@@ -184,12 +184,13 @@ export const currentFilterPreset = derived(
   }
 );
 export const dataTheme = derived(isDark, ($isDark) => isLiveTL || $isDark ? 'dark' : 'light');
+type MaybePromise<T> = T | Promise<T>;
 export const confirmDialog = writable(null as null | {
   title: string;
   message: string;
   action: {
     text: string;
-    callback: () => void;
+    callback: () => MaybePromise<void>;
   };
 });
 export const errorDialog = writable(null as null | {
@@ -197,7 +198,7 @@ export const errorDialog = writable(null as null | {
   message: string;
   action: {
     text: string;
-    callback: () => void;
+    callback: () => MaybePromise<void>;
   };
 });
 export const inputDialog = writable(null as null | {
@@ -211,7 +212,7 @@ export const inputDialog = writable(null as null | {
   }>;
   action: {
     text: string;
-    callback: (values: string[]) => void;
+    callback: (values: string[]) => MaybePromise<void>;
     cancelled?: () => void;
     noAction?: boolean;
   };
