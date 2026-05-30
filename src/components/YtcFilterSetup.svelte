@@ -117,7 +117,13 @@
       loading = false;
     }
   };
-  const returnToYtcF = () => (window.location.href = referrer || window.location.href);
+  const returnToYtcF = () => {
+    if (referrer) {
+      window.location.href = referrer;
+    } else {
+      window.location.assign(window.location.href);
+    }
+  };
   $: if ($initialSetupDone && currentPanel !== 'done') returnToYtcF();
   const cancel = () => {
     $inputDialog = null;

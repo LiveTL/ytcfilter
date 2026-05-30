@@ -60,7 +60,7 @@
   data-theme={$dataTheme}
 >
   <div class="settings-card" use:exioComponent style={tabs[tabIndex].freeScale ? 'max-width: unset !important;' : ''}>
-    <svelte:component this={tabs[tabIndex].component} {...(tabs[tabIndex].props || {})} />
+    <svelte:component this={tabs[tabIndex].component} {...(tabs[tabIndex].props ? tabs[tabIndex].props : {})} />
   </div>
 </div>
 

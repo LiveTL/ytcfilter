@@ -472,7 +472,7 @@
     }
   };
 
-  $: document.title = $videoInfo?.video?.title || 'YtcFilter';
+  $: document.title = $videoInfo?.video?.title ? $videoInfo.video.title : 'YtcFilter';
 
   const postMessageListener = (event: any) => {
     if (event.data.type === 'loadArchiveRequest') {
@@ -793,8 +793,13 @@
   };
   let key = '';
   const initMessageStorage = async () => {
-    let tempKey = paramsArchiveKey || await findSavedMessageActionKey(paramsContinuation, $videoInfo, $autoClear);
-    tempKey = tempKey === null ? getRandomString() : tempKey;
+    let tempKey = paramsArchiveKey;
+    if (!tempKey) {
+      tempKey = await findSavedMessageActionKey(paramsContinuation, $videoInfo, $autoClear);
+    }
+    if (!tempKey) {
+      tempKey = getRandomString();
+    }
     const newMsgs = await getSavedMessageDumpActions(tempKey);
     if (newMsgs?.length) {
       newMessages({

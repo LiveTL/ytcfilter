@@ -81,7 +81,11 @@
     }, 100);
   }
   $: if (loaded) {
-    calcHeight = resizing ? `${pxHeight}px` : `${100 * (tickEmbedHeight || 0)}vh`;
+    let nextEmbedHeight = tickEmbedHeight;
+    if (!nextEmbedHeight) {
+      nextEmbedHeight = 0;
+    }
+    calcHeight = resizing ? `${pxHeight}px` : `${100 * nextEmbedHeight}vh`;
   }
   $: if (loaded) toggleMouse(resizing);
   function toggleMouse(toggle: boolean) {
