@@ -3,7 +3,7 @@
   import { exioButton, exioIcon } from 'exio/svelte';
   import { onDestroy, onMount } from 'svelte';
   import { embedHeight } from '../ts/storage';
-  // @ts-expect-error
+  // @ts-expect-error vite inline css import
   import inline from '../stylesheets/ui.css?inline';
   const logo = chrome.runtime.getURL((isLiveTL ? 'ytcfilter' : 'assets') + '/logo-48.png');
   let dark = document.documentElement.hasAttribute('dark');

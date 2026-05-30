@@ -1,9 +1,9 @@
 <script lang="ts">
-  // @ts-expect-error
+  // @ts-expect-error vite inline css import
   import inline1 from '../stylesheets/scrollbar.css?inline';
-  // @ts-expect-error
+  // @ts-expect-error vite inline css import
   import inline2 from '../stylesheets/ui.css?inline';
-  // @ts-expect-error
+  // @ts-expect-error vite inline css import
   import inline3 from '../stylesheets/line.css?inline';
   import { onDestroy, onMount, afterUpdate, tick } from 'svelte';
   import { fade } from 'svelte/transition';
