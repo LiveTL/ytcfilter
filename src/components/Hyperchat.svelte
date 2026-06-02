@@ -592,13 +592,11 @@
   $: $enableStickySuperchatBar, topBarResized(); // hasBanner
 
   const isMention = (msg: Ytc.ParsedMessage) => {
-    return $selfChannelName && msg.message.map(run => {
-      if (run.type === 'text' || run.type === 'link') {
-        return run.text;
-      } else {
-        return run.alt;
-      }
-    }).join('').includes(`@${$selfChannelName}`);
+    return $selfChannelName &&
+      msg.message
+        .reduce((text, run) =>
+          text + ((run.type === 'text' || run.type === 'link') ? run.text : run.alt), '')
+        .includes(`@${$selfChannelName}`);
   };
   const executeExport = (e: any) => {
     const el = (e.target as HTMLSelectElement);
