@@ -894,8 +894,6 @@
   };
 </script>
 
-<ReportBanDialog />
-<SuperchatViewDialog />
 <YtcFilterConfirmation />
 
 <svelte:window on:resize={() => {
@@ -979,6 +977,8 @@
   </div>
   <div class="line" />
   <div class="{containerClass} container" style="font-size: 13px; height: calc(100vh - 27px);">
+    <ReportBanDialog />
+    <SuperchatViewDialog />
     {#if $enableStickySuperchatBar}
       <StickyBar />
     {/if}
