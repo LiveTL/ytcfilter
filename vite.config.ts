@@ -31,7 +31,7 @@ export default defineConfig({
       disableAutoLaunch: process.env.BROWSER === 'none',
       browser: process.env.BROWSER === 'firefox' ? 'firefox' : 'chrome',
       webExtConfig: {
-        startUrl: 'https://www.youtube.com/watch?v=5qap5aO4i9A'
+        startUrl: 'https://www.youtube.com/watch?v=X4VbdwhkE10'
       }
     }),
     svelte({
