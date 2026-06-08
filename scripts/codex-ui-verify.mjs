@@ -175,11 +175,12 @@ const cdpCall = async (socketBuf, id, method, params) => {
   }
 };
 
-const cdpEval = async (socketBuf, id, expression, { awaitPromise = false } = {}) => {
+const cdpEval = async (socketBuf, id, expression, { awaitPromise = false, contextId = undefined } = {}) => {
   const result = await cdpCall(socketBuf, id, 'Runtime.evaluate', {
     expression,
     returnByValue: true,
-    awaitPromise
+    awaitPromise,
+    ...(contextId === undefined ? {} : { contextId })
   });
   return result?.result?.value;
 };
@@ -208,6 +209,43 @@ const findTarget = async (predicate, label) => {
   throw new Error(`Timed out waiting for target: ${label}`);
 };
 
+const flattenFrameTree = (frameTree) => {
+  const out = [frameTree];
+  for (const child of frameTree.childFrames ?? []) {
+    out.push(...flattenFrameTree(child));
+  }
+  return out;
+};
+
+const connectToTargetWithFrameContext = async (targetPredicate, framePredicate, targetLabel, frameLabel) => {
+  const start = Date.now();
+  while (Date.now() - start < TIMEOUT_MS) {
+    const targets = await httpGetJson('/json/list');
+    for (const target of targets.filter(targetPredicate)) {
+      let socketBuf;
+      try {
+        socketBuf = await connectToTarget(target);
+        const tree = await cdpCall(socketBuf, 101, 'Page.getFrameTree', {});
+        const frameNode = flattenFrameTree(tree.frameTree).find((node) => framePredicate(node.frame));
+        if (!frameNode) {
+          socketBuf.socket.end();
+          continue;
+        }
+        const world = await cdpCall(socketBuf, 102, 'Page.createIsolatedWorld', {
+          frameId: frameNode.frame.id,
+          worldName: 'ytcf-verify',
+          grantUniveralAccess: true
+        });
+        return { socketBuf, contextId: world.executionContextId, target };
+      } catch {
+        socketBuf?.socket.destroy();
+      }
+    }
+    await sleep(250);
+  }
+  throw new Error(`Timed out waiting for ${targetLabel} with ${frameLabel}`);
+};
+
 const clickByText = async (socketBuf, id, text) => {
   const expr = `
     (() => {
@@ -230,6 +268,16 @@ const waitForSelector = async (socketBuf, id, selector) => {
     await sleep(250);
   }
   throw new Error(`Timed out waiting for selector: ${selector}`);
+};
+
+const waitForEval = async (socketBuf, id, expression, label, options = {}) => {
+  const start = Date.now();
+  while (Date.now() - start < TIMEOUT_MS) {
+    const ok = await cdpEval(socketBuf, id, expression, options);
+    if (ok) return true;
+    await sleep(250);
+  }
+  throw new Error(`Timed out waiting for: ${label}`);
 };
 
 const main = async () => {
@@ -281,22 +329,24 @@ const main = async () => {
   sw.socket.end();
   console.log('storage snapshot:', JSON.stringify(storageSnapshot));
 
-  const liveChatTarget = await findTarget(
-    (t) => typeof t.url === 'string' && t.url.includes('/live_chat') && t.url.includes('jfKfPfyJRdk'),
-    'live_chat popout'
+  const { socketBuf: live, contextId: liveContextId } = await connectToTargetWithFrameContext(
+    (t) => t.type === 'page' && typeof t.url === 'string' && t.url.includes('/watch') && t.url.includes('X4VbdwhkE10'),
+    (frame) => frame.name === 'chatframe' && frame.url.includes('/live_chat') && frame.url.includes('continuation='),
+    'youtube watch page',
+    'embedded live chat frame'
   );
 
-  const live = await connectToTarget(liveChatTarget);
-
   // Injected bar exists.
-  const hasButtons = await cdpEval(live, 1, "!!document.querySelector('.ytcf-launch-button')");
-  const hasMountContainer = await cdpEval(live, 2, "!!document.querySelector('.ytcf-iframe')");
-  if (!hasButtons || !hasMountContainer) {
-    throw new Error('Injected YTCF controls not present on live_chat page');
-  }
+  await waitForEval(
+    live,
+    1,
+    "!!document.querySelector('.ytcf-launch-button') && !!document.querySelector('.ytcf-iframe')",
+    'injected YTCF controls on embedded live_chat frame',
+    { contextId: liveContextId }
+  );
 
   // Use "Popout" so the embed surface becomes a top-level CDP target.
-  await cdpEval(live, 3, "document.querySelector('.ytcf-popout-button')?.click(); true");
+  await cdpEval(live, 3, "document.querySelector('.ytcf-popout-button')?.click(); true", { contextId: liveContextId });
 
   // First run should redirect the embed to setup.html.
   const setupTarget = await findTarget(
@@ -331,7 +381,7 @@ const main = async () => {
   ytEmbed.socket.end();
 
   // Open Settings from injected bar.
-  await cdpEval(live, 30, "document.querySelector('.ytcf-settings-button')?.click(); true");
+  await cdpEval(live, 30, "document.querySelector('.ytcf-settings-button')?.click(); true", { contextId: liveContextId });
   const optionsTarget = await findTarget(
     (t) => typeof t.url === 'string' && t.url.includes('options.html'),
     'options.html'

@@ -49,7 +49,7 @@ export default defineConfig({
       disableAutoLaunch: process.env.AUTOLAUNCH !== 'true',
       browser,
       webExtConfig: {
-        startUrl: 'https://www.youtube.com/watch?v=jfKfPfyJRdk'
+        startUrl: 'https://www.youtube.com/watch?v=X4VbdwhkE10'
       },
       libModeViteConfig: defineConfig({ 
         build: { 

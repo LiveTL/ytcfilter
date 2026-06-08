@@ -69,7 +69,7 @@ xvfb-run -a /snap/bin/chromium \
   --disable-translate \
   --disable-infobars \
   --autoplay-policy=no-user-gesture-required \
-  "https://www.youtube.com/watch?v=jfKfPfyJRdk"
+  "https://www.youtube.com/watch?v=X4VbdwhkE10"
 ```
 
 Build output layout:

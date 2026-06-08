@@ -161,7 +161,7 @@ xvfb-run -a /snap/bin/chromium \
   --disable-translate \
   --disable-infobars \
   --autoplay-policy=no-user-gesture-required \
-  "https://www.youtube.com/watch?v=jfKfPfyJRdk"
+  "https://www.youtube.com/watch?v=X4VbdwhkE10"
 ```
 - That manual path was the one verified on 2026-04-01 for:
   - injected YTCF button bar
@@ -173,7 +173,7 @@ xvfb-run -a /snap/bin/chromium \
   - `bash scripts/codex-dev.sh status`
   - `bash scripts/codex-dev.sh stop`
 - Default testbed URL comes from `vite.config.ts`:
-  - `https://www.youtube.com/watch?v=jfKfPfyJRdk`
+  - `https://www.youtube.com/watch?v=X4VbdwhkE10`
 - Treat `reload` as the default after significant runtime changes to:
   - `src/scripts/**`
   - `src/components/**`
