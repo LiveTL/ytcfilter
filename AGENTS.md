@@ -19,7 +19,7 @@
 
 - Work on `master` unless the user explicitly asks for something else.
 - Keep `master` in sync with `origin/master`.
-- The old local `mv3` branch is historical. Do not use it as the normal source branch.
+- The old local `mv3` branch is retired. Do not use it as the normal source branch.
 - `hc/main` is the current HC MV3 upstream. Do not merge from `hc/mv3` unless the user explicitly wants branch archaeology.
 
 ## Sync Model (Mandatory)
@@ -220,7 +220,7 @@ xvfb-run -a /snap/bin/chromium \
 
 ### GitHub Release Notes Style (Mandatory)
 
-- Match the historical release format:
+- Match the existing release format:
 
 ```md
 ## Here's what's new in vX.Y.Z:

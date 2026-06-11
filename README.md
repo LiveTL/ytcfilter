@@ -26,7 +26,7 @@ See https://livetl.app/hyperchat/install -->
 
 <!-- ### ⚠️ WARNING ⚠️ -->
 
-YtcFilter is MV3-only now. `master` is the shipping branch, and shared HyperChat changes are pulled in by merging `hc/main` into `master`.
+YtcFilter is MV3-only. `master` is the shipping branch, and shared HyperChat changes are pulled in by merging `hc/main` into `master`.
 
 ### Development
 
