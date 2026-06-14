@@ -17,3 +17,9 @@ body {
   background-color: transparent !important;
   overflow: hidden !important;
 }
+
+html > :not(head):not(body) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
