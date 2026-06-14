@@ -4,37 +4,34 @@
 
 - YTCF is an MV3-only extension repo.
 - `master` is the shipping branch.
-- This repo does not use HyperChat as a submodule.
-- Shared HC changes come in by merging `hc/main` into `master`.
+- Sync shared chat runtime updates by merging the configured `hc/main` remote-tracking branch into `master`.
 
 ## Repo Model
 
-- HC is the upstream shared chat backbone.
-- LTL embeds HC as a submodule.
-- YTCF is an HC-based codebase with a large in-tree YTCF layer.
-- Do not treat YTCF like LTL. There is no `develop -> mv3-fr -> release` ladder here.
-- Do not invent an HC-style `mv2 -> mv3` ladder here. YTCF is MV3-only.
+- YTCF source lives directly in this repository.
+- Keep filter, setup, archive, and settings behavior separate from shared chat runtime syncs.
+- Use a single working branch for ordinary YTCF work unless the user explicitly asks for more.
 
 ## Branch Discipline
 
 - Work on `master` unless the user explicitly asks for something else.
 - Keep `master` in sync with `origin/master`.
-- The old local `mv3` branch is retired. Do not use it as the normal source branch.
-- `hc/main` is the current HC MV3 upstream. Do not merge from `hc/mv3` unless the user explicitly wants branch archaeology.
+- If a local `mv3` branch exists, ignore it for ordinary work.
+- Use `hc/main` for shared chat runtime syncs unless the user explicitly names another ref.
 
 ## Sync Model (Mandatory)
 
-- If a fix belongs in shared HC behavior, land it in HC first.
+- If a fix belongs in shared chat runtime behavior, land it in the source repo for that runtime first.
 - Then pull it into YTCF by merging:
   - `hc/main` -> `master`
-- Prefer a proper merge over hand-copying many HC commits.
+- Prefer a proper merge over hand-copying many shared runtime commits.
 - Resolve merge conflicts in YTCF terms:
   - keep YTCF filters, presets, triggers, archives, setup, and panel UI
-  - take HC backbone fixes in shared parsing, rendering, messaging, and runtime plumbing
+  - take shared runtime fixes in parsing, rendering, messaging, and runtime plumbing
 
 ## Code Boundaries
 
-- HC-derived areas in this repo:
+- Shared chat runtime areas in this repo:
   - chat parsing
   - queueing/timing
   - chat rendering shell
@@ -85,13 +82,13 @@
 
 - Commit subjects should be short, direct, and easy to scan in `git log --oneline`.
 - Prefer active voice and plain wording:
-  - `merge hc main`
+  - `merge chat runtime`
   - `fix archive import`
   - `agent map`
 - Avoid padded scopes, issue-number prefixes, and long explanatory subjects.
 - Mildly funny is fine if the subject is still immediately clear.
 
-## Shared HC Patterns To Preserve
+## Shared Runtime Patterns To Preserve
 
 - Keep author/channel identity data untouched and apply display-only formatting at render edges.
 - Use `src/ts/component-utils.ts` for author-name formatting.
@@ -186,7 +183,7 @@ xvfb-run -a /snap/bin/chromium \
 1. `git fetch hc`
 2. `git checkout master`
 3. `git merge --no-ff hc/main`
-4. Resolve conflicts by keeping YTCF-owned behavior and taking HC backbone fixes.
+4. Resolve conflicts by keeping YTCF-owned behavior and taking shared runtime fixes.
 5. Clean reinstall if needed:
    - `rm -rf node_modules`
    - `n exec 22.21.1 npm install --force`
@@ -228,7 +225,7 @@ xvfb-run -a /snap/bin/chromium \
 ```
 
 - Keep it to one bullet unless the user explicitly asks for more.
-- The bullet must be user-facing only (no maintainer/internal plumbing notes).
+- The bullet must be user-facing only (no maintainer or implementation-detail notes).
 
 ## Emoji Placeholder Handling
 
