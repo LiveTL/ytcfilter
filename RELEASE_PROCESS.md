@@ -6,13 +6,11 @@ YTCF ships from a single active line.
 
 1. Work on `master`.
 2. `git fetch hc`
-3. If shared HC behavior changed upstream, merge `hc/main` into `master` first.
+3. If shared chat runtime behavior changed, merge `hc/main` into `master` first.
 4. Resolve conflicts in YTCF terms.
 5. Validate locally.
 6. Push `master`.
 7. Tag and publish the release from `master`.
-
-YTCF is MV3-only. There is no internal `mv2 -> mv3` ladder here.
 
 ## Local Validation
 
@@ -78,13 +76,13 @@ Build output layout:
 - Firefox unpacked extension: `build/firefox/`
 - release ZIPs: `build/YtcFilter-chrome.zip` and `build/YtcFilter-firefox.zip`
 
-Recommended spot checks after a shared HC bump:
+Recommended spot checks after a shared chat runtime sync:
 
 - setup flow still opens
 - options page still renders filters / archives / other tabs
 - `hyperchat.html` still renders the filtered panel UI
 - native YouTube chat still gets the YTCF button bar
-- block/report actions still route through the shared HC plumbing
+- block/report actions still work from the message menu
 - filter edits should be retested only after reloading/remounting the panel; mounted sessions do not live-patch by design
 
 ## Versioning
@@ -116,7 +114,7 @@ Recommended spot checks after a shared HC bump:
   - start with lowercase unless a proper noun forces capitalization
   - do not use `/` separators
   - example: `fix visual conflicts w/ YT`
-- GitHub release notes must match the historical format:
+- GitHub release notes must match the existing format:
 
 ```md
 ## Here's what's new in vX.Y.Z:
@@ -125,7 +123,7 @@ Recommended spot checks after a shared HC bump:
 
 ## Recommended Publish Flow
 
-1. Make sure `master` contains the intended YTCF changes and the latest needed HC merge.
+1. Make sure `master` contains the intended YTCF changes and any needed shared chat runtime sync.
 2. Run the local validation commands above.
 3. Push `master`.
 4. Create and push the release tag:
