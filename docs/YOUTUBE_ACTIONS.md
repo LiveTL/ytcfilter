@@ -6,14 +6,14 @@ This doc exists so we do not re-learn the same YouTube quirks every time.
 
 ## Rule 0: Copy The Real Request
 
-If native YouTube can do it and HyperChat cannot, assume our request is missing a header, context field, or tracking param. Do not "guess until it works".
+If native YouTube can do it and YTCF cannot, assume our request is missing a header, context field, or tracking param. Do not "guess until it works".
 
 When in doubt, capture:
 
 - One request flow in native UI (extension off)
-- The same flow in HyperChat (extension on)
+- The same flow in YTCF (extension on)
 
-Then diff the request bodies + headers and make HyperChat match.
+Then diff the request bodies + headers and make YTCF match.
 
 ## Request Inputs You Must Preserve
 
