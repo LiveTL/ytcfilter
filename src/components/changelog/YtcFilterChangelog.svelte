@@ -1,1 +1,1 @@
-add new chat actions
+fix menus and visuals

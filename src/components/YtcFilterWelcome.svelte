@@ -36,7 +36,7 @@
     <br />
     <strong>v{appVersion}:</strong>
     <span>
-      fix visual conflicts w/ YT
+      fix menus and visuals
     </span>
   </p>
 </div>
