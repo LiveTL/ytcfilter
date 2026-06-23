@@ -3466,10 +3466,10 @@ ieee754@^1.1.13:
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
-iframe-translator@^0.3.7:
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/iframe-translator/-/iframe-translator-0.3.7.tgz#d4c2b0d91129eb5b3702a037a18f478b09a42d3b"
-  integrity sha512-ivgG7duy8G76NZGI4kluh7aXjsEWIR+HHQ+XYhje6GR/OHBFMAsYZ78KqJLVZ9/URKSpyc35uhSLhnAuQrAwTw==
+iframe-translator@^0.3.8:
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/iframe-translator/-/iframe-translator-0.3.8.tgz#2d6bafc47aad21b9b6b79bcae7014b976b4b45a0"
+  integrity sha512-BV6yi4l1dg7LhHiqGkBtKl9fHhQXm3adefpXTK/fMxqPWo/NHU0UOzMnlYCR0JV16/OYmEto0LWvo/u1dOx5AQ==
   dependencies:
     "@types/node" "20.0.0"
 
