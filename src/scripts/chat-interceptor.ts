@@ -54,12 +54,11 @@ if (!window.location.href.includes('/embed/ytcfilter_embed')) {
   });
 
   try {
-    const video = (window as any)
-      .parent.yt.config_.SBOX_SETTINGS.SEARCHBOX_COMPONENT.__dataHost.parentComponent
-      .__data.data.response.contents.twoColumnWatchNextResults.results.results.contents[0]
+    const video = (window as any).parent.ytInitialData.contents
+      .twoColumnWatchNextResults.results.results.contents[0]
       .videoPrimaryInfoRenderer;
-    const channel = (window as any).parent.yt.config_.SBOX_SETTINGS.SEARCHBOX_COMPONENT.__dataHost
-      .parentComponent.__data.data.response.contents.twoColumnWatchNextResults.results.results
+    const channel = (window as any).parent.ytInitialData.contents
+      .twoColumnWatchNextResults.results.results
       .contents[1].videoSecondaryInfoRenderer.owner.videoOwnerRenderer;
     const params = new URLSearchParams(window.parent.location.search);
     window.dispatchEvent(new CustomEvent('videoInfoYtcFilter', {
