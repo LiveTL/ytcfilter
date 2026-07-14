@@ -3,6 +3,7 @@
     currentFilterPreset,
     videoInfo
   } from '../ts/storage';
+  import Changelog from './changelog/YtcFilterChangelog.svelte';
   const appVersion = __VERSION__;
   const classes = 'p-2 rounded inline-flex flex-col overflow-hidden pointer-events-none touch-none select-none';
 </script>
@@ -36,7 +37,7 @@
     <br />
     <strong>v{appVersion}:</strong>
     <span>
-      fix menus and visuals
+      <Changelog />
     </span>
   </p>
 </div>
