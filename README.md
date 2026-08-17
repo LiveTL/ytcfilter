@@ -1,3 +1,8 @@
+> [!WARNING]
+> YtcFilter is now authored at https://github.com/LiveTL/LiveTL/tree/main/apps/YtcFilter ; this repo is archived!
+
+---
+
 # YtcFilter | YouTube Chat Filter 
 
 ## Installation
